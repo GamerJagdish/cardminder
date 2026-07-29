@@ -22,6 +22,18 @@ class AppTheme {
     [Color(0xFF334155), Color(0xFF1E293B)], // Slate Charcoal
   ];
 
+  static List<Color> getCardColors(int colorIndex) {
+    if (colorIndex >= 0 && colorIndex < cardThemes.length) {
+      return cardThemes[colorIndex];
+    }
+    // Custom RGB Color (stored as 32-bit ARGB int)
+    final baseColor = Color(colorIndex);
+    final HSLColor hsl = HSLColor.fromColor(baseColor);
+    final darkerColor =
+        hsl.withLightness((hsl.lightness - 0.15).clamp(0.0, 1.0)).toColor();
+    return [baseColor, darkerColor];
+  }
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,

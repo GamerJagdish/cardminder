@@ -127,8 +127,7 @@ class _CardTileBody extends StatelessWidget {
     final dateFormat = DateFormat('MMM dd, yyyy');
     final urgency = card.status;
     final digits = card.lastFourDigits ?? '0000';
-    final cardColors =
-        AppTheme.cardThemes[card.colorIndex % AppTheme.cardThemes.length];
+    final cardColors = AppTheme.getCardColors(card.colorIndex);
 
     return Row(
       children: [

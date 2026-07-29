@@ -17,7 +17,7 @@ class CreditCardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.cardThemes[card.colorIndex % AppTheme.cardThemes.length];
+    final colors = AppTheme.getCardColors(card.colorIndex);
     final displayName = card.cardName.isEmpty ? 'Card Nickname' : card.cardName;
     final digits = card.lastFourDigits ?? '0000';
 
