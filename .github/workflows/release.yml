@@ -1,0 +1,103 @@
+name: Release CardMinder
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'pubspec.yaml'
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Build & Release CardMinder APKs
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Extract App Version from pubspec.yaml
+        id: extract_version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG_NAME=v$VERSION" >> $GITHUB_ENV
+          echo "Extracted version: $VERSION"
+
+      - name: Generate Commit Changelog
+        id: changelog
+        run: |
+          echo "Generating changelog..."
+          
+          # Find previous tag if available
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || true)
+          
+          if [ -n "$PREV_TAG" ]; then
+            echo "Previous tag found: $PREV_TAG"
+            LOG_RANGE="$PREV_TAG..HEAD"
+          else
+            echo "No previous tag found. Generating log from initial commit."
+            LOG_RANGE="HEAD"
+          fi
+
+          # Format git commits with full title and description
+          CHANGELOG_FILE="CHANGELOG_RELEASE.md"
+          echo "## What's Changed in $VERSION" > $CHANGELOG_FILE
+          echo "" >> $CHANGELOG_FILE
+          
+          if [ "$LOG_RANGE" = "HEAD" ]; then
+            git log --pretty=format:"* **%s**%n%b" >> $CHANGELOG_FILE
+          else
+            git log $LOG_RANGE --pretty=format:"* **%s**%n%b" >> $CHANGELOG_FILE
+          fi
+          
+          echo "" >> $CHANGELOG_FILE
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Universal Release APK
+        run: |
+          flutter build apk --release
+          mkdir -p release_apks
+          cp build/app/outputs/flutter-apk/app-release.apk release_apks/CardMinder-${{ env.VERSION }}-universal.apk
+
+      - name: Build Split-per-ABI Release APKs
+        run: |
+          flutter build apk --release --split-per-abi
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk release_apks/CardMinder-${{ env.VERSION }}-armeabi-v7a.apk
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk release_apks/CardMinder-${{ env.VERSION }}-arm64-v8a.apk
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk release_apks/CardMinder-${{ env.VERSION }}-x86_64.apk
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: CardMinder ${{ env.TAG_NAME }}
+          body_path: CHANGELOG_RELEASE.md
+          draft: false
+          prerelease: false
+          files: release_apks/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
