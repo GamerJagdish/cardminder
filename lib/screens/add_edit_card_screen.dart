@@ -21,8 +21,11 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   late TextEditingController _digitsController;
   late TextEditingController _monthController;
   late TextEditingController _yearController;
+  late PageController _pageController;
 
+  int _currentPage = 0;
   int _selectedColorIndex = 0;
+  int _customRgbColorValue = const Color(0xFFE11D48).toARGB32();
   String _selectedNetwork = 'Visa';
   late DateTime _selectedDate;
 
@@ -36,7 +39,22 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     _digitsController = TextEditingController(text: card?.lastFourDigits ?? '');
     _monthController = TextEditingController(text: card?.expiryMonth ?? '12');
     _yearController = TextEditingController(text: card?.expiryYear ?? '28');
-    _selectedColorIndex = card?.colorIndex ?? 0;
+
+    if (card != null) {
+      if (card.colorIndex >= AppTheme.cardThemes.length) {
+        _customRgbColorValue = card.colorIndex;
+        _selectedColorIndex = card.colorIndex;
+        _currentPage = AppTheme.cardThemes.length; // 6th index (Custom RGB page)
+      } else {
+        _selectedColorIndex = card.colorIndex;
+        _currentPage = card.colorIndex;
+      }
+    } else {
+      _selectedColorIndex = 0;
+      _currentPage = 0;
+    }
+
+    _pageController = PageController(initialPage: _currentPage);
     _selectedNetwork = card?.network ?? 'Visa';
     _selectedDate = card?.lastTransactionDate ?? DateTime.now();
   }
@@ -47,6 +65,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     _digitsController.dispose();
     _monthController.dispose();
     _yearController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -112,9 +131,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   }
 
   void _showRgbColorPickerDialog(BuildContext context) {
-    Color currentColor = _selectedColorIndex >= AppTheme.cardThemes.length
-        ? Color(_selectedColorIndex)
-        : const Color(0xFFE11D48);
+    Color currentColor = Color(_customRgbColorValue);
 
     double r = (currentColor.r * 255.0).clamp(0.0, 255.0);
     double g = (currentColor.g * 255.0).clamp(0.0, 255.0);
@@ -193,8 +210,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                           min: 0,
                           max: 255,
                           activeColor: Colors.red,
-                          onChanged: (val) =>
-                              setDialogState(() => r = val),
+                          onChanged: (val) => setDialogState(() => r = val),
                         ),
                       ),
                       SizedBox(
@@ -218,8 +234,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                           min: 0,
                           max: 255,
                           activeColor: Colors.green,
-                          onChanged: (val) =>
-                              setDialogState(() => g = val),
+                          onChanged: (val) => setDialogState(() => g = val),
                         ),
                       ),
                       SizedBox(
@@ -243,8 +258,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                           min: 0,
                           max: 255,
                           activeColor: Colors.blue,
-                          onChanged: (val) =>
-                              setDialogState(() => b = val),
+                          onChanged: (val) => setDialogState(() => b = val),
                         ),
                       ),
                       SizedBox(
@@ -274,8 +288,16 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                 onPressed: () {
                   final argbInt = activeColor.toARGB32();
                   setState(() {
+                    _customRgbColorValue = argbInt;
                     _selectedColorIndex = argbInt;
                   });
+                  if (_currentPage != AppTheme.cardThemes.length) {
+                    _pageController.animateToPage(
+                      AppTheme.cardThemes.length,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                    );
+                  }
                   Navigator.pop(dialogCtx);
                 },
                 child: const Text('Apply Color'),
@@ -307,9 +329,6 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
       cardType: 'Debit Card',
     );
 
-    final bool isCustomColorActive =
-        _selectedColorIndex >= AppTheme.cardThemes.length;
-
     return Scaffold(
       backgroundColor: AppTheme.bgLight,
       appBar: AppBar(
@@ -336,111 +355,129 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Live Interactive Credit Card Preview
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: CreditCardView(card: previewCard, isInteractive: false),
-              ),
-
-              const SizedBox(height: 24),
-
-              // CARD COLOR SELECTOR (Edge-to-Edge Horizontal Scroll)
+              // CARD CAROUSEL SLIDER (Swipe to select card color)
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.0),
-                child: _FieldLabel(text: 'CARD COLOR'),
+                child: _FieldLabel(text: 'SELECT CARD COLOR (SWIPE TO CHOOSE)'),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
+
               SizedBox(
-                height: 48,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  children: [
-                    // Presets 0..5
-                    ...List.generate(AppTheme.cardThemes.length, (index) {
-                      final colors = AppTheme.cardThemes[index];
-                      final isSelected = _selectedColorIndex == index;
-                      return GestureDetector(
-                        onTap: () =>
-                            setState(() => _selectedColorIndex = index),
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          margin: const EdgeInsets.only(right: 10),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: colors.first,
-                            border: isSelected
-                                ? Border.all(
-                                    color: AppTheme.primaryNavy, width: 3)
+                height: 195,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: AppTheme.cardThemes.length + 1,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                      if (index < AppTheme.cardThemes.length) {
+                        _selectedColorIndex = index;
+                      } else {
+                        _selectedColorIndex = _customRgbColorValue;
+                      }
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    final isCustomRgbPage = index == AppTheme.cardThemes.length;
+                    final cardColor =
+                        isCustomRgbPage ? _customRgbColorValue : index;
+                    final cardForPage =
+                        previewCard.copyWith(colorIndex: cardColor);
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Stack(
+                        children: [
+                          CreditCardView(
+                            card: cardForPage,
+                            isInteractive: false,
+                            onTap: isCustomRgbPage
+                                ? () => _showRgbColorPickerDialog(context)
                                 : null,
                           ),
-                        ),
-                      );
-                    }),
-
-                    // Active Custom RGB Circle (If custom color selected)
-                    if (isCustomColorActive)
-                      GestureDetector(
-                        onTap: () => _showRgbColorPickerDialog(context),
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          margin: const EdgeInsets.only(right: 10),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Color(_selectedColorIndex),
-                            border: Border.all(
-                                color: AppTheme.primaryNavy, width: 3),
-                          ),
-                          child: const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-
-                    // Custom RGB Color Picker Action Button
-                    GestureDetector(
-                      onTap: () => _showRgbColorPickerDialog(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(
-                              color: isCustomColorActive
-                                  ? AppTheme.primaryNavy
-                                  : const Color(0xFFCBD5E1)),
-                        ),
-                        alignment: Alignment.center,
-                        child: Row(
-                          children: const [
-                            Icon(
-                              Icons.palette_outlined,
-                              size: 18,
-                              color: AppTheme.primaryNavy,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              'Custom',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryNavy,
+                          if (isCustomRgbPage)
+                            Positioned(
+                              top: 14,
+                              right: 16,
+                              child: GestureDetector(
+                                onTap: () =>
+                                    _showRgbColorPickerDialog(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.95),
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 6,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(Icons.palette_outlined,
+                                          size: 16, color: AppTheme.primaryNavy),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Custom RGB',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.primaryNavy,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                          ],
-                        ),
+                        ],
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+
+              // Page Indicator Dots (. . . . . . 🎨)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(AppTheme.cardThemes.length + 1, (index) {
+                  final isSelected = _currentPage == index;
+                  final isCustomDot = index == AppTheme.cardThemes.length;
+
+                  return GestureDetector(
+                    onTap: () {
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                      );
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: isSelected ? 22 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppTheme.primaryNavy
+                            : (isCustomDot
+                                ? AppTheme.primaryNavy.withValues(alpha: 0.4)
+                                : const Color(0xFFCBD5E1)),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+
+              const SizedBox(height: 24),
 
               // NICKNAME INPUT
               Padding(
