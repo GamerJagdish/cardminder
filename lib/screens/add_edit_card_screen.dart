@@ -30,7 +30,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   String _cardType = 'Credit Card';
   late DateTime _selectedDate;
 
-  final List<String> _networks = ['Visa', 'Mastercard', 'RuPay', 'Amex', 'Discover'];
+
 
   @override
   void initState() {
@@ -402,6 +402,9 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                     : 'Credit Card';
                               });
                             },
+                            onNetworkSelected: (net) {
+                              setState(() => _selectedNetwork = net);
+                            },
                             onTap: isCustomRgbPage
                                 ? () => _showRgbColorPickerDialog(context)
                                 : null,
@@ -541,53 +544,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
 
               const SizedBox(height: 20),
 
-              // NETWORK SELECTOR PILLS (Edge-to-Edge Horizontal Scroll)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.0),
-                child: _FieldLabel(text: 'NETWORK'),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 44,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  itemCount: _networks.length,
-                  itemBuilder: (context, index) {
-                    final net = _networks[index];
-                    final isSelected = _selectedNetwork == net;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedNetwork = net),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 18, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppTheme.primaryNavy
-                                : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            net,
-                            style: TextStyle(
-                              color: isSelected
-                                  ? Colors.white
-                                  : const Color(0xFF475569),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
 
-              const SizedBox(height: 20),
 
               // EXP. MONTH & EXP. YEAR (Row)
               Padding(

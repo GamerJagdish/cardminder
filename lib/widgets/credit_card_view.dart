@@ -7,6 +7,7 @@ class CreditCardView extends StatelessWidget {
   final CreditCard card;
   final VoidCallback? onTap;
   final VoidCallback? onCardTypeTap;
+  final ValueChanged<String>? onNetworkSelected;
   final bool isInteractive;
 
   const CreditCardView({
@@ -14,6 +15,7 @@ class CreditCardView extends StatelessWidget {
     required this.card,
     this.onTap,
     this.onCardTypeTap,
+    this.onNetworkSelected,
     this.isInteractive = true,
   });
 
@@ -100,7 +102,79 @@ class CreditCardView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        _buildNetworkLogo(card.network),
+                        if (onNetworkSelected != null)
+                          PopupMenuButton<String>(
+                            onSelected: onNetworkSelected,
+                            offset: const Offset(0, 36),
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            color: Colors.white,
+                            surfaceTintColor: Colors.transparent,
+                            tooltip: 'Select Network',
+                            itemBuilder: (context) => [
+                              'Visa',
+                              'Mastercard',
+                              'RuPay',
+                              'Amex',
+                              'Discover',
+                            ].map((net) {
+                              final isSelected = card.network.toLowerCase() ==
+                                  net.toLowerCase();
+                              return PopupMenuItem<String>(
+                                value: net,
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 44,
+                                      height: 26,
+                                      child: Center(child: _buildNetworkLogo(net)),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      net,
+                                      style: TextStyle(
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? AppTheme.primaryNavy
+                                            : AppTheme.textDark,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    if (isSelected) ...[
+                                      const Spacer(),
+                                      const Icon(Icons.check_rounded,
+                                          size: 18, color: AppTheme.primaryNavy),
+                                    ],
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: Colors.white38, width: 0.8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildNetworkLogo(card.network),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.arrow_drop_down_rounded,
+                                      color: Colors.white, size: 18),
+                                ],
+                              ),
+                            ),
+                          )
+                        else
+                          _buildNetworkLogo(card.network),
                       ],
                     ),
 
