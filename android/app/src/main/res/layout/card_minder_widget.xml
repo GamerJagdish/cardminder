@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:padding="12dp">
 
-    <!-- Top Header: Title & Last 4 Digits -->
+    <!-- Widget Header Bar -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -18,18 +18,18 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:text="CARDMINDER"
-            android:textColor="#8B5CF6"
-            android:textSize="11sp"
+            android:textColor="#0F172A"
+            android:textSize="12sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/widget_card_digits"
+            android:id="@+id/widget_cards_count_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:text=""
+            android:text="0 CARDS"
             android:textColor="#94A3B8"
-            android:textSize="11sp"
+            android:textSize="10sp"
             android:textStyle="bold" />
     </RelativeLayout>
 
@@ -38,70 +38,251 @@
         android:layout_height="1dp"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="6dp"
-        android:background="#334155" />
+        android:background="#E2E8F0" />
 
-    <!-- Main Content Body -->
+    <!-- Multi-Card List Container (up to 5 rows in 4x2 space) -->
     <LinearLayout
+        android:id="@+id/widget_cards_list_container"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <!-- Card Name & Subtitle -->
+        <!-- Card Row 1 -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:id="@+id/widget_row_1"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:paddingRight="8dp">
+            android:layout_marginBottom="3dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="3dp">
 
             <TextView
-                android:id="@+id/widget_card_name"
-                android:layout_width="match_parent"
+                android:id="@+id/widget_digits_1"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:text="No Cards Tracked"
+                android:background="#1E293B"
+                android:paddingLeft="5dp"
+                android:paddingTop="2dp"
+                android:paddingRight="5dp"
+                android:paddingBottom="2dp"
+                android:text="7712"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="9sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/widget_status_sub"
-                android:layout_width="wrap_content"
+                android:id="@+id/widget_name_1"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="365-Day Inactivity Tracker"
-                android:textColor="#64748B"
-                android:textSize="9sp" />
-        </LinearLayout>
-
-        <!-- Days Remaining Counter -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingLeft="6dp"
-            android:paddingRight="4dp">
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingLeft="8dp"
+                android:text="No Cards Tracked"
+                android:textColor="#0F172A"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/widget_days_count"
+                android:id="@+id/widget_days_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="—"
-                android:textColor="#EF4444"
-                android:textSize="22sp"
+                android:textColor="#10B981"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Card Row 2 -->
+        <LinearLayout
+            android:id="@+id/widget_row_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="3dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/widget_digits_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#1E293B"
+                android:paddingLeft="5dp"
+                android:paddingTop="2dp"
+                android:paddingRight="5dp"
+                android:paddingBottom="2dp"
+                android:text="4821"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/widget_days_label"
+                android:id="@+id/widget_name_2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingLeft="8dp"
+                android:text=""
+                android:textColor="#0F172A"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_days_2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DAYS LEFT"
-                android:textColor="#94A3B8"
-                android:textSize="8sp"
+                android:text=""
+                android:textColor="#EF4444"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Card Row 3 -->
+        <LinearLayout
+            android:id="@+id/widget_row_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="3dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/widget_digits_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#1E293B"
+                android:paddingLeft="5dp"
+                android:paddingTop="2dp"
+                android:paddingRight="5dp"
+                android:paddingBottom="2dp"
+                android:text="3306"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_name_3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingLeft="8dp"
+                android:text=""
+                android:textColor="#0F172A"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_days_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#10B981"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Card Row 4 -->
+        <LinearLayout
+            android:id="@+id/widget_row_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="3dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/widget_digits_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#1E293B"
+                android:paddingLeft="5dp"
+                android:paddingTop="2dp"
+                android:paddingRight="5dp"
+                android:paddingBottom="2dp"
+                android:text="0000"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_name_4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingLeft="8dp"
+                android:text=""
+                android:textColor="#0F172A"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_days_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#10B981"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Card Row 5 -->
+        <LinearLayout
+            android:id="@+id/widget_row_5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="3dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/widget_digits_5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#1E293B"
+                android:paddingLeft="5dp"
+                android:paddingTop="2dp"
+                android:paddingRight="5dp"
+                android:paddingBottom="2dp"
+                android:text="0000"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_name_5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingLeft="8dp"
+                android:text=""
+                android:textColor="#0F172A"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_days_5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#10B981"
+                android:textSize="13sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>

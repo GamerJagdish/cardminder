@@ -19,16 +19,29 @@ enum UrgencyStatus {
     }
   }
 
+  Color get bgLightColor {
+    switch (this) {
+      case UrgencyStatus.safe:
+        return const Color(0xFFDCFCE7); // Light green badge bg
+      case UrgencyStatus.warning:
+        return const Color(0xFFFEF3C7); // Light amber badge bg
+      case UrgencyStatus.critical:
+        return const Color(0xFFFEE2E2); // Light red badge bg
+      case UrgencyStatus.expired:
+        return const Color(0xFFF3F4F6); // Light gray badge bg
+    }
+  }
+
   String get label {
     switch (this) {
       case UrgencyStatus.safe:
-        return 'Safe';
+        return 'SAFE';
       case UrgencyStatus.warning:
-        return 'Needs Attention';
+        return 'WARNING';
       case UrgencyStatus.critical:
-        return 'Urgent';
+        return 'URGENT';
       case UrgencyStatus.expired:
-        return 'Expired / Inactive';
+        return 'EXPIRED';
     }
   }
 }
@@ -40,7 +53,10 @@ class CreditCard {
   final DateTime lastTransactionDate;
   final int colorIndex;
   final String? bankName;
-  final String? cardType; // Visa, Mastercard, Amex, RuPay, etc.
+  final String cardType; // e.g. "Debit Card", "Credit Card"
+  final String network; // Visa, Mastercard, Amex, Discover
+  final String expiryMonth; // e.g. "12"
+  final String expiryYear; // e.g. "28"
 
   CreditCard({
     required this.id,
@@ -49,7 +65,10 @@ class CreditCard {
     required this.lastTransactionDate,
     this.colorIndex = 0,
     this.bankName,
-    this.cardType,
+    this.cardType = 'Debit Card',
+    this.network = 'Visa',
+    this.expiryMonth = '12',
+    this.expiryYear = '28',
   });
 
   /// Expiry date is 365 days after the last transaction date
@@ -85,6 +104,8 @@ class CreditCard {
     return UrgencyStatus.safe;
   }
 
+  String get expiryDateString => '$expiryMonth/$expiryYear';
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -94,6 +115,9 @@ class CreditCard {
       'colorIndex': colorIndex,
       'bankName': bankName,
       'cardType': cardType,
+      'network': network,
+      'expiryMonth': expiryMonth,
+      'expiryYear': expiryYear,
     };
   }
 
@@ -105,7 +129,10 @@ class CreditCard {
       lastTransactionDate: DateTime.parse(json['lastTransactionDate'] as String),
       colorIndex: (json['colorIndex'] as int?) ?? 0,
       bankName: json['bankName'] as String?,
-      cardType: json['cardType'] as String?,
+      cardType: (json['cardType'] as String?) ?? 'Debit Card',
+      network: (json['network'] as String?) ?? 'Visa',
+      expiryMonth: (json['expiryMonth'] as String?) ?? '12',
+      expiryYear: (json['expiryYear'] as String?) ?? '28',
     );
   }
 
@@ -117,6 +144,9 @@ class CreditCard {
     int? colorIndex,
     String? bankName,
     String? cardType,
+    String? network,
+    String? expiryMonth,
+    String? expiryYear,
   }) {
     return CreditCard(
       id: id ?? this.id,
@@ -126,6 +156,9 @@ class CreditCard {
       colorIndex: colorIndex ?? this.colorIndex,
       bankName: bankName ?? this.bankName,
       cardType: cardType ?? this.cardType,
+      network: network ?? this.network,
+      expiryMonth: expiryMonth ?? this.expiryMonth,
+      expiryYear: expiryYear ?? this.expiryYear,
     );
   }
 }

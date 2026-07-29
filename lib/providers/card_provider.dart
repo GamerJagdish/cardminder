@@ -38,7 +38,6 @@ class CardState {
         case FilterType.safe:
           return card.daysRemaining > 30;
         case FilterType.all:
-        default:
           return true;
       }
     }).toList();
@@ -92,7 +91,7 @@ class CardNotifier extends StateNotifier<CardState> {
       lastTransactionDate: lastTransactionDate,
       colorIndex: colorIndex,
       bankName: bankName,
-      cardType: cardType,
+      cardType: cardType ?? 'Debit Card',
     );
 
     await _storageService.saveCard(newCard);

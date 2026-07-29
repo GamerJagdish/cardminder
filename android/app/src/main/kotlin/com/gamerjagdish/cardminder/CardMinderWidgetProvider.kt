@@ -5,7 +5,9 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.view.View
 import android.widget.RemoteViews
+import org.json.JSONArray
 
 class CardMinderWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(
@@ -16,33 +18,64 @@ class CardMinderWidgetProvider : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             try {
                 val views = RemoteViews(context.packageName, R.layout.card_minder_widget)
-
-                // Retrieve saved data from HomeWidget preferences
                 val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-                val cardName = prefs.getString("urgent_card_name", null) ?: "No Cards Tracked"
-                val cardDigits = prefs.getString("urgent_card_digits", null) ?: ""
-                val daysLeft = prefs.getInt("urgent_card_days", -1)
+
+                // Static Widget Header Title: CARDMINDER
+                views.setTextViewText(R.id.widget_title, "CARDMINDER")
+
+                val jsonString = prefs.getString("widget_cards_json", null)
                 val totalCards = prefs.getInt("total_cards", 0)
 
-                views.setTextViewText(R.id.widget_card_name, cardName)
-                views.setTextViewText(R.id.widget_card_digits, cardDigits)
+                views.setTextViewText(R.id.widget_cards_count_label, "$totalCards CARDS")
 
-                if (totalCards > 0 && daysLeft >= 0) {
-                    views.setTextViewText(R.id.widget_days_count, "$daysLeft")
-                    views.setTextViewText(R.id.widget_days_label, "DAYS LEFT")
+                val rowIds = arrayOf(
+                    R.id.widget_row_1 to Triple(R.id.widget_name_1, R.id.widget_digits_1, R.id.widget_days_1),
+                    R.id.widget_row_2 to Triple(R.id.widget_name_2, R.id.widget_digits_2, R.id.widget_days_2),
+                    R.id.widget_row_3 to Triple(R.id.widget_name_3, R.id.widget_digits_3, R.id.widget_days_3),
+                    R.id.widget_row_4 to Triple(R.id.widget_name_4, R.id.widget_digits_4, R.id.widget_days_4),
+                    R.id.widget_row_5 to Triple(R.id.widget_name_5, R.id.widget_digits_5, R.id.widget_days_5)
+                )
 
-                    // Color code based on days remaining
-                    if (daysLeft <= 30) {
-                        views.setTextColor(R.id.widget_days_count, android.graphics.Color.parseColor("#EF4444"))
-                    } else if (daysLeft <= 90) {
-                        views.setTextColor(R.id.widget_days_count, android.graphics.Color.parseColor("#F59E0B"))
-                    } else {
-                        views.setTextColor(R.id.widget_days_count, android.graphics.Color.parseColor("#10B981"))
+                if (jsonString != null && jsonString.isNotEmpty()) {
+                    val jsonArray = JSONArray(jsonString)
+
+                    for (i in 0 until 5) {
+                        val (rowContainer, fields) = rowIds[i]
+                        val (nameId, digitsId, daysId) = fields
+
+                        if (i < jsonArray.length()) {
+                            val item = jsonArray.getJSONObject(i)
+                            views.setViewVisibility(rowContainer, View.VISIBLE)
+                            views.setTextViewText(nameId, item.optString("name", "Card"))
+                            views.setTextViewText(digitsId, item.optString("digits", "0000"))
+
+                            val days = item.optInt("days", -1)
+                            views.setTextViewText(daysId, if (days >= 0) "${days}d" else "—")
+
+                            val color = if (days <= 30) "#EF4444" else if (days <= 90) "#F59E0B" else "#10B981"
+                            views.setTextColor(daysId, android.graphics.Color.parseColor(color))
+                        } else {
+                            if (i == 0 && jsonArray.length() == 0) {
+                                views.setViewVisibility(rowContainer, View.VISIBLE)
+                                views.setTextViewText(nameId, "No Cards Tracked")
+                                views.setTextViewText(digitsId, "0000")
+                                views.setTextViewText(daysId, "—")
+                            } else {
+                                views.setViewVisibility(rowContainer, View.GONE)
+                            }
+                        }
                     }
                 } else {
-                    views.setTextViewText(R.id.widget_days_count, "—")
-                    views.setTextViewText(R.id.widget_days_label, "NO CARDS")
-                    views.setTextColor(R.id.widget_days_count, android.graphics.Color.parseColor("#94A3B8"))
+                    // Fallback
+                    views.setViewVisibility(R.id.widget_row_1, View.VISIBLE)
+                    views.setViewVisibility(R.id.widget_row_2, View.GONE)
+                    views.setViewVisibility(R.id.widget_row_3, View.GONE)
+                    views.setViewVisibility(R.id.widget_row_4, View.GONE)
+                    views.setViewVisibility(R.id.widget_row_5, View.GONE)
+
+                    views.setTextViewText(R.id.widget_name_1, "No Cards Tracked")
+                    views.setTextViewText(R.id.widget_digits_1, "0000")
+                    views.setTextViewText(R.id.widget_days_1, "—")
                 }
 
                 // Tap widget to launch MainActivity

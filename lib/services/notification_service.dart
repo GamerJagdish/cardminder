@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import '../models/app_settings.dart';
 import '../models/credit_card.dart';
 
 class NotificationService {
@@ -37,23 +38,39 @@ class NotificationService {
     }
   }
 
-  static Future<void> syncCardNotifications(List<CreditCard> cards) async {
+  static Future<void> syncCardNotifications(
+    List<CreditCard> cards, {
+    AppSettings? settings,
+  }) async {
     await _notificationsPlugin.cancelAll();
 
+    final config = settings ?? AppSettings();
+    if (!config.notificationsEnabled) return;
+
     for (var card in cards) {
-      await _scheduleCardReminders(card);
+      await _scheduleCardReminders(card, config);
     }
   }
 
-  static Future<void> _scheduleCardReminders(CreditCard card) async {
+  static Future<void> _scheduleCardReminders(
+      CreditCard card, AppSettings settings) async {
     final deactivationDate = card.deactivationDate;
     final now = DateTime.now();
 
-    final reminders = [
-      {'daysBefore': 30, 'idOffset': 1000},
-      {'daysBefore': 7, 'idOffset': 2000},
-      {'daysBefore': 1, 'idOffset': 3000},
-    ];
+    final reminders = <Map<String, dynamic>>[];
+
+    if (settings.notify30Days) {
+      reminders.add({'daysBefore': 30, 'idOffset': 1000});
+    }
+    if (settings.notify14Days) {
+      reminders.add({'daysBefore': 14, 'idOffset': 1500});
+    }
+    if (settings.notify7Days) {
+      reminders.add({'daysBefore': 7, 'idOffset': 2000});
+    }
+    if (settings.notify1Day) {
+      reminders.add({'daysBefore': 1, 'idOffset': 3000});
+    }
 
     final cardHash = card.id.hashCode.abs() % 100000;
 

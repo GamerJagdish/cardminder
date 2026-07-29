@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
+import 'services/notification_log_service.dart';
 import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 import 'theme/app_theme.dart';
@@ -9,18 +11,18 @@ import 'theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Force dark status bar styling
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: AppTheme.bgDark,
-      systemNavigationBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: AppTheme.bgLight,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 
-  // Initialize storage & notifications
   await StorageService.init();
+  await SettingsNotifier.init();
+  await NotificationLogService.init();
   await NotificationService.init();
   await NotificationService.requestPermissions();
 
@@ -39,7 +41,7 @@ class CardMinderApp extends StatelessWidget {
     return MaterialApp(
       title: 'CardMinder',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       home: const HomeScreen(),
     );
   }

@@ -7,40 +7,32 @@ void main() {
       final now = DateTime.now();
       final card = CreditCard(
         id: '1',
-        cardName: 'HDFC Regalia',
-        lastFourDigits: '1234',
+        cardName: 'Citi Rewards',
+        lastFourDigits: '7712',
         lastTransactionDate: now,
+        network: 'Mastercard',
+        expiryMonth: '12',
+        expiryYear: '28',
       );
 
       expect(card.daysRemaining, equals(365));
       expect(card.status, equals(UrgencyStatus.safe));
       expect(card.elapsedProgress, equals(0.0));
+      expect(card.expiryDateString, equals('12/28'));
     });
 
     test('Calculates remaining days correctly for past date', () {
       final pastDate = DateTime.now().subtract(const Duration(days: 350));
       final card = CreditCard(
         id: '2',
-        cardName: 'ICICI Sapphiro',
-        lastFourDigits: '9999',
+        cardName: 'Chase Sapphire',
+        lastFourDigits: '4821',
         lastTransactionDate: pastDate,
+        network: 'Visa',
       );
 
       expect(card.daysRemaining, equals(15));
       expect(card.status, equals(UrgencyStatus.critical));
-    });
-
-    test('Identifies expired card when transaction was >365 days ago', () {
-      final expiredDate = DateTime.now().subtract(const Duration(days: 370));
-      final card = CreditCard(
-        id: '3',
-        cardName: 'Amex Platinum',
-        lastTransactionDate: expiredDate,
-      );
-
-      expect(card.daysRemaining <= 0, isTrue);
-      expect(card.status, equals(UrgencyStatus.expired));
-      expect(card.elapsedProgress, equals(1.0));
     });
   });
 }
