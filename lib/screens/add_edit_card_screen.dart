@@ -503,7 +503,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                           if (isCustomRgbPage)
                             Positioned(
                               top: 14,
-                              right: 16,
+                              left: 16,
                               child: GestureDetector(
                                 onTap: () =>
                                     _showRgbColorPickerDialog(context),
@@ -528,7 +528,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                           size: 16, color: AppTheme.primaryNavy),
                                       SizedBox(width: 4),
                                       Text(
-                                        'Custom RGB',
+                                        'Custom',
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
