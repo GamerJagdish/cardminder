@@ -102,6 +102,22 @@ jobs:
           
           echo "" >> $CHANGELOG_FILE
 
+      - name: Decode Android Release Keystore and Config
+        if: steps.version_changed.outputs.should_release == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+            echo "storePassword=${KEYSTORE_PASSWORD:-cardminder2026}" > android/key.properties
+            echo "keyPassword=${KEY_PASSWORD:-cardminder2026}" >> android/key.properties
+            echo "keyAlias=${KEY_ALIAS:-upload}" >> android/key.properties
+            echo "storeFile=app/upload-keystore.jks" >> android/key.properties
+          fi
+
       - name: Install Dependencies
         if: steps.version_changed.outputs.should_release == 'true'
         run: flutter pub get
