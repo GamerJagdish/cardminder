@@ -329,7 +329,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
       ),
 
-      // Custom Floating Bottom Navigation Bar
+      // Custom Floating Bottom Navigation Bar (Mathematically Centered 3-Column Grid)
       bottomNavigationBar: Container(
         height: 74,
         decoration: BoxDecoration(
@@ -342,97 +342,155 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // Home Tab
-            GestureDetector(
-              onTap: () => setState(() => _selectedTab = 0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.home_outlined,
-                    color: _selectedTab == 0
-                        ? AppTheme.primaryNavy
-                        : AppTheme.textMuted,
-                    size: 24,
+        child: SafeArea(
+          child: Row(
+            children: [
+              // Left Tab: Home (33.3% width slot)
+              Expanded(
+                child: InkWell(
+                  onTap: () => setState(() => _selectedTab = 0),
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _selectedTab == 0
+                              ? AppTheme.primaryNavy.withValues(alpha: 0.1)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          _selectedTab == 0
+                              ? Icons.home_rounded
+                              : Icons.home_outlined,
+                          color: _selectedTab == 0
+                              ? AppTheme.primaryNavy
+                              : AppTheme.textMuted,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Home',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: _selectedTab == 0
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: _selectedTab == 0
+                              ? AppTheme.primaryNavy
+                              : AppTheme.textMuted,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Home',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: _selectedTab == 0
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                      color: _selectedTab == 0
-                          ? AppTheme.primaryNavy
-                          : AppTheme.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Floating Circular Add Button (+)
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const AddEditCardScreen(),
-                  ),
-                );
-              },
-              child: Container(
-                width: 52,
-                height: 52,
-                decoration: const BoxDecoration(
-                  color: AppTheme.primaryNavy,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
                 ),
-                child: const Icon(Icons.add, color: Colors.white, size: 28),
               ),
-            ),
 
-            // Settings Tab
-            GestureDetector(
-              onTap: () => setState(() => _selectedTab = 1),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.settings_outlined,
-                    color: _selectedTab == 1
-                        ? AppTheme.primaryNavy
-                        : AppTheme.textMuted,
-                    size: 24,
+              // Center Tab: Add Card Button (Rounded Square Navy Tile with Text)
+              Expanded(
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AddEditCardScreen(),
+                      ),
+                    );
+                  },
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryNavy,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  AppTheme.primaryNavy.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.add_card_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Add Card',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryNavy,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Settings',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: _selectedTab == 1
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                      color: _selectedTab == 1
-                          ? AppTheme.primaryNavy
-                          : AppTheme.textMuted,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+
+              // Right Tab: Settings (33.3% width slot)
+              Expanded(
+                child: InkWell(
+                  onTap: () => setState(() => _selectedTab = 1),
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _selectedTab == 1
+                              ? AppTheme.primaryNavy.withValues(alpha: 0.1)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          _selectedTab == 1
+                              ? Icons.settings_rounded
+                              : Icons.settings_outlined,
+                          color: _selectedTab == 1
+                              ? AppTheme.primaryNavy
+                              : AppTheme.textMuted,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Settings',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: _selectedTab == 1
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: _selectedTab == 1
+                              ? AppTheme.primaryNavy
+                              : AppTheme.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
