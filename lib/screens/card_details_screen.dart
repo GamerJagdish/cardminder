@@ -50,8 +50,16 @@ class CardDetailsScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            // Featured Card Graphic
-            CreditCardView(card: currentCard, isInteractive: false),
+            // Featured Card Graphic (Tap to Edit)
+            CreditCardView(
+              card: currentCard,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  slideUpRoute(AddEditCardScreen(cardToEdit: currentCard)),
+                );
+              },
+            ),
 
             const SizedBox(height: 20),
 
