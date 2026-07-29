@@ -264,14 +264,14 @@ class CardDetailsScreen extends ConsumerWidget {
 
             const SizedBox(height: 12),
 
-            // Line 2: Edit & Delete Buttons Side-by-Side
+            // Line 2: Edit & Delete Buttons Side-by-Side (Bold Solid Colors matching Swipe Actions)
             Row(
               children: [
-                // Edit Button
+                // Edit Button (Solid Navy)
                 Expanded(
                   child: SizedBox(
                     height: 48,
-                    child: OutlinedButton.icon(
+                    child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -283,39 +283,40 @@ class CardDetailsScreen extends ConsumerWidget {
                       },
                       icon: const Icon(Icons.edit_outlined, size: 18),
                       label: const Text('Edit'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.primaryNavy,
-                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryNavy,
+                        foregroundColor: Colors.white,
+                        elevation: 1,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
                         textStyle: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Delete Button
+                // Delete Button (Solid Bold Crimson Rose)
                 Expanded(
                   child: SizedBox(
                     height: 48,
-                    child: OutlinedButton.icon(
+                    child: ElevatedButton.icon(
                       onPressed: () => _confirmDelete(context, ref, currentCard),
                       icon: const Icon(Icons.delete_outline_rounded, size: 18),
                       label: const Text('Delete'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.accentRose,
-                        side: const BorderSide(color: Color(0xFFFECDD3)),
-                        backgroundColor: const Color(0xFFFFF1F2),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accentRose,
+                        foregroundColor: Colors.white,
+                        elevation: 1,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
                         textStyle: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
