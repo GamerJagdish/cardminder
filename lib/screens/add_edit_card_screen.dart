@@ -37,7 +37,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     super.initState();
     final card = widget.cardToEdit;
     _nameController = TextEditingController(text: card?.cardName ?? '');
-    _digitsController = TextEditingController(text: card?.lastFourDigits ?? '');
+    _digitsController = TextEditingController(text: card?.lastFourDigits ?? '0001');
     _monthController = TextEditingController(text: card?.expiryMonth ?? '12');
     _yearController = TextEditingController(text: card?.expiryYear ?? '28');
 
@@ -97,7 +97,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     if (widget.cardToEdit != null) {
       final updated = widget.cardToEdit!.copyWith(
         cardName: name,
-        lastFourDigits: digits.isNotEmpty ? digits : null,
+        lastFourDigits: digits.isNotEmpty ? digits : '0001',
         lastTransactionDate: _selectedDate,
         colorIndex: _selectedColorIndex,
         network: _selectedNetwork,
@@ -109,7 +109,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     } else {
       ref.read(cardNotifierProvider.notifier).addCard(
             cardName: name,
-            lastFourDigits: digits.isNotEmpty ? digits : null,
+            lastFourDigits: digits.isNotEmpty ? digits : '0001',
             lastTransactionDate: _selectedDate,
             colorIndex: _selectedColorIndex,
             cardType: _cardType,
@@ -313,6 +313,95 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     );
   }
 
+  void _showDigitsDialog(BuildContext context) {
+    final tempController = TextEditingController(
+      text: _digitsController.text.isNotEmpty ? _digitsController.text : '0001',
+    );
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Last 4 Digits',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textDark,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter the last 4 digits of your card:',
+              style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: tempController,
+              autofocus: true,
+              maxLength: 4,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 4,
+              ),
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintText: '0001',
+                counterText: '',
+                fillColor: const Color(0xFFF8FAFC),
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide:
+                      const BorderSide(color: AppTheme.primaryNavy, width: 2),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryNavy,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () {
+              final val = tempController.text.trim();
+              setState(() {
+                _digitsController.text = val.isNotEmpty ? val : '0001';
+              });
+              Navigator.pop(dialogCtx);
+            },
+            child: const Text('Save Digits'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.cardToEdit != null;
@@ -323,7 +412,8 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
       cardName: _nameController.text.isNotEmpty
           ? _nameController.text
           : 'Card Nickname',
-      lastFourDigits: _digitsController.text,
+      lastFourDigits:
+          _digitsController.text.isNotEmpty ? _digitsController.text : '0001',
       lastTransactionDate: _selectedDate,
       colorIndex: _selectedColorIndex,
       network: _selectedNetwork,
@@ -402,6 +492,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                     : 'Credit Card';
                               });
                             },
+                            onDigitsTap: () => _showDigitsDialog(context),
                             onNetworkSelected: (net) {
                               setState(() => _selectedNetwork = net);
                             },
@@ -513,30 +604,6 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                         }
                         return null;
                       },
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // LAST 4 DIGITS INPUT
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _FieldLabel(text: 'LAST 4 DIGITS (OPTIONAL)'),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _digitsController,
-                      maxLength: 4,
-                      keyboardType: TextInputType.number,
-                      onChanged: (_) => setState(() {}),
-                      decoration: const InputDecoration(
-                        hintText: '0000',
-                        counterText: '',
-                      ),
                     ),
                   ],
                 ),

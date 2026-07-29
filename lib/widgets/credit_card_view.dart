@@ -7,6 +7,7 @@ class CreditCardView extends StatelessWidget {
   final CreditCard card;
   final VoidCallback? onTap;
   final VoidCallback? onCardTypeTap;
+  final VoidCallback? onDigitsTap;
   final ValueChanged<String>? onNetworkSelected;
   final bool isInteractive;
 
@@ -15,6 +16,7 @@ class CreditCardView extends StatelessWidget {
     required this.card,
     this.onTap,
     this.onCardTypeTap,
+    this.onDigitsTap,
     this.onNetworkSelected,
     this.isInteractive = true,
   });
@@ -23,7 +25,9 @@ class CreditCardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppTheme.getCardColors(card.colorIndex);
     final displayName = card.cardName.isEmpty ? 'Card Nickname' : card.cardName;
-    final digits = card.lastFourDigits ?? '0000';
+    final digits = (card.lastFourDigits == null || card.lastFourDigits!.isEmpty)
+        ? '0001'
+        : card.lastFourDigits!;
 
     return GestureDetector(
       onTap: isInteractive ? onTap : null,
@@ -195,26 +199,52 @@ class CreditCardView extends StatelessWidget {
                     ),
 
                     // Masked Digits + Last 4 Digits
-                    Row(
-                      children: [
-                        const Text(
-                          '• • • •   • • • •   • • • •   ',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                            letterSpacing: 2,
+                    GestureDetector(
+                      onTap: onDigitsTap,
+                      child: Container(
+                        padding: onDigitsTap != null
+                            ? const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2)
+                            : EdgeInsets.zero,
+                        decoration: onDigitsTap != null
+                            ? BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: Colors.white38, width: 0.8),
+                              )
+                            : null,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                '• • • •  • • • •  • • • •  ',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                              Text(
+                                digits,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              if (onDigitsTap != null) ...[
+                                const SizedBox(width: 4),
+                                const Icon(Icons.edit_outlined,
+                                    color: Colors.white70, size: 13),
+                              ],
+                            ],
                           ),
                         ),
-                        Text(
-                          digits,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
 
                     // Bottom Row: EXPIRES & Card Type
