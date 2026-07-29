@@ -6,6 +6,7 @@ import '../services/notification_log_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/card_tile.dart';
 import '../widgets/credit_card_view.dart';
+import '../widgets/delete_confirmation_dialog.dart';
 import 'add_edit_card_screen.dart';
 import 'card_details_screen.dart';
 import 'notification_logs_screen.dart';
@@ -353,39 +354,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           return false;
                                         } else if (direction ==
                                             DismissDirection.endToStart) {
-                                          final name = card.cardName.isEmpty ? 'Card' : card.cardName;
-                                          final confirm = await showDialog<bool>(
+                                          final confirm =
+                                              await showDeleteConfirmationDialog(
                                             context: context,
-                                            builder: (ctx) => AlertDialog(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
-                                              title: const Text('Delete Card'),
-                                              content: Text(
-                                                'Are you sure you want to delete "$name"?',
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(
-                                                          ctx, false),
-                                                  child: const Text('Cancel'),
-                                                ),
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        AppTheme.accentRose,
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                  ),
-                                                  onPressed: () =>
-                                                      Navigator.pop(ctx, true),
-                                                  child: const Text('Delete'),
-                                                ),
-                                              ],
-                                            ),
+                                            cardName: card.cardName,
                                           );
 
                                           if (confirm == true) {

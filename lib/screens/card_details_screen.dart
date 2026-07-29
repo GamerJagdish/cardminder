@@ -5,6 +5,7 @@ import '../models/credit_card.dart';
 import '../providers/card_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/credit_card_view.dart';
+import '../widgets/delete_confirmation_dialog.dart';
 import 'add_edit_card_screen.dart';
 
 class CardDetailsScreen extends ConsumerWidget {
@@ -321,31 +322,18 @@ class CardDetailsScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, CreditCard targetCard) {
-    showDialog(
+  void _confirmDelete(BuildContext context, WidgetRef ref, CreditCard targetCard) async {
+    final confirm = await showDeleteConfirmationDialog(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: const Text('Delete Credit Card?'),
-        content: Text('Are you sure you want to remove ${targetCard.cardName}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentRose,
-            ),
-            onPressed: () {
-              ref.read(cardNotifierProvider.notifier).deleteCard(targetCard.id);
-              Navigator.pop(dialogCtx);
-              Navigator.pop(context);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+      cardName: targetCard.cardName,
     );
+
+    if (confirm == true) {
+      ref.read(cardNotifierProvider.notifier).deleteCard(targetCard.id);
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+    }
   }
 }
 
