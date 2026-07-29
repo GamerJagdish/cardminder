@@ -277,34 +277,63 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
               ),
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogCtx),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryNavy,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(dialogCtx),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: AppTheme.textDark,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                onPressed: () {
-                  final argbInt = activeColor.toARGB32();
-                  setState(() {
-                    _customRgbColorValue = argbInt;
-                    _selectedColorIndex = argbInt;
-                  });
-                  if (_currentPage != AppTheme.cardThemes.length) {
-                    _pageController.animateToPage(
-                      AppTheme.cardThemes.length,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOutCubic,
-                    );
-                  }
-                  Navigator.pop(dialogCtx);
-                },
-                child: const Text('Apply Color'),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryNavy,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        final argbInt = activeColor.toARGB32();
+                        setState(() {
+                          _customRgbColorValue = argbInt;
+                          _selectedColorIndex = argbInt;
+                        });
+                        if (_currentPage != AppTheme.cardThemes.length) {
+                          _pageController.animateToPage(
+                            AppTheme.cardThemes.length,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutCubic,
+                          );
+                        }
+                        Navigator.pop(dialogCtx);
+                      },
+                      child: const Text(
+                        'Apply Color',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           );
@@ -319,85 +348,134 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     );
     showDialog(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
+      builder: (dialogCtx) => Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
         ),
         backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
-        title: const Text(
-          'Last 4 Digits',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textDark,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryNavy.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.pin_outlined,
+                      color: AppTheme.primaryNavy,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Last 4 Digits',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textDark,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Enter the last 4 digits of your card:',
+                style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: tempController,
+                autofocus: true,
+                maxLength: 4,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 4,
+                ),
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  hintText: '0001',
+                  counterText: '',
+                  fillColor: const Color(0xFFF8FAFC),
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                        color: AppTheme.primaryNavy, width: 1.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(dialogCtx),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: AppTheme.textDark,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryNavy,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        final val = tempController.text.trim();
+                        setState(() {
+                          _digitsController.text =
+                              val.isNotEmpty ? val : '0001';
+                        });
+                        Navigator.pop(dialogCtx);
+                      },
+                      child: const Text(
+                        'Save Digits',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Enter the last 4 digits of your card:',
-              style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: tempController,
-              autofocus: true,
-              maxLength: 4,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 4,
-              ),
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                hintText: '0001',
-                counterText: '',
-                fillColor: const Color(0xFFF8FAFC),
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide:
-                      const BorderSide(color: AppTheme.primaryNavy, width: 2),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryNavy,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
-              final val = tempController.text.trim();
-              setState(() {
-                _digitsController.text = val.isNotEmpty ? val : '0001';
-              });
-              Navigator.pop(dialogCtx);
-            },
-            child: const Text('Save Digits'),
-          ),
-        ],
       ),
     );
   }
