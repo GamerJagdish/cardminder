@@ -81,7 +81,7 @@ jobs:
         run: |
           flutter build apk --release
           mkdir -p release_apks
-          cp build/app/outputs/flutter-apk/app-release.apk release_apks/CardMinder-${{ env.VERSION }}-universal.apk
+          cp build/app/outputs/flutter-apk/app-release.apk release_apks/CardMinder-${{ env.VERSION }}-Universal.apk
 
       - name: Build Split-per-ABI Release APKs
         run: |
@@ -94,7 +94,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: CardMinder ${{ env.TAG_NAME }}
+          name: ${{ env.TAG_NAME }}
           body_path: CHANGELOG_RELEASE.md
           draft: false
           prerelease: false
