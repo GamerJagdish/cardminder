@@ -362,7 +362,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
               // CARD CAROUSEL SLIDER (Swipe to select card color)
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.0),
-                child: _FieldLabel(text: 'SELECT CARD COLOR (SWIPE TO CHOOSE)'),
+                child: _FieldLabel(text: 'SELECT CARD COLOR'),
               ),
               const SizedBox(height: 10),
 
