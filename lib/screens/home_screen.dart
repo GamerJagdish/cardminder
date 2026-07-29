@@ -78,7 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(cardNotifierProvider);
-    final cards = state.cards;
+    final cards = state.filteredCards;
     final settings = ref.watch(settingsNotifierProvider);
     final unreadLogsCount =
         ref.watch(notificationLogNotifierProvider.notifier).unreadCount;
@@ -251,8 +251,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
-                                    children: const [
-                                      Text(
+                                    children: [
+                                      const Text(
                                         'All Cards',
                                         style: TextStyle(
                                           fontSize: 18,
@@ -260,12 +260,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           color: AppTheme.textDark,
                                         ),
                                       ),
-                                      Text(
-                                        'Sorted by urgency',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: AppTheme.textMuted,
-                                          fontWeight: FontWeight.w500,
+                                      GestureDetector(
+                                        onTap: () {
+                                          ref
+                                              .read(cardNotifierProvider
+                                                  .notifier)
+                                              .toggleSortMode();
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryNavy
+                                                .withValues(alpha: 0.08),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: AppTheme.primaryNavy
+                                                  .withValues(alpha: 0.15),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                state.sortMode ==
+                                                        SortMode.urgency
+                                                    ? Icons.bolt_rounded
+                                                    : Icons
+                                                        .drag_indicator_rounded,
+                                                size: 14,
+                                                color: AppTheme.primaryNavy,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                state.sortMode ==
+                                                        SortMode.urgency
+                                                    ? 'Sorted by urgency'
+                                                    : 'User Defined',
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppTheme.primaryNavy,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -274,15 +313,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                                 const SizedBox(height: 6),
 
-                                // Cards List
-                                ListView.builder(
+                                // Cards List with Drag-and-Drop Reordering
+                                ReorderableListView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemCount: cards.length,
                                   padding: const EdgeInsets.only(bottom: 20),
+                                  onReorderItem: (oldIndex, newIndex) {
+                                    ref
+                                        .read(cardNotifierProvider.notifier)
+                                        .reorderCards(oldIndex, newIndex);
+                                  },
                                   itemBuilder: (context, index) {
                                     final card = cards[index];
                                     return SwipeableCardTile(
+                                      key: ValueKey(card.id),
                                       card: card,
                                       onTap: () {
                                         Navigator.push(

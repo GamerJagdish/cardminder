@@ -8,21 +8,25 @@ import '../services/notification_service.dart';
 
 enum FilterType { all, actionRequired, safe }
 
+enum SortMode { urgency, custom }
+
 class CardState {
   final List<CreditCard> cards;
   final bool isLoading;
   final String searchQuery;
   final FilterType filter;
+  final SortMode sortMode;
 
   CardState({
     required this.cards,
     this.isLoading = false,
     this.searchQuery = '',
     this.filter = FilterType.all,
+    this.sortMode = SortMode.urgency,
   });
 
   List<CreditCard> get filteredCards {
-    return cards.where((card) {
+    final list = cards.where((card) {
       // Apply Search Filter
       if (searchQuery.isNotEmpty) {
         final query = searchQuery.toLowerCase();
@@ -42,6 +46,11 @@ class CardState {
           return true;
       }
     }).toList();
+
+    if (sortMode == SortMode.urgency) {
+      list.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
+    }
+    return list;
   }
 
   int get totalCards => cards.length;
@@ -53,12 +62,14 @@ class CardState {
     bool? isLoading,
     String? searchQuery,
     FilterType? filter,
+    SortMode? sortMode,
   }) {
     return CardState(
       cards: cards ?? this.cards,
       isLoading: isLoading ?? this.isLoading,
       searchQuery: searchQuery ?? this.searchQuery,
       filter: filter ?? this.filter,
+      sortMode: sortMode ?? this.sortMode,
     );
   }
 }
@@ -141,6 +152,26 @@ class CardNotifier extends StateNotifier<CardState> {
 
   void setFilter(FilterType filter) {
     state = state.copyWith(filter: filter);
+  }
+
+  Future<void> reorderCards(int oldIndex, int newIndex) async {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final currentList = List<CreditCard>.from(state.filteredCards);
+    final item = currentList.removeAt(oldIndex);
+    currentList.insert(newIndex, item);
+
+    state = state.copyWith(cards: currentList, sortMode: SortMode.custom);
+    await _storageService.saveAllCards(currentList);
+    _syncExternalServices(currentList);
+  }
+
+  void toggleSortMode() {
+    final nextMode = state.sortMode == SortMode.urgency
+        ? SortMode.custom
+        : SortMode.urgency;
+    state = state.copyWith(sortMode: nextMode);
   }
 
   void _syncExternalServices(List<CreditCard> cards) {

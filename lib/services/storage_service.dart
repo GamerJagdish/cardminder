@@ -22,14 +22,20 @@ class StorageService {
         // Skip corrupted records
       }
     }
-    // Sort cards by days remaining ascending (most urgent first)
-    cards.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
     return cards;
   }
 
   Future<void> saveCard(CreditCard card) async {
     final jsonString = jsonEncode(card.toJson());
     await _box.put(card.id, jsonString);
+  }
+
+  Future<void> saveAllCards(List<CreditCard> cards) async {
+    await _box.clear();
+    for (var card in cards) {
+      final jsonString = jsonEncode(card.toJson());
+      await _box.put(card.id, jsonString);
+    }
   }
 
   Future<void> deleteCard(String id) async {
