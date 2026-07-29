@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/app_settings.dart';
 import '../models/credit_card.dart';

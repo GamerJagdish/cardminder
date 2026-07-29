@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -7,6 +8,21 @@ import '../models/credit_card.dart';
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  static const int _debugImmediateId = 99999;
+  static const int _debugScheduledId = 99998;
+
+  static const NotificationDetails _notificationDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'cardminder_channel',
+      'Card Expiry Reminders',
+      channelDescription:
+          'Notifications for upcoming 365-day card transaction deadlines',
+      importance: Importance.high,
+      priority: Priority.high,
+    ),
+    iOS: DarwinNotificationDetails(),
+  );
 
   static Future<void> init() async {
     tz.initializeTimeZones();
@@ -94,20 +110,43 @@ class NotificationService {
           body:
               '${card.cardName}$cardDigitsInfo needs a transaction in $daysBefore day(s) to avoid deactivation!',
           scheduledDate: scheduledTZDate,
-          notificationDetails: const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'cardminder_channel',
-              'Card Expiry Reminders',
-              channelDescription:
-                  'Notifications for upcoming 365-day card transaction deadlines',
-              importance: Importance.high,
-              priority: Priority.high,
-            ),
-            iOS: DarwinNotificationDetails(),
-          ),
+          notificationDetails: _notificationDetails,
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         );
       }
     }
+  }
+
+  /// Debug-only: fire a notification immediately to verify permissions/channel.
+  static Future<void> showTestNotification() async {
+    assert(kDebugMode);
+    await _notificationsPlugin.show(
+      id: _debugImmediateId,
+      title: '💳 CardMinder Test',
+      body: 'If you see this, notifications are working.',
+      notificationDetails: _notificationDetails,
+    );
+  }
+
+  /// Debug-only: schedule a notification ~1 minute from now.
+  static Future<DateTime> scheduleTestNotificationInOneMinute() async {
+    assert(kDebugMode);
+    final scheduledDate =
+        tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
+    await _notificationsPlugin.zonedSchedule(
+      id: _debugScheduledId,
+      title: '💳 CardMinder Scheduled Test',
+      body: 'This test notification was scheduled 1 minute ago.',
+      scheduledDate: scheduledDate,
+      notificationDetails: _notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+    return scheduledDate.toLocal();
+  }
+
+  /// Debug-only: list notifications the OS has queued.
+  static Future<List<PendingNotificationRequest>> getPendingNotifications() async {
+    assert(kDebugMode);
+    return _notificationsPlugin.pendingNotificationRequests();
   }
 }

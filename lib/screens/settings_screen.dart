@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/app_settings.dart';
 import '../providers/card_provider.dart';
 import '../providers/settings_provider.dart';
+import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -402,6 +405,16 @@ class SettingsScreen extends ConsumerWidget {
 
             const SizedBox(height: 28),
 
+            if (kDebugMode) ...[
+              const _SectionHeader(
+                title: 'DEBUG: NOTIFICATION TOOLS',
+                icon: Icons.bug_report_outlined,
+              ),
+              const SizedBox(height: 12),
+              const _DebugNotificationTools(),
+              const SizedBox(height: 28),
+            ],
+
             // Force Refresh / Sync Button
             SizedBox(
               width: double.infinity,
@@ -542,6 +555,239 @@ class _ReminderToggleRow extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DebugNotificationTools extends StatefulWidget {
+  const _DebugNotificationTools();
+
+  @override
+  State<_DebugNotificationTools> createState() =>
+      _DebugNotificationToolsState();
+}
+
+class _DebugNotificationToolsState extends State<_DebugNotificationTools> {
+  bool _busy = false;
+  String? _status;
+
+  Future<void> _run(Future<void> Function() action, String successMessage) async {
+    setState(() {
+      _busy = true;
+      _status = null;
+    });
+    try {
+      await action();
+      if (mounted) {
+        setState(() => _status = successMessage);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _status = 'Failed: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  Future<void> _showPendingNotifications() async {
+    setState(() {
+      _busy = true;
+      _status = null;
+    });
+    try {
+      final pending = await NotificationService.getPendingNotifications();
+      if (!mounted) return;
+
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Pending notifications (${pending.length})'),
+          content: pending.isEmpty
+              ? const Text('No notifications are scheduled with the OS.')
+              : SizedBox(
+                  width: double.maxFinite,
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: pending.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 16),
+                    itemBuilder: (_, index) {
+                      final item = pending[index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ID ${item.id}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: AppTheme.textMuted,
+                            ),
+                          ),
+                          if (item.title != null) ...[
+                            const SizedBox(height: 4),
+                            Text(item.title!),
+                          ],
+                          if (item.body != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              item.body!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppTheme.textMuted,
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+                ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+
+      if (mounted) {
+        setState(() => _status = '${pending.length} pending notification(s)');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _status = 'Failed: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          _DebugActionButton(
+            icon: Icons.notifications_active_outlined,
+            label: 'Send test notification now',
+            busy: _busy,
+            onPressed: () => _run(
+              NotificationService.showTestNotification,
+              'Test notification sent.',
+            ),
+          ),
+          const SizedBox(height: 8),
+          _DebugActionButton(
+            icon: Icons.schedule_outlined,
+            label: 'Schedule test in 1 minute',
+            busy: _busy,
+            onPressed: () async {
+              setState(() {
+                _busy = true;
+                _status = null;
+              });
+              try {
+                final when =
+                    await NotificationService.scheduleTestNotificationInOneMinute();
+                if (mounted) {
+                  setState(() => _status =
+                      'Scheduled for ${DateFormat.jm().format(when)}');
+                }
+              } catch (e) {
+                if (mounted) {
+                  setState(() => _status = 'Failed: $e');
+                }
+              } finally {
+                if (mounted) {
+                  setState(() => _busy = false);
+                }
+              }
+            },
+          ),
+          const SizedBox(height: 8),
+          _DebugActionButton(
+            icon: Icons.list_alt_outlined,
+            label: 'View pending scheduled notifications',
+            busy: _busy,
+            onPressed: _showPendingNotifications,
+          ),
+          if (_status != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              _status!,
+              style: TextStyle(
+                fontSize: 12,
+                color: _status!.startsWith('Failed')
+                    ? AppTheme.accentRose
+                    : AppTheme.accentEmerald,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DebugActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool busy;
+  final VoidCallback onPressed;
+
+  const _DebugActionButton({
+    required this.icon,
+    required this.label,
+    required this.busy,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: busy ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppTheme.primaryNavy,
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        icon: Icon(icon, size: 18),
+        label: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          ),
+        ),
       ),
     );
   }
