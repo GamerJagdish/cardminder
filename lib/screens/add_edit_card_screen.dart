@@ -196,13 +196,13 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
               const SizedBox(height: 20),
 
               // NICKNAME INPUT
-              const _FieldLabel(text: 'NICKNAME'),
+              const _FieldLabel(text: 'NICKNAME (REQUIRED)'),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _nameController,
                 onChanged: (_) => setState(() {}),
                 decoration: const InputDecoration(
-                  hintText: 'e.g. Chase Sapphire',
+                  hintText: 'e.g. Swiggy HDFC',
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -215,7 +215,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
               const SizedBox(height: 20),
 
               // LAST 4 DIGITS INPUT
-              const _FieldLabel(text: 'LAST 4 DIGITS'),
+              const _FieldLabel(text: 'LAST 4 DIGITS (OPTIONAL)'),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _digitsController,
@@ -281,7 +281,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const _FieldLabel(text: 'EXP. MONTH'),
+                        const _FieldLabel(text: 'EXP. MONTH (OPTIONAL)'),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _monthController,
@@ -301,7 +301,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const _FieldLabel(text: 'EXP. YEAR'),
+                        const _FieldLabel(text: 'EXP. YEAR (OPTIONAL)'),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _yearController,

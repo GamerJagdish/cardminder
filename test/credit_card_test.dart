@@ -25,7 +25,7 @@ void main() {
       final pastDate = DateTime.now().subtract(const Duration(days: 350));
       final card = CreditCard(
         id: '2',
-        cardName: 'Chase Sapphire',
+        cardName: 'Swiggy HDFC',
         lastFourDigits: '4821',
         lastTransactionDate: pastDate,
         network: 'Visa',
