@@ -45,7 +45,35 @@ jobs:
           echo "TAG_NAME=v$VERSION" >> $GITHUB_ENV
           echo "Extracted version: $VERSION"
 
+      - name: Check if version changed since previous commit
+        id: version_changed
+        run: |
+          CURRENT_VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
+          PREV_VERSION=""
+
+          if [ "${{ github.event_name }}" = "push" ] && git rev-parse HEAD^ >/dev/null 2>&1; then
+            PREV_VERSION=$(git show HEAD^:pubspec.yaml 2>/dev/null | grep '^version:' | cut -d ' ' -f 2 | cut -d '+' -f 1 || true)
+          fi
+
+          echo "Current version: $CURRENT_VERSION"
+          echo "Previous version: $PREV_VERSION"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          elif [ -z "$PREV_VERSION" ]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          elif [ "$CURRENT_VERSION" != "$PREV_VERSION" ]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Skip release if version unchanged
+        if: steps.version_changed.outputs.should_release != 'true'
+        run: echo "Skipping release because the app version did not change."
+
       - name: Generate Commit Changelog
+        if: steps.version_changed.outputs.should_release == 'true'
         id: changelog
         run: |
           echo "Generating changelog..."
@@ -75,15 +103,18 @@ jobs:
           echo "" >> $CHANGELOG_FILE
 
       - name: Install Dependencies
+        if: steps.version_changed.outputs.should_release == 'true'
         run: flutter pub get
 
       - name: Build Universal Release APK
+        if: steps.version_changed.outputs.should_release == 'true'
         run: |
           flutter build apk --release
           mkdir -p release_apks
           cp build/app/outputs/flutter-apk/app-release.apk release_apks/CardMinder-${{ env.VERSION }}-Universal.apk
 
       - name: Build Split-per-ABI Release APKs
+        if: steps.version_changed.outputs.should_release == 'true'
         run: |
           flutter build apk --release --split-per-abi
           cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk release_apks/CardMinder-${{ env.VERSION }}-armeabi-v7a.apk
@@ -91,6 +122,7 @@ jobs:
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk release_apks/CardMinder-${{ env.VERSION }}-x86_64.apk
 
       - name: Create or Update GitHub Release
+        if: steps.version_changed.outputs.should_release == 'true'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.TAG_NAME }}
@@ -98,6 +130,7 @@ jobs:
           body_path: CHANGELOG_RELEASE.md
           draft: false
           prerelease: false
+          overwrite_files: true
           files: release_apks/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
