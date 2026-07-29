@@ -27,6 +27,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   int _selectedColorIndex = 0;
   int _customRgbColorValue = const Color(0xFFE11D48).toARGB32();
   String _selectedNetwork = 'Visa';
+  String _cardType = 'Credit Card';
   late DateTime _selectedDate;
 
   final List<String> _networks = ['Visa', 'Mastercard', 'RuPay', 'Amex', 'Discover'];
@@ -44,7 +45,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
       if (card.colorIndex >= AppTheme.cardThemes.length) {
         _customRgbColorValue = card.colorIndex;
         _selectedColorIndex = card.colorIndex;
-        _currentPage = AppTheme.cardThemes.length; // 6th index (Custom RGB page)
+        _currentPage = AppTheme.cardThemes.length;
       } else {
         _selectedColorIndex = card.colorIndex;
         _currentPage = card.colorIndex;
@@ -56,6 +57,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
 
     _pageController = PageController(initialPage: _currentPage);
     _selectedNetwork = card?.network ?? 'Visa';
+    _cardType = card?.cardType ?? 'Credit Card';
     _selectedDate = card?.lastTransactionDate ?? DateTime.now();
   }
 
@@ -99,6 +101,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
         lastTransactionDate: _selectedDate,
         colorIndex: _selectedColorIndex,
         network: _selectedNetwork,
+        cardType: _cardType,
         expiryMonth: month.isNotEmpty ? month : '12',
         expiryYear: year.isNotEmpty ? year : '28',
       );
@@ -109,7 +112,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
             lastFourDigits: digits.isNotEmpty ? digits : null,
             lastTransactionDate: _selectedDate,
             colorIndex: _selectedColorIndex,
-            cardType: 'Debit Card',
+            cardType: _cardType,
           );
       final list = ref.read(cardNotifierProvider).cards;
       if (list.isNotEmpty) {
@@ -120,6 +123,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
         ref.read(cardNotifierProvider.notifier).updateCard(
               created.copyWith(
                 network: _selectedNetwork,
+                cardType: _cardType,
                 expiryMonth: month.isNotEmpty ? month : '12',
                 expiryYear: year.isNotEmpty ? year : '28',
               ),
@@ -326,7 +330,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
       expiryMonth:
           _monthController.text.isNotEmpty ? _monthController.text : 'MM',
       expiryYear: _yearController.text.isNotEmpty ? _yearController.text : 'YY',
-      cardType: 'Debit Card',
+      cardType: _cardType,
     );
 
     return Scaffold(
@@ -391,6 +395,13 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                           CreditCardView(
                             card: cardForPage,
                             isInteractive: false,
+                            onCardTypeTap: () {
+                              setState(() {
+                                _cardType = _cardType == 'Credit Card'
+                                    ? 'Debit Card'
+                                    : 'Credit Card';
+                              });
+                            },
                             onTap: isCustomRgbPage
                                 ? () => _showRgbColorPickerDialog(context)
                                 : null,

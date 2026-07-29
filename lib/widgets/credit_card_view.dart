@@ -6,12 +6,14 @@ import '../theme/app_theme.dart';
 class CreditCardView extends StatelessWidget {
   final CreditCard card;
   final VoidCallback? onTap;
+  final VoidCallback? onCardTypeTap;
   final bool isInteractive;
 
   const CreditCardView({
     super.key,
     required this.card,
     this.onTap,
+    this.onCardTypeTap,
     this.isInteractive = true,
   });
 
@@ -170,12 +172,40 @@ class CreditCardView extends StatelessWidget {
                           ],
                         ),
 
-                        Text(
-                          card.cardType,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                        GestureDetector(
+                          onTap: onCardTypeTap,
+                          child: Container(
+                            padding: onCardTypeTap != null
+                                ? const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4)
+                                : EdgeInsets.zero,
+                            decoration: onCardTypeTap != null
+                                ? BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                        color: Colors.white38, width: 0.8),
+                                  )
+                                : null,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  card.cardType.toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                if (onCardTypeTap != null) ...[
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.sync_alt_rounded,
+                                      color: Colors.white70, size: 12),
+                                ],
+                              ],
+                            ),
                           ),
                         ),
                       ],

@@ -65,7 +65,7 @@ class CreditCard {
     required this.lastTransactionDate,
     this.colorIndex = 0,
     this.bankName,
-    this.cardType = 'Debit Card',
+    this.cardType = 'Credit Card',
     this.network = 'Visa',
     this.expiryMonth = '12',
     this.expiryYear = '28',
