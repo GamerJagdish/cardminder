@@ -80,7 +80,7 @@ class CreditCardView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Top Row: Card Nickname & Network Logo (Fixed Overflow using Expanded)
+                    // Top Row: Card Nickname & Network Logo
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -196,19 +196,19 @@ class CreditCardView extends StatelessWidget {
       case 'mastercard':
         return Image.asset(
           'assets/logos/mastercard.png',
-          height: 26,
+          height: 32,
           fit: BoxFit.contain,
         );
       case 'rupay':
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Image.asset(
             'assets/logos/rupay.png',
-            height: 18,
+            height: 22,
             fit: BoxFit.contain,
           ),
         );
@@ -216,28 +216,35 @@ class CreditCardView extends StatelessWidget {
       case 'american express':
         return SvgPicture.asset(
           'assets/logos/amex.svg',
-          height: 26,
+          height: 32,
           fit: BoxFit.contain,
         );
       case 'discover':
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Image.asset(
             'assets/logos/discover.png',
-            height: 18,
+            height: 22,
             fit: BoxFit.contain,
           ),
         );
       case 'visa':
       default:
-        return Image.asset(
-          'assets/logos/visa.png',
-          height: 22,
-          fit: BoxFit.contain,
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Image.asset(
+            'assets/logos/visa.png',
+            height: 22,
+            fit: BoxFit.contain,
+          ),
         );
     }
   }
