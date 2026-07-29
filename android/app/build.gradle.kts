@@ -35,11 +35,19 @@ android {
     signingConfigs {
         create("release") {
             val storeFilePath = keystoreProperties.getProperty("storeFile")
-            if (storeFilePath != null && file(storeFilePath).exists()) {
-                storeFile = file(storeFilePath)
-                storePassword = keystoreProperties.getProperty("storePassword")
-                keyAlias = keystoreProperties.getProperty("keyAlias")
-                keyPassword = keystoreProperties.getProperty("keyPassword")
+            if (storeFilePath != null) {
+                val resolvedFile = if (file(storeFilePath).exists()) {
+                    file(storeFilePath)
+                } else if (rootProject.file(storeFilePath).exists()) {
+                    rootProject.file(storeFilePath)
+                } else null
+
+                if (resolvedFile != null) {
+                    storeFile = resolvedFile
+                    storePassword = keystoreProperties.getProperty("storePassword")
+                    keyAlias = keystoreProperties.getProperty("keyAlias")
+                    keyPassword = keystoreProperties.getProperty("keyPassword")
+                }
             }
         }
     }
@@ -51,6 +59,12 @@ android {
                 signingConfig = releaseSigning
             } else {
                 signingConfig = signingConfigs.getByName("debug")
+            }
+        }
+        debug {
+            val releaseSigning = signingConfigs.findByName("release")
+            if (releaseSigning?.storeFile?.exists() == true) {
+                signingConfig = releaseSigning
             }
         }
     }

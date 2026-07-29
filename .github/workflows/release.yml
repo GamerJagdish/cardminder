@@ -112,10 +112,10 @@ jobs:
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
-            echo "storePassword=${KEYSTORE_PASSWORD:-cardminder2026}" > android/key.properties
-            echo "keyPassword=${KEY_PASSWORD:-cardminder2026}" >> android/key.properties
-            echo "keyAlias=${KEY_ALIAS:-upload}" >> android/key.properties
-            echo "storeFile=app/upload-keystore.jks" >> android/key.properties
+            echo "storePassword=$KEYSTORE_PASSWORD" > android/key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+            echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+            echo "storeFile=upload-keystore.jks" >> android/key.properties
           fi
 
       - name: Install Dependencies
