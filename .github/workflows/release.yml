@@ -111,14 +111,14 @@ jobs:
         run: |
           flutter build apk --release
           mkdir -p release_apks
-          cp build/app/outputs/flutter-apk/app-release.apk release_apks/CardMinder-${{ env.VERSION }}-universal.apk
+          cp build/app/outputs/flutter-apk/app-release.apk release_apks/CardMinder-${{ env.VERSION }}-All-Devices-Universal.apk
 
       - name: Build Split-per-ABI Release APKs
         if: steps.version_changed.outputs.should_release == 'true'
         run: |
           flutter build apk --release --split-per-abi
-          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk release_apks/CardMinder-${{ env.VERSION }}-armeabi-v7a.apk
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk release_apks/CardMinder-${{ env.VERSION }}-arm64-v8a.apk
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk release_apks/CardMinder-${{ env.VERSION }}-armeabi-v7a.apk
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk release_apks/CardMinder-${{ env.VERSION }}-x86_64.apk
 
       - name: Create or Update GitHub Release
@@ -132,9 +132,9 @@ jobs:
           prerelease: false
           overwrite_files: true
           files: |
-            release_apks/CardMinder-${{ env.VERSION }}-universal.apk
-            release_apks/CardMinder-${{ env.VERSION }}-armeabi-v7a.apk
+            release_apks/CardMinder-${{ env.VERSION }}-All-Devices-Universal.apk
             release_apks/CardMinder-${{ env.VERSION }}-arm64-v8a.apk
+            release_apks/CardMinder-${{ env.VERSION }}-armeabi-v7a.apk
             release_apks/CardMinder-${{ env.VERSION }}-x86_64.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
