@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/credit_card.dart';
 import '../providers/card_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/page_transitions.dart';
 import '../widgets/credit_card_view.dart';
 import '../widgets/delete_confirmation_dialog.dart';
 import 'add_edit_card_screen.dart';
@@ -275,9 +276,8 @@ class CardDetailsScreen extends ConsumerWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                AddEditCardScreen(cardToEdit: currentCard),
+                          slideUpRoute(
+                            AddEditCardScreen(cardToEdit: currentCard),
                           ),
                         );
                       },

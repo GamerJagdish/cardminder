@@ -4,6 +4,7 @@ import '../providers/card_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/notification_log_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/page_transitions.dart';
 import '../widgets/card_tile.dart';
 import '../widgets/credit_card_view.dart';
 import '../widgets/delete_confirmation_dialog.dart';
@@ -204,10 +205,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           onTap: () {
                                             Navigator.push(
                                               context,
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    CardDetailsScreen(
-                                                        card: card),
+                                              zoomFromCenterRoute(
+                                                CardDetailsScreen(card: card),
                                               ),
                                             );
                                           },
@@ -288,18 +287,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       onTap: () {
                                         Navigator.push(
                                           context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                CardDetailsScreen(card: card),
+                                          zoomFromCenterRoute(
+                                            CardDetailsScreen(card: card),
                                           ),
                                         );
                                       },
                                       onEdit: () {
                                         Navigator.push(
                                           context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                AddEditCardScreen(cardToEdit: card),
+                                          slideUpRoute(
+                                            AddEditCardScreen(
+                                                cardToEdit: card),
                                           ),
                                         );
                                       },
@@ -398,9 +396,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const AddEditCardScreen(),
-                      ),
+                      slideUpRoute(const AddEditCardScreen()),
                     );
                   },
                   splashColor: Colors.transparent,
@@ -538,9 +534,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const AddEditCardScreen(),
-                  ),
+                  slideUpRoute(const AddEditCardScreen()),
                 );
               },
               style: ElevatedButton.styleFrom(
