@@ -282,17 +282,134 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   padding: const EdgeInsets.only(bottom: 20),
                                   itemBuilder: (context, index) {
                                     final card = cards[index];
-                                    return CardTile(
-                                      card: card,
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                CardDetailsScreen(card: card),
-                                          ),
-                                        );
+                                    return Dismissible(
+                                      key: Key(card.id),
+                                      background: Container(
+                                        margin: const EdgeInsets.symmetric(
+                                            horizontal: 20.0, vertical: 6.0),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20.0),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primaryNavy,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        alignment: Alignment.centerLeft,
+                                        child: Row(
+                                          children: const [
+                                            Icon(Icons.edit,
+                                                color: Colors.white, size: 22),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Edit',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      secondaryBackground: Container(
+                                        margin: const EdgeInsets.symmetric(
+                                            horizontal: 20.0, vertical: 6.0),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20.0),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.accentRose,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        alignment: Alignment.centerRight,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: const [
+                                            Text(
+                                              'Delete',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            SizedBox(width: 8),
+                                            Icon(Icons.delete_outline,
+                                                color: Colors.white, size: 22),
+                                          ],
+                                        ),
+                                      ),
+                                      confirmDismiss: (direction) async {
+                                        if (direction ==
+                                            DismissDirection.startToEnd) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  AddEditCardScreen(cardToEdit: card),
+                                            ),
+                                          );
+                                          return false;
+                                        } else if (direction ==
+                                            DismissDirection.endToStart) {
+                                          final name = card.cardName.isEmpty ? 'Card' : card.cardName;
+                                          final confirm = await showDialog<bool>(
+                                            context: context,
+                                            builder: (ctx) => AlertDialog(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                              title: const Text('Delete Card'),
+                                              content: Text(
+                                                'Are you sure you want to delete "$name"?',
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                          ctx, false),
+                                                  child: const Text('Cancel'),
+                                                ),
+                                                ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        AppTheme.accentRose,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                  ),
+                                                  onPressed: () =>
+                                                      Navigator.pop(ctx, true),
+                                                  child: const Text('Delete'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+
+                                          if (confirm == true) {
+                                            ref
+                                                .read(cardNotifierProvider
+                                                    .notifier)
+                                                .deleteCard(card.id);
+                                            return true;
+                                          }
+                                        }
+                                        return false;
                                       },
+                                      child: CardTile(
+                                        card: card,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  CardDetailsScreen(card: card),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     );
                                   },
                                 ),
