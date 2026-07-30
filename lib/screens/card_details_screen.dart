@@ -98,8 +98,13 @@ class CardDetailsScreen extends ConsumerWidget {
                           backgroundColor: isDark
                               ? const Color(0xFF334155)
                               : const Color(0xFFE2E8F0),
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(urgency.badgeTextColor(isDark)),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            isDark
+                                ? (urgency == UrgencyStatus.safe
+                                    ? const Color(0xFF34D399)
+                                    : urgency.badgeTextColor(isDark))
+                                : urgency.color,
+                          ),
                         ),
                       ),
                       Column(

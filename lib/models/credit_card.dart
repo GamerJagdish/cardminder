@@ -39,7 +39,7 @@ enum UrgencyStatus {
     if (isDark) {
       switch (this) {
         case UrgencyStatus.safe:
-          return const Color(0xFF6EE7B7); // Vibrant mint green text
+          return const Color(0xFF34D399); // Vibrant emerald green
         case UrgencyStatus.warning:
           return const Color(0xFFFDE047); // Vibrant bright yellow text
         case UrgencyStatus.critical:
