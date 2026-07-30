@@ -60,7 +60,7 @@ class SwipeableCardTile extends StatelessWidget {
               return false;
             },
             child: Material(
-              color: Colors.white,
+              color: Theme.of(context).cardTheme.color,
               child: InkWell(
                 onTap: onTap,
                 child: Padding(
@@ -129,6 +129,12 @@ class _CardTileBody extends StatelessWidget {
     final digits = card.lastFourDigits ?? '0000';
     final cardColors = AppTheme.getCardColors(card.colorIndex);
 
+    // Compute contrast text color for thumbnail badge if needed
+    final isThumbnailLight = cardColors.first.computeLuminance() > 0.45;
+    final thumbnailTextColor = isThumbnailLight ? const Color(0xFF0F172A) : Colors.white;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
         Container(
@@ -141,8 +147,8 @@ class _CardTileBody extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             digits,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: thumbnailTextColor,
               fontWeight: FontWeight.bold,
               fontSize: 13,
               letterSpacing: 1,
@@ -156,10 +162,10 @@ class _CardTileBody extends StatelessWidget {
             children: [
               Text(
                 card.cardName,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -187,14 +193,14 @@ class _CardTileBody extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
-                color: urgency.color,
+                color: urgency.badgeTextColor(isDark),
               ),
             ),
             const SizedBox(height: 2),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: urgency.bgLightColor,
+                color: urgency.badgeBgColor(isDark),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -202,7 +208,7 @@ class _CardTileBody extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.bold,
-                  color: urgency.color,
+                  color: urgency.badgeTextColor(isDark),
                   letterSpacing: 0.5,
                 ),
               ),

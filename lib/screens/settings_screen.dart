@@ -52,13 +52,17 @@ class SettingsScreen extends ConsumerWidget {
     final pinController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     final pin = await showDialog<String>(
       context: context,
       builder: (dialogCtx) => Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
+            Theme.of(context).cardTheme.color,
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Form(
@@ -72,22 +76,22 @@ class SettingsScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryNavy.withValues(alpha: 0.08),
+                        color: primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.lock_outline_rounded,
-                        color: AppTheme.primaryNavy,
+                        color: primaryColor,
                         size: 22,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Set Pin',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -111,29 +115,15 @@ class SettingsScreen extends ConsumerWidget {
                       Navigator.pop(dialogCtx, pinController.text.trim());
                     }
                   },
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 4,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: '0000',
                     counterText: '',
-                    fillColor: const Color(0xFFF8FAFC),
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(
-                          color: AppTheme.primaryNavy, width: 1.5),
-                    ),
                   ),
                   validator: (val) {
                     final trimmed = val?.trim() ?? '';
@@ -150,16 +140,20 @@ class SettingsScreen extends ConsumerWidget {
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          side: BorderSide(
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFCBD5E1),
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         onPressed: () => Navigator.pop(dialogCtx, null),
-                        child: const Text(
+                        child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: AppTheme.textDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -169,7 +163,10 @@ class SettingsScreen extends ConsumerWidget {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryNavy,
+                          backgroundColor: isDark
+                              ? AppTheme.primaryAccentDark
+                              : AppTheme.primaryNavy,
+                          foregroundColor: isDark ? Colors.black : Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -181,10 +178,10 @@ class SettingsScreen extends ConsumerWidget {
                             Navigator.pop(dialogCtx, pinController.text.trim());
                           }
                         },
-                        child: const Text(
+                        child: Text(
                           'Backup',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: isDark ? Colors.black : Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -236,13 +233,16 @@ class SettingsScreen extends ConsumerWidget {
 
     if (!context.mounted) return;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final userPin = await showDialog<String>(
       context: context,
       builder: (dialogCtx) => Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
+            Theme.of(context).cardTheme.color,
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Form(
@@ -266,12 +266,12 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Enter Pin',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -295,29 +295,15 @@ class SettingsScreen extends ConsumerWidget {
                       Navigator.pop(dialogCtx, pinController.text.trim());
                     }
                   },
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 4,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: '0000',
                     counterText: '',
-                    fillColor: const Color(0xFFF8FAFC),
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(
-                          color: AppTheme.primaryNavy, width: 1.5),
-                    ),
                   ),
                   validator: (val) {
                     final trimmed = val?.trim() ?? '';
@@ -334,16 +320,20 @@ class SettingsScreen extends ConsumerWidget {
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          side: BorderSide(
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFCBD5E1),
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         onPressed: () => Navigator.pop(dialogCtx, null),
-                        child: const Text(
+                        child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: AppTheme.textDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -353,7 +343,10 @@ class SettingsScreen extends ConsumerWidget {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryNavy,
+                          backgroundColor: isDark
+                              ? AppTheme.primaryAccentDark
+                              : AppTheme.primaryNavy,
+                          foregroundColor: isDark ? Colors.black : Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -365,10 +358,10 @@ class SettingsScreen extends ConsumerWidget {
                             Navigator.pop(dialogCtx, pinController.text.trim());
                           }
                         },
-                        child: const Text(
-                          'Decrypt',
+                        child: Text(
+                          'Restore',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: isDark ? Colors.black : Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -528,6 +521,8 @@ class SettingsScreen extends ConsumerWidget {
     final settings = ref.watch(settingsNotifierProvider);
     final cards = ref.watch(cardNotifierProvider).cards;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     void update(AppSettings newSettings) {
       ref
           .read(settingsNotifierProvider.notifier)
@@ -535,7 +530,7 @@ class SettingsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.bgLight,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Settings'),
         automaticallyImplyLeading: false,
@@ -545,6 +540,53 @@ class SettingsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // SECTION 0: APP THEME
+            const _SectionHeader(
+              title: 'APP THEME',
+              icon: Icons.palette_outlined,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardTheme.color,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  _ThemeOptionTile(
+                    title: 'System',
+                    icon: Icons.phone_android_rounded,
+                    isSelected: settings.themeMode == 'system',
+                    onTap: () => update(settings.copyWith(themeMode: 'system')),
+                  ),
+                  const SizedBox(width: 8),
+                  _ThemeOptionTile(
+                    title: 'Light',
+                    icon: Icons.wb_sunny_rounded,
+                    isSelected: settings.themeMode == 'light',
+                    onTap: () => update(settings.copyWith(themeMode: 'light')),
+                  ),
+                  const SizedBox(width: 8),
+                  _ThemeOptionTile(
+                    title: 'Dark',
+                    icon: Icons.nightlight_round,
+                    isSelected: settings.themeMode == 'dark',
+                    onTap: () => update(settings.copyWith(themeMode: 'dark')),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
             // SECTION 1: HOME SCREEN WIDGET CONTROLS
             const _SectionHeader(
               title: 'HOME SCREEN WIDGET',
@@ -554,7 +596,7 @@ class SettingsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -568,12 +610,12 @@ class SettingsScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 1. Max Cards Limit Segmented Selector
-                  const Text(
+                  Text(
                     'Max Cards Shown on Widget',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -581,49 +623,26 @@ class SettingsScreen extends ConsumerWidget {
                     children: [3, 5, 10, 100].map((count) {
                       final label = count == 100 ? 'All' : '$count';
                       final isSelected = settings.widgetMaxCards == count;
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: GestureDetector(
-                            onTap: () =>
-                                update(settings.copyWith(widgetMaxCards: count)),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppTheme.primaryNavy
-                                    : const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                label,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : AppTheme.textDark,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                      return _PillOption(
+                        label: label,
+                        isSelected: isSelected,
+                        onTap: () =>
+                            update(settings.copyWith(widgetMaxCards: count)),
                       );
                     }).toList(),
                   ),
 
                   const SizedBox(height: 20),
-                  const Divider(color: Color(0xFFF1F5F9)),
+                  Divider(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                   const SizedBox(height: 16),
 
                   // 2. Urgency Filter Pill Shape Selector
-                  const Text(
+                  Text(
                     'Widget Cards Filter',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -652,16 +671,16 @@ class SettingsScreen extends ConsumerWidget {
                   ),
 
                   const SizedBox(height: 20),
-                  const Divider(color: Color(0xFFF1F5F9)),
+                  Divider(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                   const SizedBox(height: 16),
 
                   // 3. Widget Sort Order Pill Shape Selector
-                  const Text(
+                  Text(
                     'Widget Sort Order',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -696,7 +715,7 @@ class SettingsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -711,13 +730,18 @@ class SettingsScreen extends ConsumerWidget {
                   // Master Notification Switch
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    activeTrackColor: AppTheme.primaryNavy,
-                    title: const Text(
+                    activeTrackColor: isDark
+                        ? AppTheme.primaryAccentDark
+                        : AppTheme.primaryNavy,
+                    thumbColor: WidgetStateProperty.all(
+                      isDark ? Colors.black : Colors.white,
+                    ),
+                    title: Text(
                       'Transaction Reminders',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     subtitle: const Text(
@@ -730,7 +754,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
 
                   if (settings.notificationsEnabled) ...[
-                    const Divider(color: Color(0xFFF1F5F9)),
+                    Divider(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                     _ReminderToggleRow(
                       title: '30 Days Before Expiry',
                       value: settings.notify30Days,
@@ -771,7 +795,7 @@ class SettingsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -784,12 +808,12 @@ class SettingsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Backup & Restore Options',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -811,14 +835,16 @@ class SettingsScreen extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             alignment: Alignment.center,
-                            child: const Text(
+                            child: Text(
                               'Create Backup',
                               style: TextStyle(
-                                color: AppTheme.textDark,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -835,14 +861,16 @@ class SettingsScreen extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             alignment: Alignment.center,
-                            child: const Text(
+                            child: Text(
                               'Restore Backup',
                               style: TextStyle(
-                                color: AppTheme.textDark,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -867,7 +895,7 @@ class SettingsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -883,13 +911,15 @@ class SettingsScreen extends ConsumerWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF1F5F9),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF1F5F9),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.person_outline_rounded,
-                          color: AppTheme.primaryNavy,
+                          color: Theme.of(context).colorScheme.primary,
                           size: 22,
                         ),
                       ),
@@ -897,8 +927,8 @@ class SettingsScreen extends ConsumerWidget {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
+                          children: [
+                            const Text(
                               'Developer',
                               style: TextStyle(
                                 fontSize: 11,
@@ -906,13 +936,13 @@ class SettingsScreen extends ConsumerWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 2),
+                            const SizedBox(height: 2),
                             Text(
                               'GamerJagdish',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.textDark,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ],
@@ -921,7 +951,7 @@ class SettingsScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  const Divider(color: Color(0xFFF1F5F9)),
+                  Divider(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                   const SizedBox(height: 10),
 
                   // Clickable GitHub Tile
@@ -934,31 +964,37 @@ class SettingsScreen extends ConsumerWidget {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(10),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFF1F5F9),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFFF1F5F9),
                               shape: BoxShape.circle,
                             ),
                             child: SvgPicture.asset(
                               'assets/logos/github.svg',
                               width: 20,
                               height: 20,
+                              colorFilter: isDark
+                                  ? const ColorFilter.mode(
+                                      Colors.white, BlendMode.srcIn)
+                                  : null,
                             ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text(
                                   'Contribute',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.textDark,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
-                                SizedBox(height: 2),
-                                Text(
+                                const SizedBox(height: 2),
+                                const Text(
                                   'github.com/GamerJagdish/cardminder',
                                   style: TextStyle(
                                     fontSize: 12,
@@ -1011,21 +1047,97 @@ class SettingsScreen extends ConsumerWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryNavy,
-                  foregroundColor: Colors.white,
+                  backgroundColor: isDark
+                      ? AppTheme.primaryAccentDark
+                      : AppTheme.primaryNavy,
+                  foregroundColor: isDark ? Colors.black : Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                icon: const Icon(Icons.sync_rounded, size: 20),
-                label: const Text(
+                icon: Icon(
+                  Icons.sync_rounded,
+                  size: 20,
+                  color: isDark ? Colors.black : Colors.white,
+                ),
+                label: Text(
                   'Sync Widget & Notifications',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: isDark ? Colors.black : Colors.white,
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 30),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeOptionTile extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ThemeOptionTile({
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeBg = isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy;
+    final activeFg = isDark ? Colors.black : Colors.white;
+    final inactiveBg =
+        isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+    final inactiveFg =
+        isDark ? const Color(0xFFF8FAFC) : AppTheme.textDark;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? activeBg : inactiveBg,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected
+                  ? activeBg
+                  : (isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0)),
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: isSelected ? activeFg : inactiveFg,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isSelected ? activeFg : inactiveFg,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1045,6 +1157,14 @@ class _PillOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeBg = isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy;
+    final activeFg = isDark ? Colors.black : Colors.white;
+    final inactiveBg =
+        isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+    final inactiveFg =
+        isDark ? const Color(0xFFF8FAFC) : AppTheme.textDark;
+
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -1053,15 +1173,14 @@ class _PillOption extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
-              color:
-                  isSelected ? AppTheme.primaryNavy : const Color(0xFFF1F5F9),
+              color: isSelected ? activeBg : inactiveBg,
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
             child: Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : AppTheme.textDark,
+                color: isSelected ? activeFg : inactiveFg,
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -1081,9 +1200,11 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppTheme.primaryNavy),
+        Icon(icon, size: 18, color: primaryColor),
         const SizedBox(width: 8),
         Text(
           title,
@@ -1112,6 +1233,8 @@ class _ReminderToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -1119,15 +1242,16 @@ class _ReminderToggleRow extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: AppTheme.textDark,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           Checkbox(
             value: value,
-            activeColor: AppTheme.primaryNavy,
+            activeColor: isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy,
+            checkColor: isDark ? Colors.black : Colors.white,
             onChanged: (val) {
               if (val != null) onChanged(val);
             },
@@ -1253,7 +1377,7 @@ class _DebugNotificationToolsState extends State<_DebugNotificationTools> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
         boxShadow: [
@@ -1346,13 +1470,17 @@ class _DebugActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: busy ? null : onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppTheme.primaryNavy,
-          side: const BorderSide(color: Color(0xFFE2E8F0)),
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          side: BorderSide(
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

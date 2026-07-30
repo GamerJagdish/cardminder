@@ -8,6 +8,14 @@ class AppTheme {
   static const Color textMuted = Color(0xFF94A3B8); // Muted grey text
   static const Color textDark = Color(0xFF0F172A); // Dark text
 
+  // Dark Mode Colors
+  static const Color bgDark = Color(0xFF0B0F19); // Midnight dark background
+  static const Color surfaceDark = Color(0xFF1E293B); // Dark slate card surface
+  static const Color primaryAccentDark = Color(0xFFF8FAFC); // Solid light accent
+  static const Color textLight = Color(0xFFF8FAFC); // White/light text
+  static const Color textMutedDark = Color(0xFF64748B); // Muted slate text in dark mode
+  static const Color borderDark = Color(0xFF334155); // Border in dark mode
+
   static const Color accentRose = Color(0xFFEF4444); // Urgent red
   static const Color accentEmerald = Color(0xFF10B981); // Safe green
   static const Color accentAmber = Color(0xFFF59E0B); // Warning gold
@@ -82,6 +90,71 @@ class AppTheme {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: primaryNavy, width: 2),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: bgDark,
+      colorScheme: const ColorScheme.dark(
+        primary: primaryAccentDark,
+        secondary: primaryAccentDark,
+        surface: surfaceDark,
+        error: accentRose,
+      ),
+      textTheme: GoogleFonts.plusJakartaSansTextTheme(
+        ThemeData.dark().textTheme,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: bgDark,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: textLight),
+        titleTextStyle: GoogleFonts.plusJakartaSans(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: textLight,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: surfaceDark,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF0F172A),
+        hintStyle: TextStyle(color: textMutedDark.withValues(alpha: 0.7)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: borderDark),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: borderDark),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: primaryAccentDark, width: 2),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
         ),
       ),
       snackBarTheme: SnackBarThemeData(

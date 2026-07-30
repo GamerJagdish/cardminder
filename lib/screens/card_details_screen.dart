@@ -27,8 +27,10 @@ class CardDetailsScreen extends ConsumerWidget {
     final urgency = currentCard.status;
     final progress = currentCard.elapsedProgress;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppTheme.bgLight,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -36,9 +38,13 @@ class CardDetailsScreen extends ConsumerWidget {
             onTap: () => Navigator.pop(context),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
+                ),
               ),
               child: const Icon(Icons.arrow_back_rounded, size: 20),
             ),
@@ -67,7 +73,7 @@ class CardDetailsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -89,9 +95,11 @@ class CardDetailsScreen extends ConsumerWidget {
                         child: CircularProgressIndicator(
                           value: 1.0 - progress,
                           strokeWidth: 8,
-                          backgroundColor: const Color(0xFFE2E8F0),
+                          backgroundColor: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
                           valueColor:
-                              AlwaysStoppedAnimation<Color>(urgency.color),
+                              AlwaysStoppedAnimation<Color>(urgency.badgeTextColor(isDark)),
                         ),
                       ),
                       Column(
@@ -99,10 +107,10 @@ class CardDetailsScreen extends ConsumerWidget {
                         children: [
                           Text(
                             '${currentCard.daysRemaining}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
-                              color: AppTheme.textDark,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           const Text(
@@ -128,7 +136,7 @@ class CardDetailsScreen extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: urgency.bgLightColor,
+                            color: urgency.badgeBgColor(isDark),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Row(
@@ -138,7 +146,7 @@ class CardDetailsScreen extends ConsumerWidget {
                                 width: 6,
                                 height: 6,
                                 decoration: BoxDecoration(
-                                  color: urgency.color,
+                                  color: urgency.badgeTextColor(isDark),
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -146,7 +154,7 @@ class CardDetailsScreen extends ConsumerWidget {
                               Text(
                                 urgency.label,
                                 style: TextStyle(
-                                  color: urgency.color,
+                                  color: urgency.badgeTextColor(isDark),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 11,
                                 ),
@@ -157,10 +165,10 @@ class CardDetailsScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Text(
                           '${currentCard.daysRemaining} days left',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.textDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -184,7 +192,7 @@ class CardDetailsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -249,23 +257,25 @@ class CardDetailsScreen extends ConsumerWidget {
                     SnackBar(
                       content: Text('${currentCard.cardName} reset for 365 days!'),
                       backgroundColor: AppTheme.accentEmerald,
-                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryNavy,
-                  foregroundColor: Colors.white,
+                  backgroundColor: isDark
+                      ? AppTheme.primaryAccentDark
+                      : AppTheme.primaryNavy,
+                  foregroundColor: isDark ? Colors.black : Colors.white,
+                  elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  elevation: 2,
                 ),
-                child: const Text(
+                child: Text(
                   'Mark Transaction Today',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.black : Colors.white,
                   ),
                 ),
               ),
@@ -273,14 +283,13 @@ class CardDetailsScreen extends ConsumerWidget {
 
             const SizedBox(height: 12),
 
-            // Line 2: Edit & Delete Buttons Side-by-Side (Bold Solid Colors matching Swipe Actions)
+            // Secondary Actions Row: Edit & Delete Buttons (No Icons)
             Row(
               children: [
-                // Edit Button (Solid Navy)
                 Expanded(
                   child: SizedBox(
-                    height: 48,
-                    child: ElevatedButton.icon(
+                    height: 50,
+                    child: OutlinedButton(
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -289,42 +298,51 @@ class CardDetailsScreen extends ConsumerWidget {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.edit_outlined, size: 18),
-                      label: const Text('Edit'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryNavy,
-                        foregroundColor: Colors.white,
-                        elevation: 1,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Theme.of(context).cardTheme.color,
+                        side: BorderSide(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFCBD5E1),
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        textStyle: const TextStyle(
+                      ),
+                      child: Text(
+                        'Edit',
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Delete Button (Solid Bold Crimson Rose)
                 Expanded(
                   child: SizedBox(
-                    height: 48,
-                    child: ElevatedButton.icon(
+                    height: 50,
+                    child: OutlinedButton(
                       onPressed: () => _confirmDelete(context, ref, currentCard),
-                      icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                      label: const Text('Delete'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.accentRose,
-                        foregroundColor: Colors.white,
-                        elevation: 1,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Theme.of(context).cardTheme.color,
+                        side: BorderSide(
+                          color: isDark
+                              ? AppTheme.accentRose.withValues(alpha: 0.4)
+                              : const Color(0xFFFECDD3),
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        textStyle: const TextStyle(
+                      ),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
+                          color: AppTheme.accentRose,
                         ),
                       ),
                     ),
@@ -376,10 +394,10 @@ class _MetaItem extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,
-            color: AppTheme.textDark,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ],

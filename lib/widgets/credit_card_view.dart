@@ -128,49 +128,55 @@ class CreditCardView extends StatelessWidget {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            color: Colors.white,
+                            color: Theme.of(context).cardTheme.color,
                             surfaceTintColor: Colors.transparent,
                             tooltip: 'Select Network',
-                            itemBuilder: (context) => [
-                              'Visa',
-                              'Mastercard',
-                              'RuPay',
-                              'Amex',
-                              'Discover',
-                            ].map((net) {
-                              final isSelected = card.network.toLowerCase() ==
-                                  net.toLowerCase();
-                              return PopupMenuItem<String>(
-                                value: net,
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 44,
-                                      height: 26,
-                                      child: Center(child: _buildNetworkLogo(net)),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      net,
-                                      style: TextStyle(
-                                        fontWeight: isSelected
-                                            ? FontWeight.bold
-                                            : FontWeight.w500,
-                                        color: isSelected
-                                            ? AppTheme.primaryNavy
-                                            : AppTheme.textDark,
-                                        fontSize: 14,
+                            itemBuilder: (context) {
+                              final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+                              final selectedColor = isDarkTheme ? AppTheme.primaryAccentDark : AppTheme.primaryNavy;
+                              final itemTextColor = Theme.of(context).colorScheme.onSurface;
+
+                              return [
+                                'Visa',
+                                'Mastercard',
+                                'RuPay',
+                                'Amex',
+                                'Discover',
+                              ].map((net) {
+                                final isSelected = card.network.toLowerCase() ==
+                                    net.toLowerCase();
+                                return PopupMenuItem<String>(
+                                  value: net,
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 44,
+                                        height: 26,
+                                        child: Center(child: _buildNetworkLogo(net)),
                                       ),
-                                    ),
-                                    if (isSelected) ...[
-                                      const Spacer(),
-                                      const Icon(Icons.check_rounded,
-                                          size: 18, color: AppTheme.primaryNavy),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        net,
+                                        style: TextStyle(
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.w500,
+                                          color: isSelected
+                                              ? selectedColor
+                                              : itemTextColor,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      if (isSelected) ...[
+                                        const Spacer(),
+                                        Icon(Icons.check_rounded,
+                                            size: 18, color: selectedColor),
+                                      ],
                                     ],
-                                  ],
-                                ),
-                              );
-                            }).toList(),
+                                  ),
+                                );
+                              }).toList();
+                            },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 4),

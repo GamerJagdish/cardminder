@@ -1,5 +1,6 @@
 class AppSettings {
   final String userName; // Custom name in "Welcome back, <userName>"
+  final String themeMode; // 'system', 'light', 'dark'
   final int widgetMaxCards; // 3, 5, 10, 100 (All)
   final String widgetFilter; // 'all', 'action_needed', 'warning_and_urgent'
   final String widgetSortBy; // 'urgency', 'name'
@@ -11,6 +12,7 @@ class AppSettings {
 
   AppSettings({
     this.userName = 'CardMinder',
+    this.themeMode = 'system',
     this.widgetMaxCards = 5,
     this.widgetFilter = 'all',
     this.widgetSortBy = 'urgency',
@@ -24,6 +26,7 @@ class AppSettings {
   Map<String, dynamic> toJson() {
     return {
       'userName': userName,
+      'themeMode': themeMode,
       'widgetMaxCards': widgetMaxCards,
       'widgetFilter': widgetFilter,
       'widgetSortBy': widgetSortBy,
@@ -38,6 +41,7 @@ class AppSettings {
   factory AppSettings.fromJson(Map<String, dynamic> json) {
     return AppSettings(
       userName: (json['userName'] as String?) ?? 'CardMinder',
+      themeMode: (json['themeMode'] as String?) ?? 'system',
       widgetMaxCards: (json['widgetMaxCards'] as int?) ?? 5,
       widgetFilter: (json['widgetFilter'] as String?) ?? 'all',
       widgetSortBy: (json['widgetSortBy'] as String?) ?? 'urgency',
@@ -51,6 +55,7 @@ class AppSettings {
 
   AppSettings copyWith({
     String? userName,
+    String? themeMode,
     int? widgetMaxCards,
     String? widgetFilter,
     String? widgetSortBy,
@@ -62,6 +67,7 @@ class AppSettings {
   }) {
     return AppSettings(
       userName: userName ?? this.userName,
+      themeMode: themeMode ?? this.themeMode,
       widgetMaxCards: widgetMaxCards ?? this.widgetMaxCards,
       widgetFilter: widgetFilter ?? this.widgetFilter,
       widgetSortBy: widgetSortBy ?? this.widgetSortBy,

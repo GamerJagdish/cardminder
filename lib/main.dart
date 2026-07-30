@@ -33,15 +33,33 @@ void main() async {
   );
 }
 
-class CardMinderApp extends StatelessWidget {
+class CardMinderApp extends ConsumerWidget {
   const CardMinderApp({super.key});
 
+  ThemeMode _parseThemeMode(String mode) {
+    switch (mode) {
+      case 'dark':
+        return ThemeMode.dark;
+      case 'light':
+        return ThemeMode.light;
+      case 'system':
+      default:
+        return ThemeMode.system;
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeModeStr = ref.watch(
+      settingsNotifierProvider.select((s) => s.themeMode),
+    );
+
     return MaterialApp(
       title: 'CardMinder',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: _parseThemeMode(themeModeStr),
       home: const HomeScreen(),
     );
   }

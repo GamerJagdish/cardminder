@@ -19,6 +19,38 @@ enum UrgencyStatus {
     }
   }
 
+  Color badgeBgColor(bool isDark) {
+    if (isDark) {
+      switch (this) {
+        case UrgencyStatus.safe:
+          return const Color(0xFF064E3B); // Dark emerald container
+        case UrgencyStatus.warning:
+          return const Color(0xFF78350F); // Dark amber container
+        case UrgencyStatus.critical:
+          return const Color(0xFF7F1D1D); // Dark red container
+        case UrgencyStatus.expired:
+          return const Color(0xFF1E293B); // Dark slate container
+      }
+    }
+    return bgLightColor;
+  }
+
+  Color badgeTextColor(bool isDark) {
+    if (isDark) {
+      switch (this) {
+        case UrgencyStatus.safe:
+          return const Color(0xFF6EE7B7); // Vibrant mint green text
+        case UrgencyStatus.warning:
+          return const Color(0xFFFDE047); // Vibrant bright yellow text
+        case UrgencyStatus.critical:
+          return const Color(0xFFFCA5A5); // Vibrant bright rose text
+        case UrgencyStatus.expired:
+          return const Color(0xFF94A3B8); // Slate grey text
+      }
+    }
+    return color;
+  }
+
   Color get bgLightColor {
     switch (this) {
       case UrgencyStatus.safe:

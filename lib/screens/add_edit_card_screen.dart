@@ -140,15 +140,19 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
 
   void _showDigitsDialog(BuildContext context) {
     final tempController = TextEditingController(
-      text: _digitsController.text.isNotEmpty ? _digitsController.text : '0001',
+      text: _digitsController.text == '0000' ? '' : _digitsController.text,
     );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     showDialog(
       context: context,
       builder: (dialogCtx) => Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
+            Theme.of(context).cardTheme.color,
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -160,22 +164,22 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryNavy.withValues(alpha: 0.08),
+                      color: primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.pin_outlined,
-                      color: AppTheme.primaryNavy,
+                      color: primaryColor,
                       size: 22,
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Text(
+                  Text(
                     'Last 4 Digits',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -200,30 +204,16 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   });
                   Navigator.pop(dialogCtx);
                 },
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 4,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: '0001',
                   counterText: '',
-                  fillColor: const Color(0xFFF8FAFC),
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                        color: AppTheme.primaryNavy, width: 1.5),
-                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -233,16 +223,20 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        side: BorderSide(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFCBD5E1),
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       onPressed: () => Navigator.pop(dialogCtx),
-                      child: const Text(
+                      child: Text(
                         'Cancel',
                         style: TextStyle(
-                          color: AppTheme.textDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -252,7 +246,10 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryNavy,
+                        backgroundColor: isDark
+                            ? AppTheme.primaryAccentDark
+                            : AppTheme.primaryNavy,
+                        foregroundColor: isDark ? Colors.black : Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -267,10 +264,10 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                         });
                         Navigator.pop(dialogCtx);
                       },
-                      child: const Text(
+                      child: Text(
                         'Save',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: isDark ? Colors.black : Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -306,8 +303,10 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
       cardType: _cardType,
     );
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppTheme.bgLight,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -315,9 +314,13 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
             onTap: () => Navigator.pop(context),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
+                ),
               ),
               child: const Icon(Icons.arrow_back_rounded, size: 20),
             ),
@@ -395,6 +398,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                 children: List.generate(AppTheme.cardThemes.length + 1, (index) {
                   final isSelected = _currentPage == index;
                   final isCustomDot = index == AppTheme.cardThemes.length;
+                  final primaryColor = Theme.of(context).colorScheme.primary;
 
                   return GestureDetector(
                     onTap: () {
@@ -411,10 +415,12 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                       height: 8,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.primaryNavy
+                            ? primaryColor
                             : (isCustomDot
-                                ? AppTheme.primaryNavy.withValues(alpha: 0.4)
-                                : const Color(0xFFCBD5E1)),
+                                ? primaryColor.withValues(alpha: 0.4)
+                                : (isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFCBD5E1))),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -432,9 +438,13 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardTheme.color,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.04),
@@ -455,23 +465,25 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryNavy
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
                                         .withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.palette_outlined,
-                                    color: AppTheme.primaryNavy,
+                                    color: Theme.of(context).colorScheme.primary,
                                     size: 20,
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-                                const Text(
+                                Text(
                                   'Pick Your Color',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.textDark,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -481,18 +493,23 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
+                                color: isDark
+                                    ? const Color(0xFF0F172A)
+                                    : const Color(0xFFF1F5F9),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                    color: const Color(0xFFE2E8F0)),
+                                  color: isDark
+                                      ? const Color(0xFF334155)
+                                      : const Color(0xFFE2E8F0),
+                                ),
                               ),
                               child: Text(
                                 '#${Color(_customRgbColorValue).toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'monospace',
-                                  color: AppTheme.primaryNavy,
+                                  color: Theme.of(context).colorScheme.primary,
                                   letterSpacing: 1,
                                 ),
                               ),
@@ -535,7 +552,9 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                 color: Color(_customRgbColorValue),
                                 borderRadius: BorderRadius.circular(9),
                                 border: Border.all(
-                                    color: const Color(0xFFCBD5E1),
+                                    color: isDark
+                                        ? const Color(0xFF475569)
+                                        : const Color(0xFFCBD5E1),
                                     width: 1.5),
                                 boxShadow: [
                                   BoxShadow(
@@ -607,7 +626,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                   borderRadius: BorderRadius.circular(7),
                                   border: Border.all(
                                     color: isSelected
-                                        ? AppTheme.primaryNavy
+                                        ? Theme.of(context).colorScheme.primary
                                         : Colors.transparent,
                                     width: isSelected ? 2.5 : 0,
                                   ),
@@ -658,8 +677,6 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
               ),
 
               const SizedBox(height: 20),
-
-
 
               // EXP. MONTH & EXP. YEAR (Row)
               Padding(
@@ -726,23 +743,30 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
+                          color: Theme.of(context)
+                              .inputDecorationTheme
+                              .fillColor,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFE2E8F0),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               dateFormat.format(_selectedDate),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
-                                color: AppTheme.textDark,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
-                            const Icon(Icons.calendar_today_outlined,
-                                size: 18, color: AppTheme.textDark),
+                            Icon(Icons.calendar_today_outlined,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.onSurface),
                           ],
                         ),
                       ),
@@ -762,8 +786,10 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   child: ElevatedButton(
                     onPressed: _onSave,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryNavy,
-                      foregroundColor: Colors.white,
+                      backgroundColor: isDark
+                          ? AppTheme.primaryAccentDark
+                          : AppTheme.primaryNavy,
+                      foregroundColor: isDark ? Colors.black : Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -771,9 +797,10 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                     ),
                     child: Text(
                       isEditing ? 'Save Changes' : 'Add Card',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.black : Colors.white,
                       ),
                     ),
                   ),

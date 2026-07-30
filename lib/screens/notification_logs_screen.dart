@@ -29,7 +29,7 @@ class _NotificationLogsScreenState
     final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
 
     return Scaffold(
-      backgroundColor: AppTheme.bgLight,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -37,9 +37,13 @@ class _NotificationLogsScreenState
             onTap: () => Navigator.pop(context),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
+                ),
               ),
               child: const Icon(Icons.arrow_back_rounded, size: 20),
             ),
@@ -68,19 +72,20 @@ class _NotificationLogsScreenState
         ],
       ),
       body: logs.isEmpty
-          ? _buildEmptyLogs()
+          ? _buildEmptyLogs(context)
           : ListView.builder(
               padding: const EdgeInsets.all(20.0),
               itemCount: logs.length,
               itemBuilder: (context, index) {
                 final log = logs[index];
                 final isUrgent = log.daysRemaining <= 30;
+                final isDark = Theme.of(context).brightness == Brightness.dark;
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardTheme.color,
                     borderRadius: BorderRadius.circular(18),
                     boxShadow: [
                       BoxShadow(
@@ -97,8 +102,12 @@ class _NotificationLogsScreenState
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: isUrgent
-                              ? const Color(0xFFFEE2E2)
-                              : const Color(0xFFFEF3C7),
+                              ? (isDark
+                                  ? AppTheme.accentRose.withValues(alpha: 0.2)
+                                  : const Color(0xFFFEE2E2))
+                              : (isDark
+                                  ? AppTheme.accentAmber.withValues(alpha: 0.2)
+                                  : const Color(0xFFFEF3C7)),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -120,10 +129,10 @@ class _NotificationLogsScreenState
                                 Expanded(
                                   child: Text(
                                     log.cardName,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
-                                      color: AppTheme.textDark,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -135,8 +144,14 @@ class _NotificationLogsScreenState
                                       horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: isUrgent
-                                        ? const Color(0xFFFEE2E2)
-                                        : const Color(0xFFDCFCE7),
+                                        ? (isDark
+                                            ? AppTheme.accentRose
+                                                .withValues(alpha: 0.2)
+                                            : const Color(0xFFFEE2E2))
+                                        : (isDark
+                                            ? AppTheme.accentEmerald
+                                                .withValues(alpha: 0.2)
+                                            : const Color(0xFFDCFCE7)),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
@@ -155,9 +170,9 @@ class _NotificationLogsScreenState
                             const SizedBox(height: 4),
                             Text(
                               log.message,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: AppTheme.textDark,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 height: 1.3,
                               ),
                             ),
@@ -181,7 +196,10 @@ class _NotificationLogsScreenState
     );
   }
 
-  Widget _buildEmptyLogs() {
+  Widget _buildEmptyLogs(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -190,23 +208,23 @@ class _NotificationLogsScreenState
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1F5F9),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.notifications_off_outlined,
                 size: 56,
-                color: AppTheme.primaryNavy,
+                color: primaryColor,
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'No Notifications Yet',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
