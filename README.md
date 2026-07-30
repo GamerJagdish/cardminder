@@ -1,125 +1,63 @@
 # CardMinder
 
-CardMinder is a privacy-focused Android application built with Flutter designed to prevent credit and debit card deactivation resulting from inactivity.
+An Android app that keeps your credit and debit cards from getting deactivated due to inactivity.
 
-Many financial institutions automatically deactivate payment cards if no transaction is performed within a 365-day period. CardMinder tracks transaction dates, calculates countdown deadlines, schedules local notification reminders, and provides a multi-card Android Home Screen widget.
+Most banks quietly deactivate a card if you don't use it for 365 days. I kept forgetting to swipe cards I don't use often, so I built this to track the last transaction date on each card and remind me before the deadline hits.
 
----
+## What it does
 
-## Key Features
+- Tracks the last transaction date for each card and counts down to the 365 day deactivation deadline
+- Home screen widget that shows up to 5 cards at once with live countdowns
+- Notifies you 30, 14, 7, and 1 day before a card is about to go inactive
+- Keeps a log of past notifications so you can see what you missed
+- Everything is stored locally on your phone, nothing is sent anywhere
 
-- **Modern User Interface**: Designed with a clean light theme, interactive card carousels, dynamic color gradient previews, and structured card lists.
-- **Multi-Card Native Android Widget (4x2)**: Displays up to 5 payment cards on the Android Home Screen with real-time countdown counters.
-- **365-Day Inactivity Countdown**: Automatically computes remaining days and target deactivation dates based on the most recent transaction date.
-- **Scheduled Push Notifications**: Configurable local alerts triggered at 30, 14, 7, and 1 day prior to card deactivation.
-- **Notification History Logs**: Dedicated timeline view tracking all generated alerts with unread status indicators.
-- **Customization Options**:
-  - Personalized header greeting.
-  - Configurable widget card capacity (3, 5, 10, or All).
-  - Urgency-based widget filtering (All Cards, Less than 90 Days, Less than 30 Days).
-  - Sorting options by urgency or card name.
-- **Supported Payment Networks**: Full support for Visa, Mastercard, RuPay, American Express, and Discover brand logos.
-- **Offline & Private**: Built on Hive local storage with zero server communication, zero telemetry, and zero remote tracking.
+## How it works
 
----
+Add a card with its nickname, last four digits, network, and the date you last used it. The app calculates when it'll hit the 365 day mark and starts counting down. When you actually use the card, just open it and tap the button to log a new transaction, which resets the timer.
 
-## Application Architecture
+The widget on your home screen shows your cards sorted by urgency so the ones about to expire are easy to spot. You can filter it to only show cards that are getting close to the deadline, and choose how many cards it displays.
 
-1. **Dashboard (Home Screen)**:
-   - User header greeting with edit capability.
-   - Interactive payment card carousel with page indicators.
-   - Urgency-sorted card list featuring status indicators (Safe, Warning, Urgent).
-   - Custom navigation bar with a centered action button for adding cards.
-2. **Card Details Screen**:
-   - Visual card preview with real-time metadata.
-   - Circular progress indicator showing remaining active days.
-   - 2x2 metadata grid containing Last Transaction, Deadline, Network, and Expiration.
-   - Action button to register a transaction and reset the 365-day timer.
-   - Editing and deletion capabilities.
-3. **Add and Edit Card Screen**:
-   - Interactive live card graphic reflecting form entries in real time.
-   - Color gradient theme selector.
-   - Form inputs for nickname, last four digits, expiration month and year, and transaction date.
-   - Horizontal pill selector for card networks.
-4. **Settings Screen**:
-   - Controls for widget capacity, urgency filtering, and sort order.
-   - Notification master switch and reminder interval toggles.
-   - Manual synchronization trigger for widget and reminder updates.
-   - Developer information and project links.
-5. **Notification Logs Screen**:
-   - History of all past reminder notifications with status badges and clear functionality.
+## Screens
 
----
+- **Home**: a carousel of your cards plus a list sorted by urgency (safe, warning, urgent)
+- **Card details**: shows days remaining, last transaction date, deadline, and lets you log a new transaction or edit/delete the card
+- **Add/Edit card**: a live preview of the card as you fill in the form, with a color picker for the card design
+- **Settings**: control widget size, filtering, sorting, and notification toggles
+- **Notification history**: a simple log of every reminder that's been sent
 
-## Tech Stack
+## Installation
 
-- **Framework**: Flutter (Dart)
-- **State Management**: Riverpod
-- **Local Database**: Hive
-- **Notifications**: flutter_local_notifications
-- **Home Screen Widget**: home_widget integration with Android AppWidgetProvider and RemoteViews
-- **Timezone Management**: timezone package
-- **Vector Graphics**: flutter_svg
+You can download the latest APK from the [releases page](https://github.com/GamerJagdish/cardminder/releases).
 
----
+If you'd rather build it yourself, clone the repo and use Flutter:
 
-## Getting Started
-
-### Prerequisites
-
-- Flutter SDK (v3.29.0 or higher)
-- Android Studio / Android SDK (API Level 21 or higher)
-- Java Development Kit (JDK 17 or higher)
-
-### Installation and Build
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/GamerJagdish/cardminder.git
-   cd cardminder
-   ```
-
-2. Install dependencies:
-   ```bash
-   flutter pub get
-   ```
-
-3. Run on a connected Android device or emulator:
-   ```bash
-   flutter run
-   ```
-
-4. Build the debug APK:
-   ```bash
-   flutter build apk --debug
-   ```
-   The generated APK will be available at `build/app/outputs/flutter-apk/app-debug.apk`.
-
----
-
-## Testing and Quality Verification
-
-Run the automated test suite:
 ```bash
-flutter test --no-pub --reporter compact
+git clone https://github.com/GamerJagdish/cardminder.git
+cd cardminder
+flutter pub get
+flutter run
 ```
 
-Run static code analysis:
+To build a release APK:
+
 ```bash
-flutter analyze
+flutter build apk --release
 ```
 
----
+You'll find it at `build/app/outputs/flutter-apk/app-release.apk`.
 
-## Developer and Project Information
+## Contributing
 
-- Developer: **GamerJagdish**
-- Repository: [https://github.com/GamerJagdish/cardminder](https://github.com/GamerJagdish/cardminder)
+Contributions, bug reports, and feature requests are welcome. Feel free to open an issue or a pull request.
 
-Contributions, issue reports, and feature requests are welcome.
+## Support
 
----
+If you find this useful, consider supporting the project:
+
+[![buymeacoffee-yellow-badge](https://iili.io/JoQ1MeS.md.png)](https://www.buymeacoffee.com/gamerjagdish "buymeacoffee")
+[![ko-fi-badge](https://iili.io/qHFVi5Q.md.png)](https://www.ko-fi.com/gamerjagdish "ko-fi")
 
 ## License
 
-This project is licensed under the MIT License. Refer to the LICENSE file for details.
+MIT. See the LICENSE file for details.
