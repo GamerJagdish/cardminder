@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/app_settings.dart';
 import '../providers/card_provider.dart';
 import '../providers/settings_provider.dart';
+import '../services/backup_service.dart';
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 
@@ -393,6 +394,307 @@ class SettingsScreen extends ConsumerWidget {
                           const Icon(
                             Icons.open_in_new_rounded,
                             size: 18,
+                            color: AppTheme.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // SECTION: DATA & BACKUP
+            const _SectionHeader(
+              title: 'DATA & BACKUP',
+              icon: Icons.shield_outlined,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Create Backup
+                  InkWell(
+                    onTap: () async {
+                      final success = await BackupService.createAndShareBackup(
+                        cards: cards,
+                        settings: settings,
+                      );
+                      if (context.mounted && success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Encrypted backup exported (.cmbk)'),
+                            backgroundColor: AppTheme.accentEmerald,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryNavy.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.upload_file_rounded,
+                              color: AppTheme.primaryNavy,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Create Backup (.cmbk)',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textDark,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'AES-256 encrypted export of cards & settings',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppTheme.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Divider(color: Color(0xFFF1F5F9)),
+                  ),
+
+                  // Restore Backup
+                  InkWell(
+                    onTap: () async {
+                      try {
+                        final backupData = await BackupService.pickAndDecryptBackup();
+                        if (backupData == null) return;
+
+                        if (context.mounted) {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (dialogCtx) => Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              backgroundColor: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.all(24.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.accentEmerald
+                                                .withValues(alpha: 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: const Icon(
+                                            Icons.restore_page_rounded,
+                                            color: AppTheme.accentEmerald,
+                                            size: 22,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        const Text(
+                                          'Restore Backup?',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppTheme.textDark,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Found ${backupData.cards.length} card(s) from backup created on ${DateFormat('MMM dd, yyyy • hh:mm a').format(backupData.exportDate)}.\n\nRestoring will overwrite your current card list.',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: AppTheme.textDark,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton(
+                                            style: OutlinedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(
+                                                  vertical: 12),
+                                              side: const BorderSide(
+                                                  color: Color(0xFFCBD5E1)),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () =>
+                                                Navigator.pop(dialogCtx, false),
+                                            child: const Text(
+                                              'Cancel',
+                                              style: TextStyle(
+                                                color: AppTheme.textDark,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  AppTheme.primaryNavy,
+                                              elevation: 0,
+                                              padding: const EdgeInsets.symmetric(
+                                                  vertical: 12),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () =>
+                                                Navigator.pop(dialogCtx, true),
+                                            child: const Text(
+                                              'Restore',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+
+                          if (confirm == true) {
+                            final storage = ref.read(storageServiceProvider);
+                            await storage.saveAllCards(backupData.cards);
+
+                            ref
+                                .read(cardNotifierProvider.notifier)
+                                .reloadCards();
+                            ref.read(settingsNotifierProvider.notifier).updateSettings(
+                                  backupData.settings,
+                                  backupData.cards,
+                                );
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Restored ${backupData.cards.length} card(s) successfully!'),
+                                  backgroundColor: AppTheme.accentEmerald,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Failed to restore backup: ${e.toString().replaceAll("FormatException: ", "")}'),
+                              backgroundColor: AppTheme.accentRose,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentEmerald
+                                  .withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.download_for_offline_rounded,
+                              color: AppTheme.accentEmerald,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Restore Backup (.cmbk)',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textDark,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Decrypt and import your saved .cmbk file',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
                             color: AppTheme.textMuted,
                           ),
                         ],

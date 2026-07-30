@@ -82,6 +82,10 @@ class CardNotifier extends StateNotifier<CardState> {
     _loadCards();
   }
 
+  void reloadCards() {
+    _loadCards();
+  }
+
   void _loadCards() {
     final loaded = _storageService.loadCards();
     state = state.copyWith(cards: loaded, isLoading: false);
