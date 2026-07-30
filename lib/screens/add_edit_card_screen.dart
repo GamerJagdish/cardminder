@@ -395,6 +395,15 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                 autofocus: true,
                 maxLength: 4,
                 keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) {
+                  final val = tempController.text.trim();
+                  setState(() {
+                    _digitsController.text =
+                        val.isNotEmpty ? val : '0001';
+                  });
+                  Navigator.pop(dialogCtx);
+                },
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,

@@ -105,6 +105,12 @@ class SettingsScreen extends ConsumerWidget {
                   maxLength: 4,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) {
+                    if (formKey.currentState?.validate() ?? false) {
+                      Navigator.pop(dialogCtx, pinController.text.trim());
+                    }
+                  },
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -283,6 +289,12 @@ class SettingsScreen extends ConsumerWidget {
                   maxLength: 4,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) {
+                    if (formKey.currentState?.validate() ?? false) {
+                      Navigator.pop(dialogCtx, pinController.text.trim());
+                    }
+                  },
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

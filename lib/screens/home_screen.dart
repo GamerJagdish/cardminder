@@ -81,6 +81,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 controller: controller,
                 autofocus: true,
                 textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) {
+                  final newName = controller.text.trim();
+                  if (newName.isNotEmpty) {
+                    final settings = ref.read(settingsNotifierProvider);
+                    ref
+                        .read(settingsNotifierProvider.notifier)
+                        .updateSettings(
+                            settings.copyWith(userName: newName),
+                            cards.cast());
+                  }
+                  Navigator.pop(dialogCtx);
+                },
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
