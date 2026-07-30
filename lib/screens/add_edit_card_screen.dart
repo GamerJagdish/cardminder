@@ -135,25 +135,31 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   }
 
   void _showRgbColorPickerDialog(BuildContext context) {
-    Color currentColor = Color(_customRgbColorValue);
+    Color initialColor = Color(_customRgbColorValue);
+    final initialHsl = HSLColor.fromColor(initialColor);
+    double hue = initialHsl.hue;
+    double lightness = initialHsl.lightness.clamp(0.05, 0.95);
+    double saturation = initialHsl.saturation == 0 ? 0.85 : initialHsl.saturation.clamp(0.3, 1.0);
 
-    double r = (currentColor.r * 255.0).clamp(0.0, 255.0);
-    double g = (currentColor.g * 255.0).clamp(0.0, 255.0);
-    double b = (currentColor.b * 255.0).clamp(0.0, 255.0);
+    final presetSwatches = [
+      const Color(0xFF0F172A), // Slate Dark
+      const Color(0xFF1E1B4B), // Midnight Indigo
+      const Color(0xFF065F46), // Deep Emerald
+      const Color(0xFF831843), // Rich Magenta
+      const Color(0xFF1E3A8A), // Ocean Navy
+      const Color(0xFF581C87), // Royal Purple
+      const Color(0xFF991B1B), // Crimson Red
+      const Color(0xFFB45309), // Amber Gold
+      const Color(0xFF0284C7), // Sky Blue
+      const Color(0xFF18181B), // Onyx Black
+    ];
 
     showDialog(
       context: context,
       builder: (dialogCtx) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final activeColor = Color.from(
-            alpha: 1.0,
-            red: r / 255.0,
-            green: g / 255.0,
-            blue: b / 255.0,
-          );
-          final hexString =
-              '#${r.toInt().toRadixString(16).padLeft(2, '0')}${g.toInt().toRadixString(16).padLeft(2, '0')}${b.toInt().toRadixString(16).padLeft(2, '0')}'
-                  .toUpperCase();
+          final activeColor =
+              HSLColor.fromAHSL(1.0, hue, saturation, lightness).toColor();
 
           return AlertDialog(
             shape: RoundedRectangleBorder(
@@ -162,7 +168,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,
             title: const Text(
-              'Custom RGB Color',
+              'Custom Card Color',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -172,10 +178,12 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Live Color Preview Container
-                  Container(
-                    height: 70,
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 75,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: activeColor,
@@ -183,95 +191,204 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                       boxShadow: [
                         BoxShadow(
                           color: activeColor.withValues(alpha: 0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
                     alignment: Alignment.center,
-                    child: Text(
-                      hexString,
-                      style: const TextStyle(
+                    child: const Text(
+                      'CARD PREVIEW',
+                      style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        letterSpacing: 1,
+                        fontSize: 14,
+                        letterSpacing: 2,
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Red Slider
-                  Row(
-                    children: [
-                      const Text('R',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.red)),
-                      Expanded(
-                        child: Slider(
-                          value: r,
-                          min: 0,
-                          max: 255,
-                          activeColor: Colors.red,
-                          onChanged: (val) => setDialogState(() => r = val),
+                  // Quick Swatches
+                  const Text(
+                    'QUICK SWATCHES',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textMuted,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: presetSwatches.map((swatch) {
+                      final isSelected =
+                          activeColor.toARGB32() == swatch.toARGB32();
+                      return GestureDetector(
+                        onTap: () {
+                          final h = HSLColor.fromColor(swatch);
+                          setDialogState(() {
+                            hue = h.hue;
+                            lightness = h.lightness;
+                            saturation = h.saturation;
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: swatch,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppTheme.primaryNavy
+                                  : Colors.transparent,
+                              width: isSelected ? 3 : 0,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: swatch.withValues(alpha: 0.3),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: isSelected
+                              ? const Icon(Icons.check_rounded,
+                                  color: Colors.white, size: 18)
+                              : null,
                         ),
-                      ),
-                      SizedBox(
-                        width: 36,
-                        child: Text('${r.toInt()}',
-                            style: const TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
+                      );
+                    }).toList(),
                   ),
 
-                  // Green Slider
+                  const SizedBox(height: 22),
+
+                  // Color Hue Spectrum Slider
                   Row(
-                    children: [
-                      const Text('G',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.green)),
-                      Expanded(
-                        child: Slider(
-                          value: g,
-                          min: 0,
-                          max: 255,
-                          activeColor: Colors.green,
-                          onChanged: (val) => setDialogState(() => g = val),
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text(
+                        'COLOR HUE',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textMuted,
+                          letterSpacing: 0.8,
                         ),
                       ),
-                      SizedBox(
-                        width: 36,
-                        child: Text('${g.toInt()}',
-                            style: const TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.bold)),
-                      ),
+                      Icon(Icons.palette_outlined,
+                          size: 16, color: AppTheme.textMuted),
                     ],
                   ),
-
-                  // Blue Slider
-                  Row(
-                    children: [
-                      const Text('B',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.blue)),
-                      Expanded(
-                        child: Slider(
-                          value: b,
-                          min: 0,
-                          max: 255,
-                          activeColor: Colors.blue,
-                          onChanged: (val) => setDialogState(() => b = val),
+                  const SizedBox(height: 8),
+                  SliderTheme(
+                    data: SliderThemeData(
+                      trackHeight: 14,
+                      activeTrackColor: Colors.transparent,
+                      inactiveTrackColor: Colors.transparent,
+                      thumbColor: Colors.white,
+                      overlayColor: activeColor.withValues(alpha: 0.2),
+                      thumbShape: const RoundSliderThumbShape(
+                        enabledThumbRadius: 10,
+                        elevation: 4,
+                      ),
+                    ),
+                    child: Container(
+                      height: 14,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: const Color(0xFFE2E8F0), width: 1),
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFFF0000),
+                            Color(0xFFFFFF00),
+                            Color(0xFF00FF00),
+                            Color(0xFF00FFFF),
+                            Color(0xFF0000FF),
+                            Color(0xFFFF00FF),
+                            Color(0xFFFF0000),
+                          ],
                         ),
                       ),
-                      SizedBox(
-                        width: 36,
-                        child: Text('${b.toInt()}',
-                            style: const TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.bold)),
+                      child: Slider(
+                        value: hue.clamp(0.0, 360.0),
+                        min: 0.0,
+                        max: 360.0,
+                        onChanged: (val) {
+                          setDialogState(() {
+                            hue = val;
+                          });
+                        },
                       ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Shade / Brightness Slider
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text(
+                        'SHADE & BRIGHTNESS',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textMuted,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      Icon(Icons.wb_sunny_outlined,
+                          size: 16, color: AppTheme.textMuted),
                     ],
+                  ),
+                  const SizedBox(height: 8),
+                  SliderTheme(
+                    data: SliderThemeData(
+                      trackHeight: 14,
+                      activeTrackColor: Colors.transparent,
+                      inactiveTrackColor: Colors.transparent,
+                      thumbColor: Colors.white,
+                      overlayColor: activeColor.withValues(alpha: 0.2),
+                      thumbShape: const RoundSliderThumbShape(
+                        enabledThumbRadius: 10,
+                        elevation: 4,
+                      ),
+                    ),
+                    child: Container(
+                      height: 14,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: const Color(0xFFE2E8F0), width: 1),
+                        gradient: LinearGradient(
+                          colors: [
+                            HSLColor.fromAHSL(1.0, hue, saturation, 0.05)
+                                .toColor(),
+                            HSLColor.fromAHSL(1.0, hue, saturation, 0.50)
+                                .toColor(),
+                            HSLColor.fromAHSL(1.0, hue, saturation, 0.95)
+                                .toColor(),
+                          ],
+                        ),
+                      ),
+                      child: Slider(
+                        value: lightness.clamp(0.0, 1.0),
+                        min: 0.0,
+                        max: 1.0,
+                        onChanged: (val) {
+                          setDialogState(() {
+                            lightness = val;
+                          });
+                        },
+                      ),
+                    ),
                   ),
                 ],
               ),
