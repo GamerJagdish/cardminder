@@ -80,6 +80,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               TextField(
                 controller: controller,
                 autofocus: true,
+                maxLength: 25,
                 textCapitalization: TextCapitalization.words,
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) {
@@ -101,6 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 decoration: InputDecoration(
                   hintText: 'Enter your name',
+                  counterText: '',
                   hintStyle: const TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 14,
@@ -211,32 +213,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // Tappable User Name Header
-                        GestureDetector(
-                          onTap: () => _showEditNameDialog(
-                              context, settings.userName, cards),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Welcome back,',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppTheme.textMuted,
-                                  fontWeight: FontWeight.w500,
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _showEditNameDialog(
+                                context, settings.userName, cards),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Welcome back,',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppTheme.textMuted,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                settings.userName,
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.textDark,
+                                const SizedBox(height: 2),
+                                Text(
+                                  settings.userName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textDark,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 12),
 
                         // Real Dynamic Notification Bell Button
                         GestureDetector(
