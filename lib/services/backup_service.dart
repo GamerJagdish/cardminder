@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
@@ -21,40 +23,40 @@ class BackupData {
 }
 
 class BackupService {
-  // 32-character AES-256 Encryption Key for CardMinder offline backups
-  static const String _passKey = 'CardMinder_SecureOfflineKey_2026';
-  static const String _headerTag = 'CMBK_V1:';
+  static const String _headerTag = 'CMBK_V2:';
 
-  static enc.Encrypter _getEncrypter() {
-    final key = enc.Key.fromUtf8(_passKey);
+  static enc.Encrypter _getEncrypterForPin(String pin) {
+    // Derive 256-bit (32-byte) AES key using SHA-256 hash of pin + salt
+    final keyBytes =
+        sha256.convert(utf8.encode('$pin:CardMinder_Salt_2026!')).bytes;
+    final key = enc.Key(Uint8List.fromList(keyBytes));
     return enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
   }
 
   static enc.IV _getIV() {
-    // 16-byte fixed IV for deterministic CBC verification
     return enc.IV.fromUtf8('CM_IV_16_BYTES!!');
   }
 
-  /// Encrypts all card and settings data and prompts the user to save/share the backup file.
+  /// Encrypts all card and settings data with the user's PIN and prompts to share/save.
   static Future<String?> createAndShareBackup({
     required List<CreditCard> cards,
     required AppSettings settings,
+    required String userPin,
   }) async {
     try {
       final payload = {
         'app': 'CardMinder',
-        'version': 1,
+        'version': 2,
         'exportDate': DateTime.now().toIso8601String(),
         'cards': cards.map((c) => c.toJson()).toList(),
         'settings': settings.toJson(),
       };
 
       final jsonStr = jsonEncode(payload);
-      final encrypter = _getEncrypter();
+      final encrypter = _getEncrypterForPin(userPin);
       final iv = _getIV();
       final encrypted = encrypter.encrypt(jsonStr, iv: iv);
 
-      // Prepend header tag for quick format validation
       final backupContent = '$_headerTag${encrypted.base64}';
 
       final tempDir = await getTemporaryDirectory();
@@ -78,8 +80,8 @@ class BackupService {
     }
   }
 
-  /// Opens file picker, reads and decrypts a .cmbk backup file.
-  static Future<BackupData?> pickAndDecryptBackup() async {
+  /// Opens file picker to let user pick a .cmbk file. Returns the picked File or null.
+  static Future<File?> pickBackupFile() async {
     try {
       final pickerResult = await FilePicker.platform.pickFiles(
         type: FileType.any,
@@ -93,44 +95,51 @@ class BackupService {
       final path = pickerResult.files.single.path;
       if (path == null) return null;
 
-      final file = File(path);
-      final rawContent = (await file.readAsString()).trim();
-
-      if (!rawContent.startsWith(_headerTag)) {
-        throw const FormatException('Invalid CardMinder backup format.');
-      }
-
-      final base64Encrypted = rawContent.substring(_headerTag.length);
-      final encrypter = _getEncrypter();
-      final iv = _getIV();
-
-      final decryptedJsonStr = encrypter.decrypt64(base64Encrypted, iv: iv);
-      final Map<String, dynamic> dataMap = jsonDecode(decryptedJsonStr);
-
-      if (dataMap['app'] != 'CardMinder') {
-        throw const FormatException('Unrecognized backup payload.');
-      }
-
-      final List<dynamic> cardsListRaw = dataMap['cards'] ?? [];
-      final List<CreditCard> restoredCards = cardsListRaw
-          .map((item) => CreditCard.fromJson(Map<String, dynamic>.from(item)))
-          .toList();
-
-      final settingsRaw = Map<String, dynamic>.from(dataMap['settings'] ?? {});
-      final restoredSettings = AppSettings.fromJson(settingsRaw);
-
-      final exportDateStr = dataMap['exportDate'] as String?;
-      final exportDate = exportDateStr != null
-          ? DateTime.parse(exportDateStr)
-          : DateTime.now();
-
-      return BackupData(
-        cards: restoredCards,
-        settings: restoredSettings,
-        exportDate: exportDate,
-      );
+      return File(path);
     } catch (e) {
-      rethrow;
+      return null;
     }
+  }
+
+  /// Decrypts a backup file given the user's PIN.
+  static Future<BackupData> decryptBackupFile({
+    required File file,
+    required String userPin,
+  }) async {
+    final rawContent = (await file.readAsString()).trim();
+
+    if (!rawContent.startsWith(_headerTag)) {
+      throw const FormatException('Invalid or unrecognized backup file format.');
+    }
+
+    final base64Encrypted = rawContent.substring(_headerTag.length);
+    final encrypter = _getEncrypterForPin(userPin);
+    final iv = _getIV();
+
+    final decryptedJsonStr = encrypter.decrypt64(base64Encrypted, iv: iv);
+    final Map<String, dynamic> dataMap = jsonDecode(decryptedJsonStr);
+
+    if (dataMap['app'] != 'CardMinder') {
+      throw const FormatException('Unrecognized backup payload.');
+    }
+
+    final List<dynamic> cardsListRaw = dataMap['cards'] ?? [];
+    final List<CreditCard> restoredCards = cardsListRaw
+        .map((item) => CreditCard.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+
+    final settingsRaw = Map<String, dynamic>.from(dataMap['settings'] ?? {});
+    final restoredSettings = AppSettings.fromJson(settingsRaw);
+
+    final exportDateStr = dataMap['exportDate'] as String?;
+    final exportDate = exportDateStr != null
+        ? DateTime.parse(exportDateStr)
+        : DateTime.now();
+
+    return BackupData(
+      cards: restoredCards,
+      settings: restoredSettings,
+      exportDate: exportDate,
+    );
   }
 }

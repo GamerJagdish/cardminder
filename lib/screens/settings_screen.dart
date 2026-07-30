@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/app_settings.dart';
+import '../models/credit_card.dart';
 import '../providers/card_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/backup_service.dart';
@@ -42,6 +43,473 @@ class SettingsScreen extends ConsumerWidget {
       }
     }
   }
+
+  Future<void> _showCreateBackupPinDialog(
+    BuildContext context,
+    List<CreditCard> cards,
+    AppSettings settings,
+  ) async {
+    final pinController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final pin = await showDialog<String>(
+      context: context,
+      builder: (dialogCtx) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryNavy.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.lock_outline_rounded,
+                        color: AppTheme.primaryNavy,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Set Pin',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textDark,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'enter a 4 digit pin to lock your backup file it will be needed when you restore it.',
+                  style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: pinController,
+                  autofocus: true,
+                  obscureText: true,
+                  maxLength: 4,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 4,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '0000',
+                    counterText: '',
+                    fillColor: const Color(0xFFF8FAFC),
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                          color: AppTheme.primaryNavy, width: 1.5),
+                    ),
+                  ),
+                  validator: (val) {
+                    final trimmed = val?.trim() ?? '';
+                    if (trimmed.length != 4) {
+                      return 'Please enter a 4-digit PIN';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () => Navigator.pop(dialogCtx, null),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: AppTheme.textDark,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryNavy,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          if (formKey.currentState?.validate() ?? false) {
+                            Navigator.pop(dialogCtx, pinController.text.trim());
+                          }
+                        },
+                        child: const Text(
+                          'Backup',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (pin == null || pin.isEmpty) return;
+
+    final err = await BackupService.createAndShareBackup(
+      cards: cards,
+      settings: settings,
+      userPin: pin,
+    );
+
+    if (context.mounted) {
+      if (err == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Backup created successfully'),
+            backgroundColor: AppTheme.accentEmerald,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create backup: $err'),
+            backgroundColor: AppTheme.accentRose,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleRestoreBackup(
+      BuildContext context, WidgetRef ref) async {
+    final file = await BackupService.pickBackupFile();
+    if (file == null) return;
+
+    final pinController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    if (!context.mounted) return;
+
+    final userPin = await showDialog<String>(
+      context: context,
+      builder: (dialogCtx) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentEmerald.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.key_rounded,
+                        color: AppTheme.accentEmerald,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Enter Pin',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textDark,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'enter the 4 digit pin you used when backing up your file.',
+                  style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: pinController,
+                  autofocus: true,
+                  obscureText: true,
+                  maxLength: 4,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 4,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '0000',
+                    counterText: '',
+                    fillColor: const Color(0xFFF8FAFC),
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                          color: AppTheme.primaryNavy, width: 1.5),
+                    ),
+                  ),
+                  validator: (val) {
+                    final trimmed = val?.trim() ?? '';
+                    if (trimmed.length != 4) {
+                      return 'Please enter 4-digit PIN';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () => Navigator.pop(dialogCtx, null),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: AppTheme.textDark,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryNavy,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          if (formKey.currentState?.validate() ?? false) {
+                            Navigator.pop(dialogCtx, pinController.text.trim());
+                          }
+                        },
+                        child: const Text(
+                          'Decrypt',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (userPin == null || userPin.isEmpty) return;
+
+    try {
+      final backupData = await BackupService.decryptBackupFile(
+        file: file,
+        userPin: userPin,
+      );
+
+      if (!context.mounted) return;
+
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (dialogCtx) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentEmerald.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.restore_page_rounded,
+                        color: AppTheme.accentEmerald,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Restore Backup?',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textDark,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Found ${backupData.cards.length} card(s) from backup created on ${DateFormat('MMM dd, yyyy • hh:mm a').format(backupData.exportDate)}.\n\nRestoring will overwrite your current card list.',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.textDark,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () => Navigator.pop(dialogCtx, false),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: AppTheme.textDark,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryNavy,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () => Navigator.pop(dialogCtx, true),
+                        child: const Text(
+                          'Restore',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+          ),
+        ),
+      ),
+    );
+
+    if (confirm == true) {
+      final storage = ref.read(storageServiceProvider);
+      await storage.saveAllCards(backupData.cards);
+
+      ref.read(cardNotifierProvider.notifier).reloadCards();
+      ref.read(settingsNotifierProvider.notifier).updateSettings(
+            backupData.settings,
+            backupData.cards,
+          );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Restored ${backupData.cards.length} card(s) successfully!'),
+            backgroundColor: AppTheme.accentEmerald,
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Incorrect PIN or corrupted backup file'),
+          backgroundColor: AppTheme.accentRose,
+        ),
+      );
+    }
+  }
+}
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -326,30 +794,8 @@ class SettingsScreen extends ConsumerWidget {
                       // Create Backup Button
                       Expanded(
                         child: GestureDetector(
-                          onTap: () async {
-                            final err =
-                                await BackupService.createAndShareBackup(
-                              cards: cards,
-                              settings: settings,
-                            );
-                            if (context.mounted) {
-                              if (err == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Backup created successfully'),
-                                    backgroundColor: AppTheme.accentEmerald,
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Failed to create backup: $err'),
-                                    backgroundColor: AppTheme.accentRose,
-                                  ),
-                                );
-                              }
-                            }
-                          },
+                          onTap: () =>
+                              _showCreateBackupPinDialog(context, cards, settings),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
@@ -373,159 +819,7 @@ class SettingsScreen extends ConsumerWidget {
                       // Restore Backup Button
                       Expanded(
                         child: GestureDetector(
-                          onTap: () async {
-                            try {
-                              final backupData =
-                                  await BackupService.pickAndDecryptBackup();
-                              if (backupData == null) return;
-
-                              if (context.mounted) {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (dialogCtx) => Dialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    backgroundColor: Colors.white,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(24.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.all(10),
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.accentEmerald
-                                                      .withValues(alpha: 0.1),
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.restore_page_rounded,
-                                                  color: AppTheme.accentEmerald,
-                                                  size: 22,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              const Text(
-                                                'Restore Backup?',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: AppTheme.textDark,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 16),
-                                          Text(
-                                            'Found ${backupData.cards.length} card(s) from backup created on ${DateFormat('MMM dd, yyyy • hh:mm a').format(backupData.exportDate)}.\n\nRestoring will overwrite your current card list.',
-                                            style: const TextStyle(
-                                              fontSize: 13,
-                                              color: AppTheme.textDark,
-                                              height: 1.4,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 24),
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: OutlinedButton(
-                                                  style: OutlinedButton.styleFrom(
-                                                    padding: const EdgeInsets.symmetric(
-                                                        vertical: 12),
-                                                    side: const BorderSide(
-                                                        color: Color(0xFFCBD5E1)),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(12),
-                                                    ),
-                                                  ),
-                                                  onPressed: () =>
-                                                      Navigator.pop(dialogCtx, false),
-                                                  child: const Text(
-                                                    'Cancel',
-                                                    style: TextStyle(
-                                                      color: AppTheme.textDark,
-                                                      fontWeight: FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        AppTheme.primaryNavy,
-                                                    elevation: 0,
-                                                    padding: const EdgeInsets.symmetric(
-                                                        vertical: 12),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(12),
-                                                    ),
-                                                  ),
-                                                  onPressed: () =>
-                                                      Navigator.pop(dialogCtx, true),
-                                                  child: const Text(
-                                                    'Restore',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-
-                                if (confirm == true) {
-                                  final storage = ref.read(storageServiceProvider);
-                                  await storage.saveAllCards(backupData.cards);
-
-                                  ref
-                                      .read(cardNotifierProvider.notifier)
-                                      .reloadCards();
-                                  ref.read(settingsNotifierProvider.notifier).updateSettings(
-                                        backupData.settings,
-                                        backupData.cards,
-                                      );
-
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                            'Restored ${backupData.cards.length} card(s) successfully!'),
-                                        backgroundColor: AppTheme.accentEmerald,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  }
-                                }
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Failed to restore backup: ${e.toString().replaceAll("FormatException: ", "")}'),
-                                    backgroundColor: AppTheme.accentRose,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                              }
-                            }
-                          },
+                          onTap: () => _handleRestoreBackup(context, ref),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
