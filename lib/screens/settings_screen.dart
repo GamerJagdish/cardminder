@@ -13,8 +13,52 @@ import '../services/backup_service.dart';
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  int _developerClickCount = 0;
+  bool _showClownRain = false;
+
+  void _handleDeveloperTap() {
+    setState(() {
+      _developerClickCount++;
+    });
+
+    if (_developerClickCount == 3) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("buddy don't click me so hard owo"),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else if (_developerClickCount == 6) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("you gotta stop bro it hurts"),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else if (_developerClickCount == 9) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("i will show my true colors now stay prepared"),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else if (_developerClickCount == 20) {
+      setState(() {
+        _showClownRain = true;
+      });
+    }
+  }
 
   Future<void> _openGitHub(BuildContext context) async {
     const urlStr = 'https://github.com/GamerJagdish/cardminder';
@@ -525,7 +569,7 @@ class SettingsScreen extends ConsumerWidget {
 }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final settings = ref.watch(settingsNotifierProvider);
     final cards = ref.watch(cardNotifierProvider).cards;
 
@@ -539,16 +583,25 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text('Settings'),
-        automaticallyImplyLeading: false,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // SECTION 0: APP THEME
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Settings',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // SECTION 0: APP THEME
             const _SectionHeader(
               title: 'APP THEME',
               icon: Icons.palette_outlined,
@@ -915,48 +968,60 @@ class SettingsScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF1F5F9),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.person_outline_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Developer',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppTheme.textMuted,
-                                fontWeight: FontWeight.bold,
-                              ),
+                  InkWell(
+                    onTap: _handleDeveloperTap,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFFF1F5F9),
+                              shape: BoxShape.circle,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'GamerJagdish',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
+                            child: _developerClickCount >= 12
+                                ? const Text(
+                                    '🤡',
+                                    style: TextStyle(fontSize: 20),
+                                  )
+                                : Icon(
+                                    Icons.person_outline_rounded,
+                                    color: Theme.of(context).colorScheme.primary,
+                                    size: 22,
+                                  ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Developer',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppTheme.textMuted,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'GamerJagdish',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 14),
                   Divider(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
@@ -1082,7 +1147,17 @@ class SettingsScreen extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ),
+    if (_showClownRain)
+      _ClownRainOverlay(
+        onDismiss: () => setState(() {
+          _showClownRain = false;
+          _developerClickCount = 0;
+        }),
+      ),
+  ],
+),
+);
   }
 }
 
@@ -1505,4 +1580,158 @@ class _DebugActionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ClownRainOverlay extends StatefulWidget {
+  final VoidCallback onDismiss;
+  const _ClownRainOverlay({required this.onDismiss});
+
+  @override
+  State<_ClownRainOverlay> createState() => _ClownRainOverlayState();
+}
+
+class _ClownRainOverlayState extends State<_ClownRainOverlay>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late List<_ClownParticle> _clowns;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+
+    _clowns = List.generate(40, (index) {
+      final randomX = ((index * 73 + 29) % 100) / 100.0;
+      final size = 22.0 + ((index * 17) % 28);
+      final speedMultiplier = 0.8 + ((index * 19) % 15) / 10.0;
+      final offsetPhase = ((index * 23) % 100) / 100.0;
+
+      return _ClownParticle(
+        relativeX: randomX,
+        size: size,
+        speedMultiplier: speedMultiplier,
+        offsetPhase: offsetPhase,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Material(
+        color: Colors.black.withValues(alpha: 0.6),
+        child: Stack(
+            children: [
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  final screenHeight = MediaQuery.of(context).size.height;
+                  final screenWidth = MediaQuery.of(context).size.width;
+
+                  return Stack(
+                    children: _clowns.map((clown) {
+                      final progress =
+                          (_controller.value * clown.speedMultiplier + clown.offsetPhase) % 1.0;
+                      final topY = progress * (screenHeight + 100) - 50;
+                      final leftX = clown.relativeX * (screenWidth - clown.size);
+
+                      return Positioned(
+                        top: topY,
+                        left: leftX,
+                        child: Text(
+                          '🤡',
+                          style: TextStyle(fontSize: clown.size),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardTheme.color,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B),
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          '🤡',
+                          style: TextStyle(fontSize: 54),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "yes that's me a clown. laugh on me bro :)",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: widget.onDismiss,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF59E0B),
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                          child: const Text(
+                            'Close 🤡',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+  }
+}
+
+class _ClownParticle {
+  final double relativeX;
+  final double size;
+  final double speedMultiplier;
+  final double offsetPhase;
+
+  _ClownParticle({
+    required this.relativeX,
+    required this.size,
+    required this.speedMultiplier,
+    required this.offsetPhase,
+  });
 }
