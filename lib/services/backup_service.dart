@@ -22,7 +22,7 @@ class BackupData {
 
 class BackupService {
   // 32-character AES-256 Encryption Key for CardMinder offline backups
-  static const String _passKey = 'CardMinder_SecureOfflineKey_2026!';
+  static const String _passKey = 'CardMinder_SecureOfflineKey_2026';
   static const String _headerTag = 'CMBK_V1:';
 
   static enc.Encrypter _getEncrypter() {
@@ -35,8 +35,8 @@ class BackupService {
     return enc.IV.fromUtf8('CM_IV_16_BYTES!!');
   }
 
-  /// Encrypts all card and settings data and prompts the user to save/share the .cmbk backup file.
-  static Future<bool> createAndShareBackup({
+  /// Encrypts all card and settings data and prompts the user to save/share the backup file.
+  static Future<String?> createAndShareBackup({
     required List<CreditCard> cards,
     required AppSettings settings,
   }) async {
@@ -64,19 +64,17 @@ class BackupService {
 
       await file.writeAsString(backupContent);
 
-      final xFile = XFile(file.path, mimeType: 'application/octet-stream');
-      final result = await SharePlus.instance.share(
-        ShareParams(
-          files: [xFile],
-          subject: 'CardMinder Encrypted Backup ($fileName)',
-          text: 'CardMinder Encrypted Backup file (.cmbk)',
-        ),
+      final xFile = XFile(file.path);
+      // ignore: deprecated_member_use
+      await Share.shareXFiles(
+        [xFile],
+        subject: 'CardMinder Backup ($fileName)',
+        text: 'CardMinder Backup file',
       );
 
-      return result.status == ShareResultStatus.success ||
-          result.status == ShareResultStatus.dismissed;
+      return null;
     } catch (e) {
-      return false;
+      return e.toString().replaceAll('FormatException: ', '');
     }
   }
 

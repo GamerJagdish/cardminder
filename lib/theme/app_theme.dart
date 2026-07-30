@@ -84,6 +84,12 @@ class AppTheme {
           borderSide: const BorderSide(color: primaryNavy, width: 2),
         ),
       ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
     );
   }
 }
