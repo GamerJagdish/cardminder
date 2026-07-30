@@ -6,6 +6,7 @@ Future<bool?> showDeleteConfirmationDialog({
   required String cardName,
 }) {
   final displayName = cardName.trim().isEmpty ? 'this card' : '"$cardName"';
+  final isDark = Theme.of(context).brightness == Brightness.dark;
 
   return showDialog<bool>(
     context: context,
@@ -13,7 +14,8 @@ Future<bool?> showDeleteConfirmationDialog({
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
+          Theme.of(context).cardTheme.color,
       surfaceTintColor: Colors.transparent,
       titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -33,13 +35,13 @@ Future<bool?> showDeleteConfirmationDialog({
             ),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Text(
               'Delete Card',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -62,8 +64,10 @@ Future<bool?> showDeleteConfirmationDialog({
                 child: TextButton(
                   onPressed: () => Navigator.pop(dialogCtx, false),
                   style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFFF1F5F9),
-                    foregroundColor: const Color(0xFF475569),
+                    backgroundColor: isDark
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFFF1F5F9),
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

@@ -392,7 +392,8 @@ class SettingsScreen extends ConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
+              Theme.of(context).cardTheme.color,
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -414,12 +415,12 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Restore Backup?',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -427,9 +428,9 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 Text(
                   'Found ${backupData.cards.length} card(s) from backup created on ${DateFormat('MMM dd, yyyy • hh:mm a').format(backupData.exportDate)}.\n\nRestoring will overwrite your current card list.',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: AppTheme.textDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     height: 1.4,
                   ),
                 ),
@@ -440,16 +441,20 @@ class SettingsScreen extends ConsumerWidget {
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          side: BorderSide(
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFCBD5E1),
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         onPressed: () => Navigator.pop(dialogCtx, false),
-                        child: const Text(
+                        child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: AppTheme.textDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -459,7 +464,10 @@ class SettingsScreen extends ConsumerWidget {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryNavy,
+                          backgroundColor: isDark
+                              ? AppTheme.primaryAccentDark
+                              : AppTheme.primaryNavy,
+                          foregroundColor: isDark ? Colors.black : Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -467,10 +475,10 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                         ),
                         onPressed: () => Navigator.pop(dialogCtx, true),
-                        child: const Text(
+                        child: Text(
                           'Restore',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: isDark ? Colors.black : Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

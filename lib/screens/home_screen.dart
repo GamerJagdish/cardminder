@@ -678,6 +678,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -686,23 +688,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1F5F9),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFFF1F5F9),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.credit_card_off_outlined,
                 size: 56,
-                color: AppTheme.primaryNavy,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'No Cards Tracked Yet',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -715,7 +719,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -723,18 +727,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryNavy,
-                foregroundColor: Colors.white,
+                backgroundColor: isDark
+                    ? AppTheme.primaryAccentDark
+                    : AppTheme.primaryNavy,
+                foregroundColor: isDark ? Colors.black : Colors.white,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              icon: const Icon(Icons.add, size: 20),
-              label: const Text(
+              child: Text(
                 'Add First Card',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.black : Colors.white,
+                ),
               ),
             ),
           ],
