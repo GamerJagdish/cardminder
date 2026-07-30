@@ -29,6 +29,20 @@ class CreditCardView extends StatelessWidget {
         ? '0001'
         : card.lastFourDigits!;
 
+    // Dynamic contrast coloring based on background luminance
+    final isLightBg = colors.first.computeLuminance() > 0.45;
+    final textColor = isLightBg ? const Color(0xFF0F172A) : Colors.white;
+    final textMuted = isLightBg ? const Color(0xFF334155) : Colors.white70;
+    final textSubtle = isLightBg ? const Color(0xFF475569) : Colors.white60;
+    final iconColor = isLightBg ? const Color(0xFF0F172A) : Colors.white;
+    final badgeBg = isLightBg
+        ? Colors.black.withValues(alpha: 0.08)
+        : Colors.white.withValues(alpha: 0.18);
+    final badgeBorder = isLightBg ? Colors.black26 : Colors.white38;
+    final ambientCircleColor = isLightBg
+        ? Colors.black.withValues(alpha: 0.04)
+        : Colors.white.withValues(alpha: 0.08);
+
     return GestureDetector(
       onTap: isInteractive ? onTap : null,
       child: Container(
@@ -62,7 +76,7 @@ class CreditCardView extends StatelessWidget {
                   height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: ambientCircleColor,
                   ),
                 ),
               ),
@@ -76,7 +90,7 @@ class CreditCardView extends StatelessWidget {
                   height: 130,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: ambientCircleColor,
                   ),
                 ),
               ),
@@ -97,8 +111,8 @@ class CreditCardView extends StatelessWidget {
                             displayName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: textColor,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.2,
@@ -161,18 +175,18 @@ class CreditCardView extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.18),
+                                color: badgeBg,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                    color: Colors.white38, width: 0.8),
+                                    color: badgeBorder, width: 0.8),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _buildNetworkLogo(card.network),
                                   const SizedBox(width: 4),
-                                  const Icon(Icons.arrow_drop_down_rounded,
-                                      color: Colors.white, size: 18),
+                                  Icon(Icons.arrow_drop_down_rounded,
+                                      color: iconColor, size: 18),
                                 ],
                               ),
                             ),
@@ -208,10 +222,10 @@ class CreditCardView extends StatelessWidget {
                             : EdgeInsets.zero,
                         decoration: onDigitsTap != null
                             ? BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.18),
+                                color: badgeBg,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                    color: Colors.white38, width: 0.8),
+                                    color: badgeBorder, width: 0.8),
                               )
                             : null,
                         child: FittedBox(
@@ -219,18 +233,18 @@ class CreditCardView extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text(
+                              Text(
                                 '• • • •  • • • •  • • • •  ',
                                 style: TextStyle(
-                                  color: Colors.white70,
+                                  color: textMuted,
                                   fontSize: 13,
                                   letterSpacing: 1.5,
                                 ),
                               ),
                               Text(
                                 digits,
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: textColor,
                                   fontSize: 17,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 1.2,
@@ -238,8 +252,8 @@ class CreditCardView extends StatelessWidget {
                               ),
                               if (onDigitsTap != null) ...[
                                 const SizedBox(width: 4),
-                                const Icon(Icons.edit_outlined,
-                                    color: Colors.white70, size: 13),
+                                Icon(Icons.edit_outlined,
+                                    color: textMuted, size: 13),
                               ],
                             ],
                           ),
@@ -255,10 +269,10 @@ class CreditCardView extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'EXPIRES',
                               style: TextStyle(
-                                color: Colors.white60,
+                                color: textSubtle,
                                 fontSize: 9,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 1,
@@ -267,8 +281,8 @@ class CreditCardView extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               card.expiryDateString,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: textColor,
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -285,10 +299,10 @@ class CreditCardView extends StatelessWidget {
                                 : EdgeInsets.zero,
                             decoration: onCardTypeTap != null
                                 ? BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.18),
+                                    color: badgeBg,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                        color: Colors.white38, width: 0.8),
+                                        color: badgeBorder, width: 0.8),
                                   )
                                 : null,
                             child: Row(
@@ -296,8 +310,8 @@ class CreditCardView extends StatelessWidget {
                               children: [
                                 Text(
                                   card.cardType.toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: textColor,
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.5,
@@ -305,8 +319,8 @@ class CreditCardView extends StatelessWidget {
                                 ),
                                 if (onCardTypeTap != null) ...[
                                   const SizedBox(width: 4),
-                                  const Icon(Icons.sync_alt_rounded,
-                                      color: Colors.white70, size: 12),
+                                  Icon(Icons.sync_alt_rounded,
+                                      color: textMuted, size: 12),
                                 ],
                               ],
                             ),

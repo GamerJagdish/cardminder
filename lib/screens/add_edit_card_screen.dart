@@ -446,48 +446,179 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Header with Title and Hex Code Badge
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryNavy.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.palette_outlined,
-                                color: AppTheme.primaryNavy,
-                                size: 20,
-                              ),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryNavy
+                                        .withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.palette_outlined,
+                                    color: AppTheme.primaryNavy,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'Pick Your Color',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textDark,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 10),
-                            const Text(
-                              'Pick Your Color',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textDark,
+                            // Hex Value Display Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Text(
+                                '#${Color(_customRgbColorValue).toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                  color: AppTheme.primaryNavy,
+                                  letterSpacing: 1,
+                                ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                        ColorPicker(
-                          pickerColor: Color(_customRgbColorValue),
-                          onColorChanged: (color) {
-                            setState(() {
-                              _customRgbColorValue = color.toARGB32();
-                              _selectedColorIndex = _customRgbColorValue;
-                            });
-                          },
-                          colorPickerWidth: MediaQuery.of(context).size.width - 112,
-                          pickerAreaHeightPercent: 0.6,
-                          enableAlpha: false,
-                          displayThumbColor: true,
-                          paletteType: PaletteType.hsvWithHue,
-                          labelTypes: const [],
-                          pickerAreaBorderRadius: BorderRadius.circular(12),
-                          hexInputBar: false,
+
+                        // Main Color Picker Area
+                        SizedBox(
+                          width: double.infinity,
+                          height: 170,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: ColorPickerArea(
+                              HSVColor.fromColor(Color(_customRgbColorValue)),
+                              (hsv) {
+                                setState(() {
+                                  _customRgbColorValue =
+                                      hsv.toColor().toARGB32();
+                                  _selectedColorIndex = _customRgbColorValue;
+                                });
+                              },
+                              PaletteType.hsvWithHue,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Slider & SQUARE Color Preview Row
+                        Row(
+                          children: [
+                            // SQUARE Color Preview Container
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: Color(_customRgbColorValue),
+                                borderRadius: BorderRadius.circular(9),
+                                border: Border.all(
+                                    color: const Color(0xFFCBD5E1),
+                                    width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Color(_customRgbColorValue)
+                                        .withValues(alpha: 0.35),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Hue Slider
+                            Expanded(
+                              child: SizedBox(
+                                height: 38,
+                                child: ColorPickerSlider(
+                                  TrackType.hue,
+                                  HSVColor.fromColor(
+                                      Color(_customRgbColorValue)),
+                                  (hsv) {
+                                    setState(() {
+                                      _customRgbColorValue =
+                                          hsv.toColor().toARGB32();
+                                      _selectedColorIndex =
+                                          _customRgbColorValue;
+                                    });
+                                  },
+                                  displayThumbColor: true,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Quick Preset Color Swatches
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            const Color(0xFF0F172A), // Slate Dark
+                            const Color(0xFF1E1B4B), // Midnight Indigo
+                            const Color(0xFF065F46), // Deep Emerald
+                            const Color(0xFF831843), // Rich Magenta
+                            const Color(0xFF1E3A8A), // Ocean Navy
+                            const Color(0xFF581C87), // Royal Violet
+                            const Color(0xFF991B1B), // Crimson Red
+                            const Color(0xFFB45309), // Amber Gold
+                            const Color(0xFF15803D), // Forest Green
+                            const Color(0xFF0284C7), // Sky Blue
+                            const Color(0xFFBE185D), // Rose Pink
+                          ].map((swatch) {
+                            final isSelected =
+                                _customRgbColorValue == swatch.toARGB32();
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _customRgbColorValue = swatch.toARGB32();
+                                  _selectedColorIndex = _customRgbColorValue;
+                                });
+                              },
+                              child: Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  color: swatch,
+                                  borderRadius: BorderRadius.circular(7),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? AppTheme.primaryNavy
+                                        : Colors.transparent,
+                                    width: isSelected ? 2.5 : 0,
+                                  ),
+                                ),
+                                child: isSelected
+                                    ? const Icon(Icons.check_rounded,
+                                        color: Colors.white, size: 16)
+                                    : null,
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ],
                     ),
