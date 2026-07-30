@@ -463,7 +463,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                         Navigator.pop(dialogCtx);
                       },
                       child: const Text(
-                        'Save Digits',
+                        'Save',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
