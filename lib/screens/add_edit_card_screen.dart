@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../models/credit_card.dart';
@@ -134,330 +135,8 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     Navigator.pop(context);
   }
 
-  void _showRgbColorPickerDialog(BuildContext context) {
-    Color initialColor = Color(_customRgbColorValue);
-    final initialHsl = HSLColor.fromColor(initialColor);
-    double hue = initialHsl.hue;
-    double lightness = initialHsl.lightness.clamp(0.05, 0.95);
-    double saturation = initialHsl.saturation == 0 ? 0.85 : initialHsl.saturation.clamp(0.3, 1.0);
 
-    final presetSwatches = [
-      const Color(0xFF0F172A), // Slate Dark
-      const Color(0xFF1E1B4B), // Midnight Indigo
-      const Color(0xFF065F46), // Deep Emerald
-      const Color(0xFF831843), // Rich Magenta
-      const Color(0xFF1E3A8A), // Ocean Navy
-      const Color(0xFF581C87), // Royal Purple
-      const Color(0xFF991B1B), // Crimson Red
-      const Color(0xFFB45309), // Amber Gold
-      const Color(0xFF0284C7), // Sky Blue
-      const Color(0xFF18181B), // Onyx Black
-    ];
 
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          final activeColor =
-              HSLColor.fromAHSL(1.0, hue, saturation, lightness).toColor();
-
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.transparent,
-            title: const Text(
-              'Custom Card Color',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Live Color Preview Container
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    height: 75,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: activeColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: activeColor.withValues(alpha: 0.35),
-                          blurRadius: 12,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: const Text(
-                      'CARD PREVIEW',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Quick Swatches
-                  const Text(
-                    'QUICK SWATCHES',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textMuted,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: presetSwatches.map((swatch) {
-                      final isSelected =
-                          activeColor.toARGB32() == swatch.toARGB32();
-                      return GestureDetector(
-                        onTap: () {
-                          final h = HSLColor.fromColor(swatch);
-                          setDialogState(() {
-                            hue = h.hue;
-                            lightness = h.lightness;
-                            saturation = h.saturation;
-                          });
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: swatch,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppTheme.primaryNavy
-                                  : Colors.transparent,
-                              width: isSelected ? 3 : 0,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: swatch.withValues(alpha: 0.3),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: isSelected
-                              ? const Icon(Icons.check_rounded,
-                                  color: Colors.white, size: 18)
-                              : null,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  // Color Hue Spectrum Slider
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text(
-                        'COLOR HUE',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textMuted,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      Icon(Icons.palette_outlined,
-                          size: 16, color: AppTheme.textMuted),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SliderTheme(
-                    data: SliderThemeData(
-                      trackHeight: 14,
-                      activeTrackColor: Colors.transparent,
-                      inactiveTrackColor: Colors.transparent,
-                      thumbColor: Colors.white,
-                      overlayColor: activeColor.withValues(alpha: 0.2),
-                      thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 10,
-                        elevation: 4,
-                      ),
-                    ),
-                    child: Container(
-                      height: 14,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                            color: const Color(0xFFE2E8F0), width: 1),
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFFFF0000),
-                            Color(0xFFFFFF00),
-                            Color(0xFF00FF00),
-                            Color(0xFF00FFFF),
-                            Color(0xFF0000FF),
-                            Color(0xFFFF00FF),
-                            Color(0xFFFF0000),
-                          ],
-                        ),
-                      ),
-                      child: Slider(
-                        value: hue.clamp(0.0, 360.0),
-                        min: 0.0,
-                        max: 360.0,
-                        onChanged: (val) {
-                          setDialogState(() {
-                            hue = val;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Shade / Brightness Slider
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text(
-                        'SHADE & BRIGHTNESS',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textMuted,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      Icon(Icons.wb_sunny_outlined,
-                          size: 16, color: AppTheme.textMuted),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SliderTheme(
-                    data: SliderThemeData(
-                      trackHeight: 14,
-                      activeTrackColor: Colors.transparent,
-                      inactiveTrackColor: Colors.transparent,
-                      thumbColor: Colors.white,
-                      overlayColor: activeColor.withValues(alpha: 0.2),
-                      thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 10,
-                        elevation: 4,
-                      ),
-                    ),
-                    child: Container(
-                      height: 14,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                            color: const Color(0xFFE2E8F0), width: 1),
-                        gradient: LinearGradient(
-                          colors: [
-                            HSLColor.fromAHSL(1.0, hue, saturation, 0.05)
-                                .toColor(),
-                            HSLColor.fromAHSL(1.0, hue, saturation, 0.50)
-                                .toColor(),
-                            HSLColor.fromAHSL(1.0, hue, saturation, 0.95)
-                                .toColor(),
-                          ],
-                        ),
-                      ),
-                      child: Slider(
-                        value: lightness.clamp(0.0, 1.0),
-                        min: 0.0,
-                        max: 1.0,
-                        onChanged: (val) {
-                          setDialogState(() {
-                            lightness = val;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: const BorderSide(color: Color(0xFFCBD5E1)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () => Navigator.pop(dialogCtx),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: AppTheme.textDark,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryNavy,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        final argbInt = activeColor.toARGB32();
-                        setState(() {
-                          _customRgbColorValue = argbInt;
-                          _selectedColorIndex = argbInt;
-                        });
-                        if (_currentPage != AppTheme.cardThemes.length) {
-                          _pageController.animateToPage(
-                            AppTheme.cardThemes.length,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeOutCubic,
-                          );
-                        }
-                        Navigator.pop(dialogCtx);
-                      },
-                      child: const Text(
-                        'Apply Color',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
 
   void _showDigitsDialog(BuildContext context) {
     final tempController = TextEditingController(
@@ -700,50 +379,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                             onNetworkSelected: (net) {
                               setState(() => _selectedNetwork = net);
                             },
-                            onTap: isCustomRgbPage
-                                ? () => _showRgbColorPickerDialog(context)
-                                : null,
                           ),
-                          if (isCustomRgbPage)
-                            Positioned(
-                              top: 14,
-                              left: 16,
-                              child: GestureDetector(
-                                onTap: () =>
-                                    _showRgbColorPickerDialog(context),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.95),
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Colors.black26,
-                                        blurRadius: 6,
-                                        offset: Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: const [
-                                      Icon(Icons.palette_outlined,
-                                          size: 16, color: AppTheme.primaryNavy),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Custom',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppTheme.primaryNavy,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
                         ],
                       ),
                     );
@@ -787,6 +423,83 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
               ),
 
               const SizedBox(height: 24),
+
+              // INLINE COLOR PICKER (visible only on custom color page)
+              AnimatedCrossFade(
+                firstChild: const SizedBox.shrink(),
+                secondChild: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryNavy.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.palette_outlined,
+                                color: AppTheme.primaryNavy,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Text(
+                              'Pick Your Color',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        ColorPicker(
+                          pickerColor: Color(_customRgbColorValue),
+                          onColorChanged: (color) {
+                            setState(() {
+                              _customRgbColorValue = color.toARGB32();
+                              _selectedColorIndex = _customRgbColorValue;
+                            });
+                          },
+                          colorPickerWidth: MediaQuery.of(context).size.width - 112,
+                          pickerAreaHeightPercent: 0.6,
+                          enableAlpha: false,
+                          displayThumbColor: true,
+                          paletteType: PaletteType.hsvWithHue,
+                          labelTypes: const [],
+                          pickerAreaBorderRadius: BorderRadius.circular(12),
+                          hexInputBar: false,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                crossFadeState: _currentPage == AppTheme.cardThemes.length
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                duration: const Duration(milliseconds: 200),
+              ),
+
+              const SizedBox(height: 20),
 
               // NICKNAME INPUT
               Padding(
