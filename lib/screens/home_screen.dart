@@ -382,13 +382,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
-                                        'All Cards',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).colorScheme.onSurface,
-                                        ),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'All Cards',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).colorScheme.onSurface,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? AppTheme.primaryAccentDark
+                                                      .withValues(alpha: 0.18)
+                                                  : AppTheme.primaryNavy
+                                                      .withValues(alpha: 0.08),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              '${cards.length}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: isDark
+                                                    ? AppTheme.primaryAccentDark
+                                                    : AppTheme.primaryNavy,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       GestureDetector(
                                         onTap: () {
