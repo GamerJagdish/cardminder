@@ -55,8 +55,13 @@ Contributions, bug reports, and feature requests are welcome. Feel free to open 
 
 If you find this useful, consider supporting the project:
 
-[![buymeacoffee-yellow-badge](https://iili.io/JoQ1MeS.md.png)](https://www.buymeacoffee.com/gamerjagdish "buymeacoffee")
-[![ko-fi-badge](https://iili.io/qHFVi5Q.md.png)](https://www.ko-fi.com/gamerjagdish "ko-fi")
+<a href="https://www.buymeacoffee.com/gamerjagdish" target="_blank" title="buymeacoffee">
+  <img src="https://iili.io/JoQ1MeS.md.png" alt="buymeacoffee-yellow-badge" style="width: 204px;">
+</a>
+
+<a href="https://www.ko-fi.com/gamerjagdish" target="_blank" title="ko-fi">
+  <img src="https://iili.io/qHFVi5Q.md.png" alt="ko-fi-badge" style="width: 304px;">
+</a>
 
 ## License
 
