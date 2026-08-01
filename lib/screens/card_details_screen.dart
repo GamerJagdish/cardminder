@@ -288,13 +288,13 @@ class CardDetailsScreen extends ConsumerWidget {
 
             const SizedBox(height: 12),
 
-            // Secondary Actions Row: Edit & Delete Buttons (No Icons)
+            // Secondary Actions Row: Solid Edit & Delete Buttons (No Icons)
             Row(
               children: [
                 Expanded(
                   child: SizedBox(
                     height: 50,
-                    child: OutlinedButton(
+                    child: ElevatedButton(
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -303,23 +303,22 @@ class CardDetailsScreen extends ConsumerWidget {
                           ),
                         );
                       },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Theme.of(context).cardTheme.color,
-                        side: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFCBD5E1),
-                        ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark
+                            ? const Color(0xFF334155)
+                            : AppTheme.primaryNavy,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Edit',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -329,15 +328,12 @@ class CardDetailsScreen extends ConsumerWidget {
                 Expanded(
                   child: SizedBox(
                     height: 50,
-                    child: OutlinedButton(
+                    child: ElevatedButton(
                       onPressed: () => _confirmDelete(context, ref, currentCard),
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Theme.of(context).cardTheme.color,
-                        side: BorderSide(
-                          color: isDark
-                              ? AppTheme.accentRose.withValues(alpha: 0.4)
-                              : const Color(0xFFFECDD3),
-                        ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accentRose,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -347,7 +343,7 @@ class CardDetailsScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.accentRose,
+                          color: Colors.white,
                         ),
                       ),
                     ),

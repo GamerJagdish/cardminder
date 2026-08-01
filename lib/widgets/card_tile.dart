@@ -19,6 +19,9 @@ class SwipeableCardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final editColor = isDark ? const Color(0xFF334155) : AppTheme.primaryNavy;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6.0),
       child: DecoratedBox(
@@ -37,7 +40,7 @@ class SwipeableCardTile extends StatelessWidget {
           child: Dismissible(
             key: Key(card.id),
             background: _SwipeActionBackground(
-              color: AppTheme.primaryNavy,
+              color: editColor,
               alignment: Alignment.centerLeft,
               icon: Icons.edit,
               label: 'Edit',
