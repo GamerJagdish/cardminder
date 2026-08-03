@@ -99,6 +99,7 @@ class CardNotifier extends StateNotifier<CardState> {
     int colorIndex = 0,
     String? bankName,
     String? cardType,
+    int deactivationPeriodDays = 365,
   }) async {
     final newCard = CreditCard(
       id: _uuid.v4(),
@@ -108,6 +109,7 @@ class CardNotifier extends StateNotifier<CardState> {
       colorIndex: colorIndex,
       bankName: bankName,
       cardType: cardType ?? 'Debit Card',
+      deactivationPeriodDays: deactivationPeriodDays,
     );
 
     await _storageService.saveCard(newCard);

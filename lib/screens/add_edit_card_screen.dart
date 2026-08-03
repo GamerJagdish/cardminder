@@ -29,6 +29,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   int _customRgbColorValue = const Color(0xFFE11D48).toARGB32();
   String _selectedNetwork = 'Visa';
   String _cardType = 'Credit Card';
+  int _selectedDeactivationDays = 365;
   late DateTime _selectedDate;
 
 
@@ -41,6 +42,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     _digitsController = TextEditingController(text: card?.lastFourDigits ?? '0001');
     _monthController = TextEditingController(text: card?.expiryMonth ?? '12');
     _yearController = TextEditingController(text: card?.expiryYear ?? '28');
+    _selectedDeactivationDays = card?.deactivationPeriodDays ?? 365;
 
     if (card != null) {
       if (card.colorIndex >= AppTheme.cardThemes.length) {
@@ -105,6 +107,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
         cardType: _cardType,
         expiryMonth: month.isNotEmpty ? month : '12',
         expiryYear: year.isNotEmpty ? year : '28',
+        deactivationPeriodDays: _selectedDeactivationDays,
       );
       ref.read(cardNotifierProvider.notifier).updateCard(updated);
     } else {
@@ -114,6 +117,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
             lastTransactionDate: _selectedDate,
             colorIndex: _selectedColorIndex,
             cardType: _cardType,
+            deactivationPeriodDays: _selectedDeactivationDays,
           );
       final list = ref.read(cardNotifierProvider).cards;
       if (list.isNotEmpty) {
@@ -127,6 +131,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                 cardType: _cardType,
                 expiryMonth: month.isNotEmpty ? month : '12',
                 expiryYear: year.isNotEmpty ? year : '28',
+                deactivationPeriodDays: _selectedDeactivationDays,
               ),
             );
       }
@@ -726,49 +731,140 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                 ),
               ),
 
-              const SizedBox(height: 20),
-
-              // LAST TRANSACTION DATE
+              // DEACTIVATION TIMELINE & LAST TRANSACTION DATE (Row)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    const _FieldLabel(text: 'LAST TRANSACTION DATE'),
-                    const SizedBox(height: 8),
-                    InkWell(
-                      onTap: _pickDate,
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .inputDecorationTheme
-                              .fillColor,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFE2E8F0),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              dateFormat.format(_selectedDate),
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).colorScheme.onSurface,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _FieldLabel(text: 'DEACTIVATION TIMELINE'),
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<int>(
+                            initialValue: _selectedDeactivationDays,
+                            isExpanded: true,
+                            dropdownColor:
+                                isDark ? const Color(0xFF1E293B) : Colors.white,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 16),
+                              fillColor: Theme.of(context)
+                                  .inputDecorationTheme
+                                  .fillColor,
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(
+                                  color: isDark
+                                      ? const Color(0xFF334155)
+                                      : const Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(
+                                  color: isDark
+                                      ? const Color(0xFF334155)
+                                      : const Color(0xFFE2E8F0),
+                                ),
                               ),
                             ),
-                            Icon(Icons.calendar_today_outlined,
-                                size: 18,
-                                color: Theme.of(context).colorScheme.onSurface),
-                          ],
-                        ),
+                            icon: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 90,
+                                child: Text('3 Months',
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                              DropdownMenuItem(
+                                value: 180,
+                                child: Text('6 Months',
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                              DropdownMenuItem(
+                                value: 270,
+                                child: Text('9 Months',
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                              DropdownMenuItem(
+                                value: 365,
+                                child: Text('1 Year',
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setState(() {
+                                  _selectedDeactivationDays = val;
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _FieldLabel(text: 'LAST TRANSACTION DATE'),
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: _pickDate,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 16),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .inputDecorationTheme
+                                    .fillColor,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isDark
+                                      ? const Color(0xFF334155)
+                                      : const Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      dateFormat.format(_selectedDate),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(Icons.calendar_today_outlined,
+                                      size: 18,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

@@ -260,7 +260,8 @@ class CardDetailsScreen extends ConsumerWidget {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('${currentCard.cardName} reset for 365 days!'),
+                      content: Text(
+                          '${currentCard.cardName} reset for ${currentCard.deactivationPeriodDays} days!'),
                       backgroundColor: AppTheme.accentEmerald,
                     ),
                   );

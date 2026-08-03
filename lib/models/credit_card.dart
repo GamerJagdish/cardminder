@@ -89,6 +89,7 @@ class CreditCard {
   final String network; // Visa, Mastercard, Amex, Discover
   final String expiryMonth; // e.g. "12"
   final String expiryYear; // e.g. "28"
+  final int deactivationPeriodDays; // Default: 365 days (1 year)
 
   CreditCard({
     required this.id,
@@ -101,13 +102,14 @@ class CreditCard {
     this.network = 'Visa',
     this.expiryMonth = '12',
     this.expiryYear = '28',
+    this.deactivationPeriodDays = 365,
   });
 
-  /// Expiry date is 365 days after the last transaction date
+  /// Deactivation date is [deactivationPeriodDays] after the last transaction date
   DateTime get deactivationDate =>
-      lastTransactionDate.add(const Duration(days: 365));
+      lastTransactionDate.add(Duration(days: deactivationPeriodDays));
 
-  /// Calculates number of days remaining until 365-day deadline
+  /// Calculates number of days remaining until deactivation deadline
   int get daysRemaining {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -116,23 +118,29 @@ class CreditCard {
       lastTransactionDate.month,
       lastTransactionDate.day,
     );
-    final deadline = txDate.add(const Duration(days: 365));
+    final deadline = txDate.add(Duration(days: deactivationPeriodDays));
     return deadline.difference(today).inDays;
   }
 
-  /// Percentage elapsed of the 365 days (0.0 = just used, 1.0 = 365 days passed)
+  /// Percentage elapsed of the deactivation period (0.0 = just used, 1.0 = period passed)
   double get elapsedProgress {
     final remaining = daysRemaining;
     if (remaining <= 0) return 1.0;
-    if (remaining >= 365) return 0.0;
-    return (365 - remaining) / 365.0;
+    if (remaining >= deactivationPeriodDays) return 0.0;
+    return (deactivationPeriodDays - remaining) / deactivationPeriodDays.toDouble();
   }
 
   UrgencyStatus get status {
     final remaining = daysRemaining;
     if (remaining <= 0) return UrgencyStatus.expired;
-    if (remaining <= 30) return UrgencyStatus.critical;
-    if (remaining <= 90) return UrgencyStatus.warning;
+
+    final criticalThreshold =
+        (deactivationPeriodDays * 0.1).round().clamp(7, 30);
+    final warningThreshold =
+        (deactivationPeriodDays * 0.25).round().clamp(15, 90);
+
+    if (remaining <= criticalThreshold) return UrgencyStatus.critical;
+    if (remaining <= warningThreshold) return UrgencyStatus.warning;
     return UrgencyStatus.safe;
   }
 
@@ -150,6 +158,7 @@ class CreditCard {
       'network': network,
       'expiryMonth': expiryMonth,
       'expiryYear': expiryYear,
+      'deactivationPeriodDays': deactivationPeriodDays,
     };
   }
 
@@ -165,6 +174,7 @@ class CreditCard {
       network: (json['network'] as String?) ?? 'Visa',
       expiryMonth: (json['expiryMonth'] as String?) ?? '12',
       expiryYear: (json['expiryYear'] as String?) ?? '28',
+      deactivationPeriodDays: (json['deactivationPeriodDays'] as int?) ?? 365,
     );
   }
 
@@ -179,6 +189,7 @@ class CreditCard {
     String? network,
     String? expiryMonth,
     String? expiryYear,
+    int? deactivationPeriodDays,
   }) {
     return CreditCard(
       id: id ?? this.id,
@@ -191,6 +202,8 @@ class CreditCard {
       network: network ?? this.network,
       expiryMonth: expiryMonth ?? this.expiryMonth,
       expiryYear: expiryYear ?? this.expiryYear,
+      deactivationPeriodDays:
+          deactivationPeriodDays ?? this.deactivationPeriodDays,
     );
   }
 }
