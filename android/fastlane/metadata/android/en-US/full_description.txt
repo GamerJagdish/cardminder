@@ -1,0 +1,12 @@
+CardMinder is a 100% offline, privacy-first Flutter application designed to track credit and debit card inactivity timelines and prevent unexpected bank deactivations.
+
+Banks often deactivate credit or debit cards if no transaction is made within a set period (e.g. 3, 6, 9 months or 1 year). CardMinder keeps all your card timelines organized in one place with countdown indicators, home screen widgets, and automated local notification reminders.
+
+Key Features:
+• 100% Offline & Private: No internet permission required. All data stays strictly on your device.
+• Custom Deactivation Timelines: Track cards with 3 months, 6 months, 9 months, or 1 year inactivity deadlines.
+• One-Tap Reset: Easily mark a transaction as used today to reset your deadline.
+• Home Screen Widgets: Keep track of upcoming deadlines right from your home screen.
+• Local Notification Reminders: Customizable transaction reminders before deadlines expire.
+• Encrypted Backup & Restore: PIN-protected backup and restore functionality.
+• Clean & Modern UI: Full Light and Dark mode support with sleek card designs.

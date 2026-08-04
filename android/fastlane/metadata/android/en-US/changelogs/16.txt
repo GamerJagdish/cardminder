@@ -1,0 +1,3 @@
+- Added custom card deactivation timeline selection (3, 6, 9 months & 1 year).
+- Updated home screen card counter and dark mode action colors.
+- Performance & caching improvements.
