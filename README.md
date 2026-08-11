@@ -71,4 +71,4 @@ If you find this useful, consider supporting the project:
 
 ## License
 
-MIT. See the LICENSE file for details.
+Distributed under the [MIT License](LICENSE).
