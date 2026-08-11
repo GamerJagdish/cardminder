@@ -32,7 +32,17 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   int _selectedDeactivationDays = 365;
   late DateTime _selectedDate;
 
+  late String _initialName;
+  late String _initialDigits;
+  late String _initialMonth;
+  late String _initialYear;
+  late int _initialColorIndex;
+  late String _initialNetwork;
+  late String _initialCardType;
+  late int _initialDeactivationDays;
+  late DateTime _initialDate;
 
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -62,6 +72,43 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     _selectedNetwork = card?.network ?? 'Visa';
     _cardType = card?.cardType ?? 'Credit Card';
     _selectedDate = card?.lastTransactionDate ?? DateTime.now();
+
+    _initialName = _nameController.text.trim();
+    _initialDigits = _digitsController.text.trim();
+    _initialMonth = _monthController.text.trim();
+    _initialYear = _yearController.text.trim();
+    _initialColorIndex = _selectedColorIndex;
+    _initialNetwork = _selectedNetwork;
+    _initialCardType = _cardType;
+    _initialDeactivationDays = _selectedDeactivationDays;
+    _initialDate = _selectedDate;
+  }
+
+  bool get _hasUnsavedChanges {
+    final nameChanged = _nameController.text.trim() != _initialName;
+    final digitsChanged = _digitsController.text.trim() != _initialDigits;
+    final monthChanged = _monthController.text.trim() != _initialMonth;
+    final yearChanged = _yearController.text.trim() != _initialYear;
+    final colorChanged = _selectedColorIndex != _initialColorIndex;
+    final networkChanged = _selectedNetwork != _initialNetwork;
+    final cardTypeChanged = _cardType != _initialCardType;
+    final deactivationChanged =
+        _selectedDeactivationDays != _initialDeactivationDays;
+    final dateChanged = !_isSameDate(_selectedDate, _initialDate);
+
+    return nameChanged ||
+        digitsChanged ||
+        monthChanged ||
+        yearChanged ||
+        colorChanged ||
+        networkChanged ||
+        cardTypeChanged ||
+        deactivationChanged ||
+        dateChanged;
+  }
+
+  bool _isSameDate(DateTime d1, DateTime d2) {
+    return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
   }
 
   @override
@@ -91,6 +138,8 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
 
   void _onSave() {
     if (!_formKey.currentState!.validate()) return;
+
+    _isSaving = true;
 
     final name = _nameController.text.trim();
     final digits = _digitsController.text.trim();
@@ -140,8 +189,126 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     Navigator.pop(context);
   }
 
+  Future<bool> _showUnsavedChangesDialog(BuildContext context) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
+            Theme.of(context).cardTheme.color,
+        surfaceTintColor: Colors.transparent,
+        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.accentAmber.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.warning_amber_rounded,
+                color: AppTheme.accentAmber,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                'Unsaved Changes',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'You have unsaved changes. Are you sure you want to discard them and go back?',
+          style: TextStyle(
+            fontSize: 14,
+            color: AppTheme.textMuted,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(dialogCtx, false),
+                    style: TextButton.styleFrom(
+                      backgroundColor: isDark
+                          ? const Color(0xFF0F172A)
+                          : const Color(0xFFF1F5F9),
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Keep Editing',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(dialogCtx, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.accentRose,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Discard',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
 
+    return result ?? false;
+  }
+
+  Future<void> _handleBackNavigation() async {
+    if (!_hasUnsavedChanges || _isSaving) {
+      Navigator.pop(context);
+      return;
+    }
+    final shouldDiscard = await _showUnsavedChangesDialog(context);
+    if (shouldDiscard && mounted) {
+      Navigator.pop(context);
+    }
+  }
 
   void _showDigitsDialog(BuildContext context) {
     final tempController = TextEditingController(
@@ -310,29 +477,38 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardTheme.color,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isDark
-                      ? const Color(0xFF334155)
-                      : const Color(0xFFE2E8F0),
+    return PopScope(
+      canPop: !_hasUnsavedChanges || _isSaving,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldDiscard = await _showUnsavedChangesDialog(context);
+        if (shouldDiscard && context.mounted) {
+          Navigator.pop(context);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GestureDetector(
+              onTap: _handleBackNavigation,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardTheme.color,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFE2E8F0),
+                  ),
                 ),
+                child: const Icon(Icons.arrow_back_rounded, size: 20),
               ),
-              child: const Icon(Icons.arrow_back_rounded, size: 20),
             ),
           ),
+          title: Text(isEditing ? 'Edit Card' : 'Add New Card'),
         ),
-        title: Text(isEditing ? 'Edit Card' : 'Add New Card'),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 20.0),
         child: Form(
@@ -906,8 +1082,9 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _FieldLabel extends StatelessWidget {
