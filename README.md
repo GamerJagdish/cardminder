@@ -25,7 +25,13 @@ The widget on your home screen shows your cards sorted by urgency so the ones ab
 - **Add/Edit card**: a live preview of the card as you fill in the form, with a color picker for the card design
 - **Settings**: control widget size, filtering, sorting, and notification toggles
 - **Notification history**: a simple log of every reminder that's been sent
+## Screenshots
 
+<p align="center">
+  <img src="screenshots/cardminder-homescreen.jpg" alt="CardMinder homescreen screenshot" width="250" />
+  <img src="screenshots/cardminder-card-details.jpg" alt="CardMinder card details screenshot" width="250" />
+  <img src="screenshots/cardminder-add-card.jpg" alt="CardMinder add card screen screenshot" width="250" />
+</p>
 ## Installation
 
 You can download the latest APK from the [releases page](https://github.com/GamerJagdish/cardminder/releases).
