@@ -28,9 +28,9 @@ The widget on your home screen shows your cards sorted by urgency so the ones ab
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/cardminder-homescreen.jpg" alt="CardMinder homescreen screenshot" width="250" />
-  <img src="screenshots/cardminder-card-details.jpg" alt="CardMinder card details screenshot" width="250" />
-  <img src="screenshots/cardminder-add-card.jpg" alt="CardMinder add card screen screenshot" width="250" />
+  <img src="assets/screenshots/cardminder-homescreen.jpg" alt="CardMinder homescreen screenshot" width="250" />
+  <img src="assets/screenshots/cardminder-card-details.jpg" alt="CardMinder card details screenshot" width="250" />
+  <img src="assets/screenshots/cardminder-add-card.jpg" alt="CardMinder add card screen screenshot" width="250" />
 </p>
 ## Installation
 
