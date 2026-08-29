@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:github_release_apk_updater/github_release_apk_updater.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../models/app_settings.dart';
@@ -41,7 +42,74 @@ class NotificationService {
 
     await _notificationsPlugin.initialize(
       settings: initSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        final payload = response.payload;
+        if (payload != null && payload.startsWith('install_apk:')) {
+          final filePath = payload.substring('install_apk:'.length);
+          if (filePath.isNotEmpty) {
+            GithubReleaseApkUpdater().installApk(filePath);
+          }
+        }
+      },
     );
+  }
+
+  static const int updateNotificationId = 77777;
+
+  static Future<void> showDownloadProgressNotification({
+    required String versionName,
+    required int progressPercent,
+    required String progressText,
+  }) async {
+    final androidDetails = AndroidNotificationDetails(
+      'cardminder_updates',
+      'App Updates',
+      channelDescription: 'Notifications for app updates and downloads',
+      importance: Importance.low,
+      priority: Priority.low,
+      showProgress: true,
+      maxProgress: 100,
+      progress: progressPercent,
+      ongoing: true,
+      onlyAlertOnce: true,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    await _notificationsPlugin.show(
+      id: updateNotificationId,
+      title: 'Downloading CardMinder v$versionName',
+      body: progressText,
+      notificationDetails: NotificationDetails(android: androidDetails),
+    );
+  }
+
+  static Future<void> showDownloadCompleteNotification({
+    required String versionName,
+    required String filePath,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'cardminder_updates',
+      'App Updates',
+      channelDescription: 'Notifications for app updates and downloads',
+      importance: Importance.high,
+      priority: Priority.high,
+      showProgress: false,
+      ongoing: false,
+      autoCancel: true,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    await _notificationsPlugin.show(
+      id: updateNotificationId,
+      title: 'Update Ready to Install',
+      body: 'CardMinder v$versionName is downloaded. Tap to install.',
+      notificationDetails: const NotificationDetails(android: androidDetails),
+      payload: 'install_apk:$filePath',
+    );
+  }
+
+  static Future<void> cancelUpdateNotification() async {
+    await _notificationsPlugin.cancel(id: updateNotificationId);
   }
 
   static Future<void> requestPermissions() async {
