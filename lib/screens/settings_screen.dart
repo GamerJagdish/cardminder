@@ -202,7 +202,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (!context.mounted) return;
 
-    // 1. Show PIN unlock dialog with inline verification & retry
+    // 1. Verify file validity BEFORE showing PIN dialog
+    final isValid = await BackupService.isValidBackupFile(file);
+    if (!context.mounted) return;
+    if (!isValid) {
+      showAppErrorSnackBar(
+        context,
+        title: 'Not a Backup File',
+        message: 'The selected file is not a valid CardMinder backup.',
+      );
+      return;
+    }
+
+    // 2. Show PIN unlock dialog with inline verification & retry
     final backupData = await showDialog<BackupData>(
       context: context,
       barrierDismissible: false,

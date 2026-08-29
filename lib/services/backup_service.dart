@@ -217,6 +217,19 @@ class BackupService {
     }
   }
 
+  /// Checks if a file is a valid CardMinder backup file without requiring the PIN
+  static Future<bool> isValidBackupFile(File file) async {
+    try {
+      if (!await file.exists()) return false;
+      final stream = file.openRead(0, _headerTag.length + 10);
+      final bytes = await stream.first;
+      final header = utf8.decode(bytes, allowMalformed: true);
+      return header.startsWith(_headerTag);
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Decrypts a backup file given the user's PIN.
   static Future<BackupData> decryptBackupFile({
     required File file,
