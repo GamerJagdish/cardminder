@@ -67,11 +67,12 @@ class BackupService {
       await file.writeAsString(backupContent);
 
       final xFile = XFile(file.path);
-      // ignore: deprecated_member_use
-      await Share.shareXFiles(
-        [xFile],
-        subject: 'CardMinder Backup ($fileName)',
-        text: 'CardMinder Backup file',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [xFile],
+          subject: 'CardMinder Backup ($fileName)',
+          text: 'CardMinder Backup file',
+        ),
       );
 
       return null;
@@ -83,19 +84,15 @@ class BackupService {
   /// Opens file picker to let user pick a .cmbk file. Returns the picked File or null.
   static Future<File?> pickBackupFile() async {
     try {
-      final pickerResult = await FilePicker.platform.pickFiles(
+      final picked = await FilePicker.pickFile(
         type: FileType.any,
-        allowMultiple: false,
       );
 
-      if (pickerResult == null || pickerResult.files.isEmpty) {
+      if (picked == null || picked.path == null) {
         return null;
       }
 
-      final path = pickerResult.files.single.path;
-      if (path == null) return null;
-
-      return File(path);
+      return File(picked.path!);
     } catch (e) {
       return null;
     }
