@@ -1,9 +1,32 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:github_release_apk_updater/github_release_apk_updater.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../theme/app_theme.dart';
 import '../widgets/backup_dialogs.dart';
+
+class AppReleaseInfo {
+  final String version;
+  final String apkUrl;
+  final String releaseNotes;
+  final String apkFileName;
+  final int apkSizeBytes;
+
+  AppReleaseInfo({
+    required this.version,
+    required this.apkUrl,
+    required this.releaseNotes,
+    required this.apkFileName,
+    required this.apkSizeBytes,
+  });
+
+  String get formattedSize {
+    if (apkSizeBytes <= 0) return '';
+    final mb = apkSizeBytes / (1024 * 1024);
+    return '${mb.toStringAsFixed(1)} MB';
+  }
+}
 
 class UpdateService {
   static const String owner = 'GamerJagdish';
@@ -13,10 +36,88 @@ class UpdateService {
   static Future<String> getAppVersion() async {
     try {
       final info = await PackageInfo.fromPlatform();
-      return info.version;
+      return info.version.isNotEmpty ? info.version : '1.2.0';
     } catch (_) {
       return '1.2.0';
     }
+  }
+
+  /// Fetches latest release metadata directly from GitHub API with asset details.
+  static Future<AppReleaseInfo?> fetchReleaseDetails({
+    List<String>? supportedAbis,
+  }) async {
+    HttpClient? client;
+    try {
+      client = HttpClient();
+      client.userAgent = 'CardMinder-App';
+      final uri = Uri.parse(
+          'https://api.github.com/repos/$owner/$repo/releases/latest');
+      final request = await client.getUrl(uri);
+      request.headers
+          .set(HttpHeaders.acceptHeader, 'application/vnd.github.v3+json');
+      final response = await request.close();
+
+      if (response.statusCode == 200) {
+        final respStr = await response.transform(utf8.decoder).join();
+        final data = jsonDecode(respStr) as Map<String, dynamic>;
+        final tagName = (data['tag_name'] as String? ?? '').trim();
+        final version = tagName.startsWith('v.')
+            ? tagName.substring(2)
+            : tagName.startsWith('v')
+                ? tagName.substring(1)
+                : tagName;
+        final body = (data['body'] as String? ?? '').trim();
+        final assets = (data['assets'] as List<dynamic>?) ?? [];
+
+        Map<String, dynamic>? targetAsset;
+
+        // 1. Check supported ABIs
+        if (supportedAbis != null && supportedAbis.isNotEmpty) {
+          for (final abi in supportedAbis) {
+            for (final a in assets) {
+              final name = (a['name'] as String? ?? '').toLowerCase();
+              if (name.endsWith('.apk') && name.contains(abi.toLowerCase())) {
+                targetAsset = a as Map<String, dynamic>;
+                break;
+              }
+            }
+            if (targetAsset != null) break;
+          }
+        }
+
+        // 2. Generic APK fallback
+        if (targetAsset == null) {
+          for (final a in assets) {
+            final name = (a['name'] as String? ?? '').toLowerCase();
+            if (name.endsWith('.apk')) {
+              targetAsset = a as Map<String, dynamic>;
+              break;
+            }
+          }
+        }
+
+        if (targetAsset != null) {
+          final apkUrl = (targetAsset['browser_download_url'] ??
+                  targetAsset['url'] ??
+                  '') as String;
+          final apkFileName =
+              targetAsset['name'] as String? ?? 'cardminder.apk';
+          final apkSizeBytes = targetAsset['size'] as int? ?? 0;
+
+          return AppReleaseInfo(
+            version: version,
+            apkUrl: apkUrl,
+            releaseNotes: body,
+            apkFileName: apkFileName,
+            apkSizeBytes: apkSizeBytes,
+          );
+        }
+      }
+    } catch (_) {
+    } finally {
+      client?.close();
+    }
+    return null;
   }
 
   /// Checks GitHub releases for updates and displays result or dialog.
@@ -37,15 +138,32 @@ class UpdateService {
 
     try {
       final updater = GithubReleaseApkUpdater();
-      final apiService = GithubApiService();
-
       final supportedAbis = await updater.getSupportedAbis();
-      final release = await apiService.getLatestGithubAPKRelease(
-        ownerGithub: owner,
-        repositoryGithub: repo,
-        apkKeyName: '',
-        supportedAbis: supportedAbis,
-      );
+
+      // 1. Fetch release details including file name, size, and notes
+      AppReleaseInfo? release =
+          await fetchReleaseDetails(supportedAbis: supportedAbis);
+
+      // Fallback to plugin api service if direct fetch failed
+      if (release == null) {
+        final apiService = GithubApiService();
+        final fallbackRelease = await apiService.getLatestGithubAPKRelease(
+          ownerGithub: owner,
+          repositoryGithub: repo,
+          apkKeyName: '',
+          supportedAbis: supportedAbis,
+        );
+
+        if (fallbackRelease != null) {
+          release = AppReleaseInfo(
+            version: fallbackRelease.version,
+            apkUrl: fallbackRelease.apkUrl,
+            releaseNotes: fallbackRelease.releaseNote,
+            apkFileName: 'cardminder-v${fallbackRelease.version}.apk',
+            apkSizeBytes: 0,
+          );
+        }
+      }
 
       if (release == null) {
         if (showNoUpdateMessage && context.mounted) {
@@ -75,7 +193,7 @@ class UpdateService {
           context: context,
           barrierDismissible: false,
           builder: (dialogCtx) => _UpdateAvailableDialog(
-            release: release,
+            release: release!,
             updater: updater,
             currentVersion: currentVersion,
           ),
@@ -94,7 +212,8 @@ class UpdateService {
         showAppErrorSnackBar(
           context,
           title: 'Update Check Failed',
-          message: 'Unable to check for updates. Please check your internet connection.',
+          message:
+              'Unable to check for updates. Please check your internet connection.',
         );
       }
     }
@@ -102,7 +221,7 @@ class UpdateService {
 }
 
 class _UpdateAvailableDialog extends StatefulWidget {
-  final dynamic release;
+  final AppReleaseInfo release;
   final GithubReleaseApkUpdater updater;
   final String currentVersion;
 
@@ -168,7 +287,7 @@ class _UpdateAvailableDialogState extends State<_UpdateAvailableDialog> {
       if (mounted) {
         setState(() {
           _isDownloading = false;
-          _statusText = 'Error: ';
+          _statusText = 'Error: $e';
         });
       }
     }
@@ -177,6 +296,7 @@ class _UpdateAvailableDialogState extends State<_UpdateAvailableDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final releaseNotes = widget.release.releaseNotes.trim();
 
     return Dialog(
       backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
@@ -187,25 +307,30 @@ class _UpdateAvailableDialogState extends State<_UpdateAvailableDialog> {
           width: 1.2,
         ),
       ),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Padding(
         padding: const EdgeInsets.all(22),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 1. Header Row
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  width: 42,
+                  height: 42,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppTheme.accentEmerald.withValues(alpha: 0.15),
+                    color: isDark
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFFF1F5F9),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.system_update_rounded,
-                    color: AppTheme.accentEmerald,
-                    size: 24,
+                  child: Icon(
+                    Icons.system_update_alt_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 22,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -223,7 +348,7 @@ class _UpdateAvailableDialogState extends State<_UpdateAvailableDialog> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'v → v',
+                        'v${widget.currentVersion}  →  v${widget.release.version}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppTheme.accentEmerald,
@@ -235,16 +360,113 @@ class _UpdateAvailableDialogState extends State<_UpdateAvailableDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'A new version of CardMinder is available for download.',
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85),
+            const SizedBox(height: 14),
+
+            // 2. APK File & Size info card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.android_rounded,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.release.apkFileName,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontFamily: 'monospace',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (widget.release.formattedSize.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentEmerald.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        widget.release.formattedSize,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.accentEmerald,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
+            const SizedBox(height: 14),
+
+            // 3. Release Notes / Changelog
+            Text(
+              "What's New:",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(maxHeight: 140),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: SingleChildScrollView(
+                child: Text(
+                  releaseNotes.isNotEmpty
+                      ? releaseNotes
+                      : 'Performance improvements and bug fixes.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.4,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.85),
+                  ),
+                ),
+              ),
+            ),
+
+            // 4. Download progress or error
             if (_isDownloading) ...[
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: LinearProgressIndicator(
@@ -276,7 +498,10 @@ class _UpdateAvailableDialogState extends State<_UpdateAvailableDialog> {
                 ),
               ),
             ],
-            const SizedBox(height: 22),
+
+            const SizedBox(height: 20),
+
+            // 5. Actions: Later & Update Now
             Row(
               children: [
                 if (!_isDownloading)
@@ -286,7 +511,7 @@ class _UpdateAvailableDialogState extends State<_UpdateAvailableDialog> {
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       child: const Text(
@@ -310,7 +535,7 @@ class _UpdateAvailableDialogState extends State<_UpdateAvailableDialog> {
                       foregroundColor: isDark ? Colors.black : Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                     child: Text(
