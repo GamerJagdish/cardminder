@@ -170,28 +170,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _handleOpenBackupFolder(
-    BuildContext context,
-    AppSettings settings,
-  ) async {
-    final effectiveDir =
-        await BackupService.getEffectiveBackupDirectory(settings);
-    final opened = await BackupService.openBackupFolder(effectiveDir);
-    if (!opened && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Backup folder location:\n$effectiveDir'),
-          behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            label: 'Copy Path',
-            onPressed: () =>
-                Clipboard.setData(ClipboardData(text: effectiveDir)),
-          ),
-        ),
-      );
-    }
-  }
-
   Future<void> _handleRestoreBackup(
       BuildContext context, WidgetRef ref, AppSettings settings) async {
     final effectiveDir =
@@ -662,7 +640,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Path container
+                  // Clickable Backup Path Container
                   FutureBuilder<String>(
                     future: BackupService.getEffectiveBackupDirectory(settings),
                     builder: (context, snapshot) {
@@ -672,200 +650,128 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               : 'Resolving default storage...');
                       final isCustom = settings.backupPath.isNotEmpty;
 
-                      return Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFE2E8F0),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _handleChangeBackupLocation(
+                              context, settings, cards),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 7, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: isCustom
-                                              ? AppTheme.accentEmerald
-                                                  .withValues(alpha: 0.15)
-                                              : (isDark
-                                                  ? const Color(0xFF334155)
-                                                  : const Color(0xFFE2E8F0)),
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          isCustom
-                                              ? 'Custom Folder'
-                                              : 'Default Folder',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: isCustom
-                                                ? AppTheme.accentEmerald
-                                                : AppTheme.textMuted,
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: isCustom
+                                                  ? AppTheme.accentEmerald
+                                                      .withValues(alpha: 0.15)
+                                                  : (isDark
+                                                      ? const Color(0xFF334155)
+                                                      : const Color(0xFFE2E8F0)),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              isCustom
+                                                  ? 'Custom Folder'
+                                                  : 'Default Folder',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: isCustom
+                                                    ? AppTheme.accentEmerald
+                                                    : AppTheme.textMuted,
+                                              ),
+                                            ),
                                           ),
+                                          const SizedBox(width: 8),
+                                          const Text(
+                                            '•  Tap to change',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: AppTheme.textMuted,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        pathDisplay,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontFamily: 'monospace',
                                         ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    pathDisplay,
-                                    style: TextStyle(
-                                      fontSize: 12,
+                                ),
+                                const SizedBox(width: 8),
+                                if (isCustom)
+                                  IconButton(
+                                    icon: const Icon(Icons.refresh_rounded,
+                                        size: 20),
+                                    tooltip: 'Reset to default folder',
+                                    color: AppTheme.textMuted,
+                                    onPressed: () {
+                                      update(settings.copyWith(backupPath: ''));
+                                      showAppSuccessSnackBar(
+                                        context,
+                                        title: 'Reset to Default Folder',
+                                        message:
+                                            'Backups will be saved to Documents/CardMinder',
+                                      );
+                                    },
+                                  )
+                                else
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(
+                                      Icons.folder_open_rounded,
+                                      size: 16,
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface,
-                                      fontFamily: 'monospace',
                                     ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ],
-                              ),
+                              ],
                             ),
-                            if (isCustom)
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.refresh_rounded, size: 18),
-                                tooltip: 'Reset to default folder',
-                                color: AppTheme.textMuted,
-                                onPressed: () {
-                                  update(settings.copyWith(backupPath: ''));
-                                  showAppSuccessSnackBar(
-                                    context,
-                                    title: 'Reset to Default Folder',
-                                    message:
-                                        'Backups will be saved to Documents/CardMinder',
-                                  );
-                                },
-                              ),
-                          ],
+                          ),
                         ),
                       );
                     },
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 2 Action Buttons: Change Backup Location & Open Backup Folder
-                  Row(
-                    children: [
-                      // Change Location Button
-                      Expanded(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => _handleChangeBackupLocation(
-                                context, settings, cards),
-                            borderRadius: BorderRadius.circular(14),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? const Color(0xFF0F172A)
-                                    : const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: isDark
-                                      ? const Color(0xFF334155)
-                                      : const Color(0xFFE2E8F0),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.folder_open_rounded,
-                                    size: 16,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Change Location',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-
-                      // Open Folder Button
-                      Expanded(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () =>
-                                _handleOpenBackupFolder(context, settings),
-                            borderRadius: BorderRadius.circular(14),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? const Color(0xFF0F172A)
-                                    : const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: isDark
-                                      ? const Color(0xFF334155)
-                                      : const Color(0xFFE2E8F0),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.drive_file_move_outlined,
-                                    size: 16,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Open Folder',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
 
                   const SizedBox(height: 16),
