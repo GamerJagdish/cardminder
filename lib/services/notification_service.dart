@@ -22,7 +22,7 @@ class NotificationService {
           'Notifications for upcoming 365-day card transaction deadlines',
       importance: Importance.high,
       priority: Priority.high,
-      icon: '@drawable/ic_notification',
+      icon: 'ic_notification',
     ),
     iOS: DarwinNotificationDetails(),
   );
@@ -43,31 +43,53 @@ class NotificationService {
       } catch (_) {}
     }
 
-    const androidSettings =
-        AndroidInitializationSettings('@drawable/ic_notification');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
-
-    await _notificationsPlugin.initialize(
-      settings: initSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        final payload = response.payload;
-        if (payload != null && payload.startsWith('install_apk:')) {
-          final filePath = payload.substring('install_apk:'.length);
-          if (filePath.isNotEmpty) {
-            GithubReleaseApkUpdater().installApk(filePath);
-          }
+    void onNotificationResponse(NotificationResponse response) {
+      final payload = response.payload;
+      if (payload != null && payload.startsWith('install_apk:')) {
+        final filePath = payload.substring('install_apk:'.length);
+        if (filePath.isNotEmpty) {
+          GithubReleaseApkUpdater().installApk(filePath);
         }
-      },
-    );
+      }
+    }
+
+    try {
+      const androidSettings = AndroidInitializationSettings('ic_notification');
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
+
+      const initSettings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      );
+
+      await _notificationsPlugin.initialize(
+        settings: initSettings,
+        onDidReceiveNotificationResponse: onNotificationResponse,
+      );
+    } catch (e) {
+      debugPrint('Notification init with ic_notification failed: $e. Falling back to @mipmap/ic_launcher');
+      try {
+        const androidFallback =
+            AndroidInitializationSettings('@mipmap/ic_launcher');
+        const iosSettings = DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
+        const fallbackSettings = InitializationSettings(
+          android: androidFallback,
+          iOS: iosSettings,
+        );
+        await _notificationsPlugin.initialize(
+          settings: fallbackSettings,
+          onDidReceiveNotificationResponse: onNotificationResponse,
+        );
+      } catch (_) {}
+    }
   }
 
   static const int updateNotificationId = 77777;
@@ -88,7 +110,7 @@ class NotificationService {
       progress: progressPercent,
       ongoing: true,
       onlyAlertOnce: true,
-      icon: '@drawable/ic_notification',
+      icon: 'ic_notification',
     );
 
     await _notificationsPlugin.show(
@@ -112,7 +134,7 @@ class NotificationService {
       showProgress: false,
       ongoing: false,
       autoCancel: true,
-      icon: '@drawable/ic_notification',
+      icon: 'ic_notification',
     );
 
     await _notificationsPlugin.show(

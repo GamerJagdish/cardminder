@@ -23,7 +23,11 @@ void main() async {
   await StorageService.init();
   await SettingsNotifier.init();
   await NotificationLogService.init();
-  await NotificationService.init();
+  try {
+    await NotificationService.init();
+  } catch (e) {
+    debugPrint('NotificationService init failed: $e');
+  }
 
   runApp(
     const ProviderScope(
