@@ -32,6 +32,7 @@
         <receiver
             android:name=".CardMinderWidgetProvider"
             android:exported="true"
+            android:icon="@mipmap/ic_launcher"
             android:label="CardMinder Widget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

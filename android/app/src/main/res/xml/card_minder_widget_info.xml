@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialLayout="@layout/card_minder_widget"
+    android:previewLayout="@layout/card_minder_widget_preview"
+    android:previewImage="@drawable/widget_preview"
+    android:description="@string/widget_description"
     android:minWidth="180dp"
     android:minHeight="120dp"
     android:minResizeWidth="110dp"
