@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/credit_card.dart';
@@ -82,11 +81,13 @@ class NotificationLogService {
   }
 }
 
-class NotificationLogNotifier extends StateNotifier<List<NotificationLog>> {
-  final NotificationLogService _service;
+class NotificationLogNotifier extends Notifier<List<NotificationLog>> {
+  late final NotificationLogService _service;
 
-  NotificationLogNotifier(this._service) : super([]) {
-    loadLogs();
+  @override
+  List<NotificationLog> build() {
+    _service = ref.watch(notificationLogServiceProvider);
+    return _service.loadLogs();
   }
 
   void loadLogs() {
@@ -116,7 +117,5 @@ final notificationLogServiceProvider = Provider<NotificationLogService>((ref) {
 });
 
 final notificationLogNotifierProvider =
-    StateNotifierProvider<NotificationLogNotifier, List<NotificationLog>>((ref) {
-  final service = ref.watch(notificationLogServiceProvider);
-  return NotificationLogNotifier(service);
-});
+    NotifierProvider<NotificationLogNotifier, List<NotificationLog>>(
+        NotificationLogNotifier.new);

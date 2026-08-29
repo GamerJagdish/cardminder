@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:uuid/uuid.dart';
 import '../models/credit_card.dart';
 import '../services/storage_service.dart';
@@ -74,19 +73,18 @@ class CardState {
   }
 }
 
-class CardNotifier extends StateNotifier<CardState> {
-  final StorageService _storageService;
+class CardNotifier extends Notifier<CardState> {
+  late final StorageService _storageService;
   final _uuid = const Uuid();
 
-  CardNotifier(this._storageService) : super(CardState(cards: [], isLoading: true)) {
-    _loadCards();
+  @override
+  CardState build() {
+    _storageService = ref.watch(storageServiceProvider);
+    final loaded = _storageService.loadCards();
+    return CardState(cards: loaded, isLoading: false);
   }
 
   void reloadCards() {
-    _loadCards();
-  }
-
-  void _loadCards() {
     final loaded = _storageService.loadCards();
     state = state.copyWith(cards: loaded, isLoading: false);
     _syncExternalServices(loaded);
@@ -191,7 +189,4 @@ final storageServiceProvider = Provider<StorageService>((ref) {
 });
 
 final cardNotifierProvider =
-    StateNotifierProvider<CardNotifier, CardState>((ref) {
-  final storage = ref.watch(storageServiceProvider);
-  return CardNotifier(storage);
-});
+    NotifierProvider<CardNotifier, CardState>(CardNotifier.new);
