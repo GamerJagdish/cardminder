@@ -540,6 +540,83 @@ class UpdateService {
       }
     }
   }
+
+  /// Fetches paginated release history from GitHub releases API.
+  static Future<List<AppReleaseInfo>> fetchReleasesHistory({
+    int page = 1,
+    int perPage = 5,
+  }) async {
+    HttpClient? client;
+    try {
+      client = HttpClient();
+      client.userAgent = 'CardMinder-App';
+      final uri = Uri.parse(
+          'https://api.github.com/repos/$owner/$repo/releases?per_page=$perPage&page=$page');
+      final request = await client.getUrl(uri);
+      request.headers
+          .set(HttpHeaders.acceptHeader, 'application/vnd.github.v3+json');
+      final response = await request.close();
+
+      if (response.statusCode == 200) {
+        final respStr = await response.transform(utf8.decoder).join();
+        final list = jsonDecode(respStr) as List<dynamic>;
+        final releases = <AppReleaseInfo>[];
+
+        for (final item in list) {
+          final data = item as Map<String, dynamic>;
+          final tagName = (data['tag_name'] as String? ?? '').trim();
+          final version = tagName.startsWith('v.')
+              ? tagName.substring(2)
+              : tagName.startsWith('v')
+                  ? tagName.substring(1)
+                  : tagName;
+          final body = (data['body'] as String? ?? '').trim();
+          final assets = (data['assets'] as List<dynamic>?) ?? [];
+
+          String apkUrl = '';
+          String apkFileName = 'cardminder-v$version.apk';
+          int apkSizeBytes = 0;
+
+          for (final a in assets) {
+            final name = (a['name'] as String? ?? '').toLowerCase();
+            if (name.endsWith('.apk')) {
+              apkUrl = (a['browser_download_url'] ?? a['url'] ?? '') as String;
+              apkFileName = a['name'] as String? ?? apkFileName;
+              apkSizeBytes = a['size'] as int? ?? 0;
+              break;
+            }
+          }
+
+          releases.add(
+            AppReleaseInfo(
+              version: version,
+              apkUrl: apkUrl,
+              releaseNotes: body,
+              apkFileName: apkFileName,
+              apkSizeBytes: apkSizeBytes,
+            ),
+          );
+        }
+
+        return releases;
+      }
+    } catch (_) {
+    } finally {
+      client?.close();
+    }
+    return [];
+  }
+
+  /// Opens the full changelog modal sheet.
+  static void showChangelog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (dialogCtx) => const ChangelogScreen(),
+    );
+  }
 }
 
 class UpdateScreen extends StatefulWidget {
@@ -1056,6 +1133,407 @@ class _UpdateScreenState extends State<UpdateScreen> {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ChangelogScreen extends StatefulWidget {
+  const ChangelogScreen({super.key});
+
+  @override
+  State<ChangelogScreen> createState() => _ChangelogScreenState();
+}
+
+class _ChangelogScreenState extends State<ChangelogScreen> {
+  final List<AppReleaseInfo> _releases = [];
+  bool _isLoading = true;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+  String _currentVersion = '';
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final currentVer = await UpdateService.getAppVersion();
+      final items = await UpdateService.fetchReleasesHistory(page: 1, perPage: 5);
+
+      if (mounted) {
+        setState(() {
+          _currentVersion = currentVer;
+          _releases.clear();
+          _releases.addAll(items);
+          _currentPage = 1;
+          _hasMore = items.length >= 5;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Unable to load changelog. Please check your internet connection.';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    try {
+      final nextPage = _currentPage + 1;
+      final newItems =
+          await UpdateService.fetchReleasesHistory(page: nextPage, perPage: 20);
+
+      if (mounted) {
+        setState(() {
+          _currentPage = nextPage;
+          _releases.addAll(newItems);
+          _hasMore = newItems.length >= 20;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.92,
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border(
+          top: BorderSide(
+            color: isDark
+                ? const Color(0xFF334155)
+                : const Color(0xFFE2E8F0),
+            width: 1.2,
+          ),
+        ),
+      ),
+      child: Column(
+        children: [
+          // 1. Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 16, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF1F5F9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.article_outlined,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Changelog',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded),
+                  color: AppTheme.textMuted,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+
+          // 2. Body List
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.cloud_off_rounded,
+                                  size: 48, color: AppTheme.textMuted),
+                              const SizedBox(height: 12),
+                              Text(
+                                _errorMessage!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.textMuted,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _loadInitialData,
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : _releases.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'No release notes found.',
+                              style: TextStyle(color: AppTheme.textMuted),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                            itemCount: _releases.length + 1,
+                            itemBuilder: (context, index) {
+                              // Bottom Load More / Completed item
+                              if (index == _releases.length) {
+                                if (_hasMore) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 12, bottom: 20),
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed:
+                                            _isLoadingMore ? null : _loadMore,
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 14),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(14),
+                                          ),
+                                        ),
+                                        child: _isLoadingMore
+                                            ? SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2.2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                          Color>(
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                  ),
+                                                ),
+                                              )
+                                            : const Text(
+                                                'Load More',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 16, bottom: 24),
+                                    child: Center(
+                                      child: Text(
+                                        "You've reached the beginning of the changelog",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppTheme.textMuted
+                                              .withValues(alpha: 0.8),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+
+                              final release = _releases[index];
+                              final isCurrent =
+                                  release.version == _currentVersion;
+                              final changelog = ChangelogParser.parse(
+                                  release.releaseNotes);
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF0F172A)
+                                      : const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: isCurrent
+                                        ? AppTheme.accentEmerald
+                                            .withValues(alpha: 0.5)
+                                        : isDark
+                                            ? const Color(0xFF1E293B)
+                                            : const Color(0xFFE2E8F0),
+                                    width: isCurrent ? 1.4 : 1.0,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Version Title Row
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'version ${release.version}',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
+                                          ),
+                                        ),
+                                        if (isCurrent) ...[
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.accentEmerald
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: const Text(
+                                              'current',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppTheme.accentEmerald,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+
+                                    // Categorized notes
+                                    if (!changelog.isEmpty) ...[
+                                      for (final entry
+                                          in changelog.categories.entries) ...[
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 4, bottom: 6),
+                                          child: Text(
+                                            entry.key,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                              fontFamily: 'monospace',
+                                            ),
+                                          ),
+                                        ),
+                                        for (int i = 0;
+                                            i < entry.value.length;
+                                            i++)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 2, bottom: 6, right: 2),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '${i + 1}. ',
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface,
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  child: Text(
+                                                    entry.value[i],
+                                                    style: TextStyle(
+                                                      fontSize: 13,
+                                                      height: 1.4,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface
+                                                          .withValues(
+                                                              alpha: 0.9),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        const SizedBox(height: 6),
+                                      ],
+                                    ] else
+                                      Text(
+                                        release.releaseNotes.trim().isNotEmpty
+                                            ? release.releaseNotes.trim()
+                                            : 'Performance improvements and bug fixes.',
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          height: 1.4,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.85),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
           ),
         ],
       ),

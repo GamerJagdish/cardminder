@@ -1159,7 +1159,72 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           .withValues(alpha: 0.1)),
                   const SizedBox(height: 10),
 
-                  // 4. Source Code: https://github.com/GamerJagdish/cardminder
+                  // 4. Changelog
+                  InkWell(
+                    onTap: () => UpdateService.showChangelog(context),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFFF1F5F9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.article_outlined,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Changelog',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'View release history',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            size: 20,
+                            color: AppTheme.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Divider(
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 0.1)),
+                  const SizedBox(height: 10),
+
+                  // 5. Source Code: https://github.com/GamerJagdish/cardminder
                   InkWell(
                     onTap: () => _openUrl(
                       context,
