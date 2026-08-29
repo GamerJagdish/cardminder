@@ -773,7 +773,29 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 22),
+
+                // "What's New" Section Header
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 18,
+                      color: AppTheme.accentEmerald,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "WHAT'S NEW",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.1,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
 
                 // Categorized Release Notes
                 if (!changelog.isEmpty) ...[
@@ -951,7 +973,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                               size: 16, color: AppTheme.accentEmerald),
                           SizedBox(width: 8),
                           Text(
-                            'App already downloaded by you',
+                            'Update already downloaded by you',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
