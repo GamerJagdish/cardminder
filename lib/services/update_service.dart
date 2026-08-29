@@ -30,12 +30,26 @@ class AppReleaseInfo {
   }
 }
 
+class CategorizedChangelog {
+  final Map<String, List<String>> categories;
+
+  CategorizedChangelog(this.categories);
+
+  bool get isEmpty => categories.isEmpty;
+}
+
 class ChangelogParser {
-  static List<String> parse(String raw) {
-    if (raw.trim().isEmpty) return [];
+  static CategorizedChangelog parse(String raw) {
+    if (raw.trim().isEmpty) return CategorizedChangelog({});
 
     final lines = raw.split('\n');
-    final points = <String>[];
+    final Map<String, List<String>> groups = {
+      'refactor:': [],
+      'feature:': [],
+      'fix:': [],
+      'chore:': [],
+      'other:': [],
+    };
 
     for (var line in lines) {
       var trimmed = line.trim();
@@ -69,41 +83,58 @@ class ChangelogParser {
       trimmed = trimmed.replaceFirst(
           RegExp(r'https?://github\.com/\S+', caseSensitive: false), '');
 
-      // Strip conventional commit prefixes
-      final prefixes = [
-        'feat:',
-        'fix:',
-        'chore:',
-        'refactor:',
-        'perf:',
-        'docs:',
-        'style:',
-        'test:',
-        'ci:',
-        'build:',
-        'revert:',
-        'feat!:',
-        'fix!:',
-        'chore!:',
-      ];
-      for (final p in prefixes) {
-        if (trimmed.toLowerCase().startsWith(p)) {
-          trimmed = trimmed.substring(p.length).trim();
-          break;
-        }
+      trimmed = trimmed.trim();
+      if (trimmed.isEmpty) continue;
+
+      String category = 'other:';
+      String content = trimmed;
+      final lower = trimmed.toLowerCase();
+
+      if (lower.startsWith('feat:') ||
+          lower.startsWith('feat!:') ||
+          lower.startsWith('feature:')) {
+        category = 'feature:';
+        content = trimmed.substring(trimmed.indexOf(':') + 1).trim();
+      } else if (lower.startsWith('fix:') ||
+          lower.startsWith('fix!:') ||
+          lower.startsWith('bugfix:')) {
+        category = 'fix:';
+        content = trimmed.substring(trimmed.indexOf(':') + 1).trim();
+      } else if (lower.startsWith('refactor:') ||
+          lower.startsWith('refactor!:') ||
+          lower.startsWith('perf:') ||
+          lower.startsWith('perf!:')) {
+        category = 'refactor:';
+        content = trimmed.substring(trimmed.indexOf(':') + 1).trim();
+      } else if (lower.startsWith('chore:') ||
+          lower.startsWith('chore!:') ||
+          lower.startsWith('docs:') ||
+          lower.startsWith('style:') ||
+          lower.startsWith('test:') ||
+          lower.startsWith('ci:') ||
+          lower.startsWith('build:') ||
+          lower.startsWith('revert:')) {
+        category = 'chore:';
+        content = trimmed.substring(trimmed.indexOf(':') + 1).trim();
       }
 
-      trimmed = trimmed.trim();
-      if (trimmed.isNotEmpty) {
-        // Capitalize first character
-        trimmed = trimmed[0].toUpperCase() + trimmed.substring(1);
-        if (!points.contains(trimmed)) {
-          points.add(trimmed);
+      if (content.isNotEmpty) {
+        content = content[0].toUpperCase() + content.substring(1);
+        if (!groups[category]!.contains(content)) {
+          groups[category]!.add(content);
         }
       }
     }
 
-    return points;
+    // Keep only populated categories in order
+    final result = <String, List<String>>{};
+    for (final key in ['refactor:', 'feature:', 'fix:', 'chore:', 'other:']) {
+      if (groups[key]!.isNotEmpty) {
+        result[key] = groups[key]!;
+      }
+    }
+
+    return CategorizedChangelog(result);
   }
 }
 
@@ -274,6 +305,65 @@ class UpdateService {
     }
   }
 
+  /// Checks if the APK for the specified release is already downloaded and complete.
+  static Future<File?> getCachedApkForRelease(AppReleaseInfo release) async {
+    try {
+      final dir = await getExternalStorageDirectory();
+      if (dir == null) return null;
+      final file = File('${dir.path}/${release.apkFileName}');
+      if (await file.exists()) {
+        final length = await file.length();
+        if (length > 1024 * 1024) {
+          if (release.apkSizeBytes <= 0 ||
+              (length - release.apkSizeBytes).abs() < 1024 * 1024) {
+            return file;
+          }
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /// Cleans up any older APK files except the one specified.
+  static Future<void> cleanupOldApksExcept(String? keepFileName) async {
+    try {
+      final dir = await getExternalStorageDirectory();
+      if (dir == null) return;
+      final list = dir.listSync();
+      for (final item in list) {
+        if (item is File && item.path.endsWith('.apk')) {
+          final name = item.uri.pathSegments.last;
+          if (keepFileName == null || name != keepFileName) {
+            try {
+              await item.delete();
+            } catch (_) {}
+          }
+        } else if (item is File && item.path.endsWith('.download')) {
+          try {
+            await item.delete();
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
+
+  /// Cleans up all downloaded APKs when the app is up to date on startup.
+  static Future<void> cleanupOldApks() async {
+    try {
+      final dir = await getExternalStorageDirectory();
+      if (dir == null) return;
+      final list = dir.listSync();
+      for (final item in list) {
+        if (item is File &&
+            (item.path.endsWith('.apk') || item.path.endsWith('.download'))) {
+          try {
+            await item.delete();
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
+
   /// Fetches latest release metadata directly from GitHub API with asset details.
   static Future<AppReleaseInfo?> fetchReleaseDetails({
     List<String>? supportedAbis,
@@ -350,65 +440,6 @@ class UpdateService {
       client?.close();
     }
     return null;
-  }
-
-  /// Checks if the APK for the specified release is already downloaded and complete.
-  static Future<File?> getCachedApkForRelease(AppReleaseInfo release) async {
-    try {
-      final dir = await getExternalStorageDirectory();
-      if (dir == null) return null;
-      final file = File('${dir.path}/${release.apkFileName}');
-      if (await file.exists()) {
-        final length = await file.length();
-        if (length > 1024 * 1024) {
-          if (release.apkSizeBytes <= 0 ||
-              (length - release.apkSizeBytes).abs() < 1024 * 1024) {
-            return file;
-          }
-        }
-      }
-    } catch (_) {}
-    return null;
-  }
-
-  /// Cleans up any older APK files except the one specified.
-  static Future<void> cleanupOldApksExcept(String? keepFileName) async {
-    try {
-      final dir = await getExternalStorageDirectory();
-      if (dir == null) return;
-      final list = dir.listSync();
-      for (final item in list) {
-        if (item is File && item.path.endsWith('.apk')) {
-          final name = item.uri.pathSegments.last;
-          if (keepFileName == null || name != keepFileName) {
-            try {
-              await item.delete();
-            } catch (_) {}
-          }
-        } else if (item is File && item.path.endsWith('.download')) {
-          try {
-            await item.delete();
-          } catch (_) {}
-        }
-      }
-    } catch (_) {}
-  }
-
-  /// Cleans up all downloaded APKs when the app is up to date on startup.
-  static Future<void> cleanupOldApks() async {
-    try {
-      final dir = await getExternalStorageDirectory();
-      if (dir == null) return;
-      final list = dir.listSync();
-      for (final item in list) {
-        if (item is File &&
-            (item.path.endsWith('.apk') || item.path.endsWith('.download'))) {
-          try {
-            await item.delete();
-          } catch (_) {}
-        }
-      }
-    } catch (_) {}
   }
 
   /// Checks GitHub releases for updates and displays result or full-screen update sheet.
@@ -588,7 +619,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final changelogPoints = ChangelogParser.parse(widget.release.releaseNotes);
+    final changelog = ChangelogParser.parse(widget.release.releaseNotes);
     final isDownloading = _downloadManager.isDownloading;
     final isReadyToInstall = _cachedApkPath != null && !isDownloading;
 
@@ -608,7 +639,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
       ),
       child: Column(
         children: [
-          // 1. Top Handle & Header
+          // 1. Top Bar: Update Info
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 16, 12),
             child: Row(
@@ -634,7 +665,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Software Update',
+                      'Update Info',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
@@ -659,7 +690,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
               children: [
-                // Hero Banner
+                // Hero Card: CardMinder -> apk file name -> version & size
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(18),
@@ -677,62 +708,63 @@ class _UpdateScreenState extends State<UpdateScreen> {
                   child: Column(
                     children: [
                       Text(
-                        'CardMinder Update',
+                        'CardMinder',
                         style: TextStyle(
-                          fontSize: 19,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      // Version Comparison Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.accentEmerald
-                              .withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(30),
+                      const SizedBox(height: 6),
+                      Text(
+                        widget.release.apkFileName,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textMuted,
+                          fontFamily: 'monospace',
                         ),
-                        child: Text(
-                          'v${widget.currentVersion}  ➔  v${widget.release.version}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.accentEmerald,
-                          ),
-                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 12),
-                      // APK File & Size chip
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
-                            Icons.android_rounded,
-                            size: 16,
-                            color: AppTheme.textMuted,
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentEmerald
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                             child: Text(
-                              widget.release.apkFileName,
+                              'v${widget.currentVersion} -> v${widget.release.version}',
                               style: const TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.textMuted,
-                                fontFamily: 'monospace',
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.accentEmerald,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (widget.release.formattedSize.isNotEmpty) ...[
-                            const SizedBox(width: 6),
-                            Text(
-                              '• ${widget.release.formattedSize}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.textMuted,
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF1E293B)
+                                    : const Color(0xFFE2E8F0),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                widget.release.formattedSize,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
                               ),
                             ),
                           ],
@@ -741,84 +773,57 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 14),
 
-                const SizedBox(height: 22),
-
-                // "What's New" Section Header
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.auto_awesome_rounded,
-                      size: 18,
-                      color: AppTheme.accentEmerald,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "WHAT'S NEW",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.1,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Formatted Changelog Points
-                if (changelogPoints.isNotEmpty)
-                  ...changelogPoints.map((point) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF0F172A)
-                            : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF1E293B)
-                              : const Color(0xFFE2E8F0),
+                // Categorized Release Notes
+                if (!changelog.isEmpty) ...[
+                  for (final entry in changelog.categories.entries) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6, bottom: 8),
+                      child: Text(
+                        entry.key,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                          fontFamily: 'monospace',
                         ),
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(top: 2),
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentEmerald
-                                  .withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.check_rounded,
-                              size: 13,
-                              color: AppTheme.accentEmerald,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              point,
+                    ),
+                    for (int i = 0; i < entry.value.length; i++)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 4, bottom: 8, right: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${i + 1}. ',
                               style: TextStyle(
                                 fontSize: 13.5,
-                                height: 1.45,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
-                          ),
-                        ],
+                            Expanded(
+                              child: Text(
+                                entry.value[i],
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  height: 1.45,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.9),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  })
-                else
+                    const SizedBox(height: 8),
+                  ],
+                ] else
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -946,7 +951,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                               size: 16, color: AppTheme.accentEmerald),
                           SizedBox(width: 8),
                           Text(
-                            'Package ready to install (No download needed)',
+                            'App already downloaded by you',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -958,15 +963,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     ),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton.icon(
+                      child: ElevatedButton(
                         onPressed: _installApk,
-                        icon: const Icon(Icons.system_update_rounded,
-                            size: 18),
-                        label: const Text(
-                          'Install Update Now',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.accentEmerald,
                           foregroundColor: Colors.white,
@@ -974,6 +972,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
+                        ),
+                        child: const Text(
+                          'Install Update',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -1017,7 +1020,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                               ),
                             ),
                             child: const Text(
-                              'Download & Update',
+                              'Download',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14.5,
