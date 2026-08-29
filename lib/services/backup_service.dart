@@ -103,21 +103,37 @@ class BackupService {
     }
   }
 
+  /// Normalizes a directory path by trimming whitespace and removing trailing slashes.
+  static String normalizePath(String path) {
+    var p = path.trim();
+    while (p.length > 1 && (p.endsWith('/') || p.endsWith('\\'))) {
+      p = p.substring(0, p.length - 1);
+    }
+    return p;
+  }
+
+  /// Returns true if the given path matches the default backup directory.
+  static Future<bool> isDefaultDirectory(String path) async {
+    if (path.trim().isEmpty) return true;
+    final defaultDir = await getDefaultBackupDirectory();
+    return normalizePath(path) == normalizePath(defaultDir);
+  }
+
   /// Returns the configured backup directory or fallback to default
   static Future<String> getEffectiveBackupDirectory(AppSettings settings) async {
     if (settings.backupPath.isNotEmpty) {
       final dir = Directory(settings.backupPath);
       if (await dir.exists()) {
-        return settings.backupPath;
+        return normalizePath(settings.backupPath);
       }
       try {
         await dir.create(recursive: true);
-        return settings.backupPath;
+        return normalizePath(settings.backupPath);
       } catch (_) {
         // Fallback to default if custom path is inaccessible
       }
     }
-    return getDefaultBackupDirectory();
+    return normalizePath(await getDefaultBackupDirectory());
   }
 
   /// Encrypts all card and settings data and saves directly to the backup folder.

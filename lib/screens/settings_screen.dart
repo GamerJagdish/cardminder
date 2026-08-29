@@ -140,23 +140,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     List<CreditCard> cards,
   ) async {
     try {
+      final effectiveDir =
+          await BackupService.getEffectiveBackupDirectory(settings);
       final selectedPath = await FilePicker.getDirectoryPath(
         dialogTitle: 'Select Backup Folder',
-        initialDirectory:
-            settings.backupPath.isNotEmpty ? settings.backupPath : null,
+        initialDirectory: effectiveDir,
       );
 
       if (selectedPath != null && selectedPath.isNotEmpty) {
+        final normalizedSelected = BackupService.normalizePath(selectedPath);
+        final isDefault =
+            await BackupService.isDefaultDirectory(normalizedSelected);
+
         ref.read(settingsNotifierProvider.notifier).updateSettings(
-              settings.copyWith(backupPath: selectedPath),
+              settings.copyWith(
+                  backupPath: isDefault ? '' : normalizedSelected),
               cards,
             );
+
         if (context.mounted) {
-          showAppSuccessSnackBar(
-            context,
-            title: 'Backup Folder Updated',
-            message: selectedPath,
-          );
+          if (isDefault) {
+            showAppSuccessSnackBar(
+              context,
+              title: 'Default Folder Selected',
+              message: 'Backups will be saved to Documents/CardMinder',
+            );
+          } else {
+            showAppSuccessSnackBar(
+              context,
+              title: 'Backup Folder Updated',
+              message: normalizedSelected,
+            );
+          }
         }
       }
     } catch (e) {
