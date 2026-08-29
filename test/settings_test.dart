@@ -12,6 +12,7 @@ void main() {
       expect(settings.notificationsEnabled, isTrue);
       expect(settings.notify30Days, isTrue);
       expect(settings.notify14Days, isTrue);
+      expect(settings.backupPath, isEmpty);
     });
 
     test('AppSettings JSON serialization and deserialization work', () {
@@ -20,6 +21,7 @@ void main() {
         widgetFilter: 'action_needed',
         widgetSortBy: 'name',
         notificationsEnabled: false,
+        backupPath: '/storage/emulated/0/Download/Backups',
       );
 
       final json = settings.toJson();
@@ -29,6 +31,7 @@ void main() {
       expect(restored.widgetFilter, equals('action_needed'));
       expect(restored.widgetSortBy, equals('name'));
       expect(restored.notificationsEnabled, isFalse);
+      expect(restored.backupPath, equals('/storage/emulated/0/Download/Backups'));
     });
   });
 }

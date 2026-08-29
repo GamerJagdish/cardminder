@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -242,34 +243,110 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (pin == null || pin.isEmpty) return;
 
-    final err = await BackupService.createAndShareBackup(
+    final result = await BackupService.createLocalBackup(
       cards: cards,
       settings: settings,
       userPin: pin,
     );
 
     if (context.mounted) {
-      if (err == null) {
+      if (result.success && result.file != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Backup created successfully'),
+          SnackBar(
+            content: Text('Backup saved:\n${result.fileName}'),
             backgroundColor: AppTheme.accentEmerald,
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'Share',
+              textColor: Colors.white,
+              onPressed: () => BackupService.shareBackupFile(
+                file: result.file!,
+                fileName: result.fileName!,
+              ),
+            ),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create backup: $err'),
+            content: Text(
+                'Failed to create backup: ${result.errorMessage ?? "Unknown error"}'),
             backgroundColor: AppTheme.accentRose,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
     }
   }
 
+  Future<void> _handleChangeBackupLocation(
+    BuildContext context,
+    AppSettings settings,
+    List<CreditCard> cards,
+  ) async {
+    try {
+      final selectedPath = await FilePicker.getDirectoryPath(
+        dialogTitle: 'Select Backup Folder',
+        initialDirectory:
+            settings.backupPath.isNotEmpty ? settings.backupPath : null,
+      );
+
+      if (selectedPath != null && selectedPath.isNotEmpty) {
+        ref.read(settingsNotifierProvider.notifier).updateSettings(
+              settings.copyWith(backupPath: selectedPath),
+              cards,
+            );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Backup folder updated:\n$selectedPath'),
+              backgroundColor: AppTheme.accentEmerald,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not set directory: $e'),
+            backgroundColor: AppTheme.accentRose,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleOpenBackupFolder(
+    BuildContext context,
+    AppSettings settings,
+  ) async {
+    final effectiveDir =
+        await BackupService.getEffectiveBackupDirectory(settings);
+    final opened = await BackupService.openBackupFolder(effectiveDir);
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Backup folder location:\n$effectiveDir'),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Copy Path',
+            onPressed: () =>
+                Clipboard.setData(ClipboardData(text: effectiveDir)),
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _handleRestoreBackup(
-      BuildContext context, WidgetRef ref) async {
-    final file = await BackupService.pickBackupFile();
+      BuildContext context, WidgetRef ref, AppSettings settings) async {
+    final effectiveDir =
+        await BackupService.getEffectiveBackupDirectory(settings);
+    final file =
+        await BackupService.pickBackupFile(initialDirectory: effectiveDir);
     if (file == null) return;
 
     final pinController = TextEditingController();
@@ -948,46 +1025,247 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 1. Backup Location Header
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.folder_outlined,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Backup Location',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Path container
+                  FutureBuilder<String>(
+                    future: BackupService.getEffectiveBackupDirectory(settings),
+                    builder: (context, snapshot) {
+                      final pathDisplay = snapshot.data ??
+                          (settings.backupPath.isNotEmpty
+                              ? settings.backupPath
+                              : 'Resolving default storage...');
+                      final isCustom = settings.backupPath.isNotEmpty;
+
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isCustom
+                                        ? 'Custom Folder'
+                                        : 'Default App Storage',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: isCustom
+                                          ? AppTheme.accentEmerald
+                                          : AppTheme.textMuted,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    pathDisplay,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontFamily: 'monospace',
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isCustom)
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.refresh_rounded, size: 18),
+                                tooltip: 'Reset to default folder',
+                                color: AppTheme.textMuted,
+                                onPressed: () {
+                                  update(settings.copyWith(backupPath: ''));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Backup folder reset to default.'),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 2 Action Buttons: Change Backup Location & Open Backup Folder
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _handleChangeBackupLocation(
+                              context, settings, cards),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 12),
+                            side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFCBD5E1),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          icon: Icon(
+                            Icons.folder_open_rounded,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          label: Text(
+                            'Change Location',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () =>
+                              _handleOpenBackupFolder(context, settings),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 12),
+                            side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFCBD5E1),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          icon: Icon(
+                            Icons.drive_file_move_outlined,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          label: Text(
+                            'Open Folder',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+                  Divider(
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 0.1)),
+                  const SizedBox(height: 14),
+
+                  // 2. Backup & Restore Options
                   Text(
-                    'Backup & Restore Options',
+                    'Create or Restore Backup',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Export or restore your card data and settings.',
+                    'Backups are encrypted with your private 4-digit PIN.',
                     style: TextStyle(
                       fontSize: 12,
                       color: AppTheme.textMuted,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   Row(
                     children: [
                       // Create Backup Button
                       Expanded(
                         child: GestureDetector(
-                          onTap: () =>
-                              _showCreateBackupPinDialog(context, cards, settings),
+                          onTap: () => _showCreateBackupPinDialog(
+                              context, cards, settings),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? const Color(0xFF0F172A)
-                                  : const Color(0xFFF1F5F9),
+                                  ? AppTheme.primaryAccentDark
+                                  : AppTheme.primaryNavy,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             alignment: Alignment.center,
-                            child: Text(
-                              'Create Backup',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.file_download_outlined,
+                                  size: 16,
+                                  color: isDark ? Colors.black : Colors.white,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Create Backup',
+                                  style: TextStyle(
+                                    color: isDark ? Colors.black : Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -997,7 +1275,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       // Restore Backup Button
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => _handleRestoreBackup(context, ref),
+                          onTap: () =>
+                              _handleRestoreBackup(context, ref, settings),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
@@ -1007,13 +1286,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             alignment: Alignment.center,
-                            child: Text(
-                              'Restore Backup',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.file_upload_outlined,
+                                  size: 16,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Restore Backup',
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),

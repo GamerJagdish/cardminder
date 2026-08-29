@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -22,8 +22,26 @@ class BackupData {
   });
 }
 
+class BackupResult {
+  final bool success;
+  final String? filePath;
+  final String? fileName;
+  final String? errorMessage;
+  final File? file;
+
+  BackupResult({
+    required this.success,
+    this.filePath,
+    this.fileName,
+    this.errorMessage,
+    this.file,
+  });
+}
+
 class BackupService {
   static const String _headerTag = 'CMBK_V2:';
+  static const MethodChannel _channel =
+      MethodChannel('com.gamerjagdish.cardminder/file_utils');
 
   static enc.Encrypter _getEncrypterForPin(String pin) {
     // Derive 256-bit (32-byte) AES key using SHA-256 hash of pin + salt
@@ -37,8 +55,50 @@ class BackupService {
     return enc.IV.fromUtf8('CM_IV_16_BYTES!!');
   }
 
-  /// Encrypts all card and settings data with the user's PIN and prompts to share/save.
-  static Future<String?> createAndShareBackup({
+  /// Resolves the default persistent backup directory
+  static Future<String> getDefaultBackupDirectory() async {
+    try {
+      if (Platform.isAndroid) {
+        final ext = await getExternalStorageDirectory();
+        if (ext != null) {
+          final cardMinderBackups = Directory('${ext.path}/Backups');
+          if (!await cardMinderBackups.exists()) {
+            await cardMinderBackups.create(recursive: true);
+          }
+          return cardMinderBackups.path;
+        }
+      }
+      final docs = await getApplicationDocumentsDirectory();
+      final backups = Directory('${docs.path}/Backups');
+      if (!await backups.exists()) {
+        await backups.create(recursive: true);
+      }
+      return backups.path;
+    } catch (_) {
+      final temp = await getTemporaryDirectory();
+      return temp.path;
+    }
+  }
+
+  /// Returns the configured backup directory or fallback to default
+  static Future<String> getEffectiveBackupDirectory(AppSettings settings) async {
+    if (settings.backupPath.isNotEmpty) {
+      final dir = Directory(settings.backupPath);
+      if (await dir.exists()) {
+        return settings.backupPath;
+      }
+      try {
+        await dir.create(recursive: true);
+        return settings.backupPath;
+      } catch (_) {
+        // Fallback to default if custom path is inaccessible
+      }
+    }
+    return getDefaultBackupDirectory();
+  }
+
+  /// Encrypts all card and settings data and saves directly to the backup folder.
+  static Future<BackupResult> createLocalBackup({
     required List<CreditCard> cards,
     required AppSettings settings,
     required String userPin,
@@ -59,33 +119,69 @@ class BackupService {
 
       final backupContent = '$_headerTag${encrypted.base64}';
 
-      final tempDir = await getTemporaryDirectory();
+      final targetDirPath = await getEffectiveBackupDirectory(settings);
+      final targetDir = Directory(targetDirPath);
+      if (!await targetDir.exists()) {
+        await targetDir.create(recursive: true);
+      }
+
       final timeStampStr = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       final fileName = 'CardMinder_Backup_$timeStampStr.cmbk';
-      final file = File('${tempDir.path}/$fileName');
+      final file = File('${targetDir.path}/$fileName');
 
       await file.writeAsString(backupContent);
 
-      final xFile = XFile(file.path);
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [xFile],
-          subject: 'CardMinder Backup ($fileName)',
-          text: 'CardMinder Backup file',
-        ),
+      return BackupResult(
+        success: true,
+        filePath: file.path,
+        fileName: fileName,
+        file: file,
       );
-
-      return null;
     } catch (e) {
-      return e.toString().replaceAll('FormatException: ', '');
+      return BackupResult(
+        success: false,
+        errorMessage: e.toString().replaceAll('FormatException: ', ''),
+      );
+    }
+  }
+
+  /// Shares an existing backup file
+  static Future<void> shareBackupFile({
+    required File file,
+    required String fileName,
+  }) async {
+    final xFile = XFile(file.path);
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [xFile],
+        subject: 'CardMinder Backup ($fileName)',
+        text: 'CardMinder Backup file',
+      ),
+    );
+  }
+
+  /// Opens the backup folder in the native Android file manager
+  static Future<bool> openBackupFolder(String folderPath) async {
+    try {
+      if (Platform.isAndroid) {
+        final res = await _channel.invokeMethod<bool>(
+          'openFolder',
+          {'path': folderPath},
+        );
+        return res ?? false;
+      }
+      return false;
+    } catch (_) {
+      return false;
     }
   }
 
   /// Opens file picker to let user pick a .cmbk file. Returns the picked File or null.
-  static Future<File?> pickBackupFile() async {
+  static Future<File?> pickBackupFile({String? initialDirectory}) async {
     try {
       final picked = await FilePicker.pickFile(
         type: FileType.any,
+        initialDirectory: initialDirectory,
       );
 
       if (picked == null || picked.path == null) {

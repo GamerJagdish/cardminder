@@ -9,6 +9,7 @@ class AppSettings {
   final bool notify14Days;
   final bool notify7Days;
   final bool notify1Day;
+  final String backupPath; // Custom backup folder path, '' means default storage
 
   AppSettings({
     this.userName = 'CardMinder',
@@ -21,6 +22,7 @@ class AppSettings {
     this.notify14Days = true,
     this.notify7Days = true,
     this.notify1Day = true,
+    this.backupPath = '',
   });
 
   Map<String, dynamic> toJson() {
@@ -35,6 +37,7 @@ class AppSettings {
       'notify14Days': notify14Days,
       'notify7Days': notify7Days,
       'notify1Day': notify1Day,
+      'backupPath': backupPath,
     };
   }
 
@@ -50,6 +53,7 @@ class AppSettings {
       notify14Days: (json['notify14Days'] as bool?) ?? true,
       notify7Days: (json['notify7Days'] as bool?) ?? true,
       notify1Day: (json['notify1Day'] as bool?) ?? true,
+      backupPath: (json['backupPath'] as String?) ?? '',
     );
   }
 
@@ -64,6 +68,7 @@ class AppSettings {
     bool? notify14Days,
     bool? notify7Days,
     bool? notify1Day,
+    String? backupPath,
   }) {
     return AppSettings(
       userName: userName ?? this.userName,
@@ -76,6 +81,7 @@ class AppSettings {
       notify14Days: notify14Days ?? this.notify14Days,
       notify7Days: notify7Days ?? this.notify7Days,
       notify1Day: notify1Day ?? this.notify1Day,
+      backupPath: backupPath ?? this.backupPath,
     );
   }
 }
