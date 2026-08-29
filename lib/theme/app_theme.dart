@@ -92,6 +92,12 @@ class AppTheme {
           borderSide: const BorderSide(color: primaryNavy, width: 2),
         ),
       ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: surfaceWhite,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(

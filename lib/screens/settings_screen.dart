@@ -13,6 +13,7 @@ import '../providers/settings_provider.dart';
 import '../services/backup_service.dart';
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/backup_dialogs.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -94,151 +95,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     List<CreditCard> cards,
     AppSettings settings,
   ) async {
-    final pinController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
-
     final pin = await showDialog<String>(
       context: context,
-      builder: (dialogCtx) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
-            Theme.of(context).cardTheme.color,
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: primaryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.lock_outline_rounded,
-                        color: primaryColor,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Set Pin',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                const Text(
-                  'enter a 4 digit pin to lock your backup file it will be needed when you restore it.',
-                  style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: pinController,
-                  autofocus: true,
-                  obscureText: true,
-                  maxLength: 4,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) {
-                    if (formKey.currentState?.validate() ?? false) {
-                      Navigator.pop(dialogCtx, pinController.text.trim());
-                    }
-                  },
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 4,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  decoration: const InputDecoration(
-                    hintText: '0000',
-                    counterText: '',
-                  ),
-                  validator: (val) {
-                    final trimmed = val?.trim() ?? '';
-                    if (trimmed.length != 4) {
-                      return 'Please enter a 4-digit PIN';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: BorderSide(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFCBD5E1),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () => Navigator.pop(dialogCtx, null),
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark
-                              ? AppTheme.primaryAccentDark
-                              : AppTheme.primaryNavy,
-                          foregroundColor: isDark ? Colors.black : Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () {
-                          if (formKey.currentState?.validate() ?? false) {
-                            Navigator.pop(dialogCtx, pinController.text.trim());
-                          }
-                        },
-                        child: Text(
-                          'Backup',
-                          style: TextStyle(
-                            color: isDark ? Colors.black : Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      barrierDismissible: false,
+      builder: (dialogCtx) => const SetBackupPinDialog(),
     );
 
     if (pin == null || pin.isEmpty) return;
@@ -251,29 +111,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (context.mounted) {
       if (result.success && result.file != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Backup saved:\n${result.fileName}'),
-            backgroundColor: AppTheme.accentEmerald,
-            behavior: SnackBarBehavior.floating,
-            action: SnackBarAction(
-              label: 'Share',
-              textColor: Colors.white,
-              onPressed: () => BackupService.shareBackupFile(
-                file: result.file!,
-                fileName: result.fileName!,
-              ),
+        showAppSuccessSnackBar(
+          context,
+          title: 'Backup Created Successfully',
+          message: 'Saved to ${result.fileName}',
+          action: SnackBarAction(
+            label: 'Share',
+            textColor: AppTheme.accentEmerald,
+            onPressed: () => BackupService.shareBackupFile(
+              file: result.file!,
+              fileName: result.fileName!,
             ),
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Failed to create backup: ${result.errorMessage ?? "Unknown error"}'),
-            backgroundColor: AppTheme.accentRose,
-            behavior: SnackBarBehavior.floating,
-          ),
+        showAppErrorSnackBar(
+          context,
+          title: 'Backup Failed',
+          message: result.errorMessage ?? 'Could not write backup file.',
         );
       }
     }
@@ -297,23 +152,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               cards,
             );
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Backup folder updated:\n$selectedPath'),
-              backgroundColor: AppTheme.accentEmerald,
-              behavior: SnackBarBehavior.floating,
-            ),
+          showAppSuccessSnackBar(
+            context,
+            title: 'Backup Folder Updated',
+            message: selectedPath,
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Could not set directory: $e'),
-            backgroundColor: AppTheme.accentRose,
-            behavior: SnackBarBehavior.floating,
-          ),
+        showAppErrorSnackBar(
+          context,
+          title: 'Folder Selection Failed',
+          message: e.toString(),
         );
       }
     }
@@ -349,268 +200,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         await BackupService.pickBackupFile(initialDirectory: effectiveDir);
     if (file == null) return;
 
-    final pinController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
+    if (!context.mounted) return;
+
+    // 1. Show PIN unlock dialog with inline verification & retry
+    final backupData = await showDialog<BackupData>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => UnlockBackupPinDialog(file: file),
+    );
+
+    if (backupData == null) return;
 
     if (!context.mounted) return;
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final userPin = await showDialog<String>(
+    // 2. Show confirmation dialog
+    final confirm = await showDialog<bool>(
       context: context,
-      builder: (dialogCtx) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
-            Theme.of(context).cardTheme.color,
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentEmerald.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.key_rounded,
-                        color: AppTheme.accentEmerald,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Enter Pin',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                const Text(
-                  'enter the 4 digit pin you used when backing up your file.',
-                  style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: pinController,
-                  autofocus: true,
-                  obscureText: true,
-                  maxLength: 4,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) {
-                    if (formKey.currentState?.validate() ?? false) {
-                      Navigator.pop(dialogCtx, pinController.text.trim());
-                    }
-                  },
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 4,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  decoration: const InputDecoration(
-                    hintText: '0000',
-                    counterText: '',
-                  ),
-                  validator: (val) {
-                    final trimmed = val?.trim() ?? '';
-                    if (trimmed.length != 4) {
-                      return 'Please enter 4-digit PIN';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: BorderSide(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFCBD5E1),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () => Navigator.pop(dialogCtx, null),
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark
-                              ? AppTheme.primaryAccentDark
-                              : AppTheme.primaryNavy,
-                          foregroundColor: isDark ? Colors.black : Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () {
-                          if (formKey.currentState?.validate() ?? false) {
-                            Navigator.pop(dialogCtx, pinController.text.trim());
-                          }
-                        },
-                        child: Text(
-                          'Restore',
-                          style: TextStyle(
-                            color: isDark ? Colors.black : Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    if (userPin == null || userPin.isEmpty) return;
-
-    try {
-      final backupData = await BackupService.decryptBackupFile(
-        file: file,
-        userPin: userPin,
-      );
-
-      if (!context.mounted) return;
-
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder: (dialogCtx) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
-              Theme.of(context).cardTheme.color,
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentEmerald.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.restore_page_rounded,
-                        color: AppTheme.accentEmerald,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Restore Backup?',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Found ${backupData.cards.length} card(s) from backup created on ${DateFormat('MMM dd, yyyy • hh:mm a').format(backupData.exportDate)}.\n\nRestoring will overwrite your current card list.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: BorderSide(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFCBD5E1),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () => Navigator.pop(dialogCtx, false),
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark
-                              ? AppTheme.primaryAccentDark
-                              : AppTheme.primaryNavy,
-                          foregroundColor: isDark ? Colors.black : Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () => Navigator.pop(dialogCtx, true),
-                        child: Text(
-                          'Restore',
-                          style: TextStyle(
-                            color: isDark ? Colors.black : Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-          ),
-        ),
-      ),
+      barrierDismissible: false,
+      builder: (dialogCtx) => RestoreConfirmDialog(backupData: backupData),
     );
 
     if (confirm == true) {
@@ -624,26 +231,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           );
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Restored ${backupData.cards.length} card(s) successfully!'),
-            backgroundColor: AppTheme.accentEmerald,
-          ),
+        showAppSuccessSnackBar(
+          context,
+          title: 'Backup Restored Successfully',
+          message: 'Restored ${backupData.cards.length} card(s) and preferences.',
         );
       }
     }
-  } catch (e) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Incorrect PIN or corrupted backup file'),
-          backgroundColor: AppTheme.accentRose,
-        ),
-      );
-    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -1122,12 +717,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 color: AppTheme.textMuted,
                                 onPressed: () {
                                   update(settings.copyWith(backupPath: ''));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                          'Backup folder reset to default.'),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
+                                  showAppSuccessSnackBar(
+                                    context,
+                                    title: 'Reset to Default Folder',
+                                    message:
+                                        'Backups will be saved to Documents/CardMinder',
                                   );
                                 },
                               ),
@@ -1482,12 +1076,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ref
                       .read(settingsNotifierProvider.notifier)
                       .updateSettings(settings, cards);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Widget & Reminders synced successfully!'),
-                      backgroundColor: AppTheme.accentEmerald,
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  showAppSuccessSnackBar(
+                    context,
+                    title: 'Sync Completed',
+                    message: 'Widget & Reminders synced successfully!',
                   );
                 },
                 style: ElevatedButton.styleFrom(
