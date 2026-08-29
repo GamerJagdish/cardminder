@@ -1148,13 +1148,16 @@ class ChangelogScreen extends StatefulWidget {
 }
 
 class _ChangelogScreenState extends State<ChangelogScreen> {
-  final List<AppReleaseInfo> _releases = [];
+  final List<AppReleaseInfo> _allFetchedReleases = [];
+  int _displayedCount = 5;
   bool _isLoading = true;
   bool _isLoadingMore = false;
-  bool _hasMore = true;
-  int _currentPage = 1;
+  bool _hasMoreServerPages = true;
+  int _serverPage = 1;
   String _currentVersion = '';
   String? _errorMessage;
+
+  static const int _serverPerPage = 20;
 
   @override
   void initState() {
@@ -1162,30 +1165,42 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
     _loadInitialData();
   }
 
+  bool get _hasMore =>
+      _displayedCount < _allFetchedReleases.length || _hasMoreServerPages;
+
+  List<AppReleaseInfo> get _displayedReleases =>
+      _allFetchedReleases.take(_displayedCount).toList();
+
   Future<void> _loadInitialData() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _allFetchedReleases.clear();
+      _displayedCount = 5;
+      _serverPage = 1;
+      _hasMoreServerPages = true;
     });
 
     try {
       final currentVer = await UpdateService.getAppVersion();
-      final items = await UpdateService.fetchReleasesHistory(page: 1, perPage: 5);
+      final items = await UpdateService.fetchReleasesHistory(
+        page: 1,
+        perPage: _serverPerPage,
+      );
 
       if (mounted) {
         setState(() {
           _currentVersion = currentVer;
-          _releases.clear();
-          _releases.addAll(items);
-          _currentPage = 1;
-          _hasMore = items.length >= 5;
+          _allFetchedReleases.addAll(items);
+          _hasMoreServerPages = items.length >= _serverPerPage;
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Unable to load changelog. Please check your internet connection.';
+          _errorMessage =
+              'Unable to load changelog. Please check your internet connection.';
           _isLoading = false;
         });
       }
@@ -1195,26 +1210,45 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
   Future<void> _loadMore() async {
     if (_isLoadingMore || !_hasMore) return;
 
+    final targetCount = _displayedCount + 20;
+
+    // If we already have enough releases in memory, just expand display count
+    if (_allFetchedReleases.length >= targetCount || !_hasMoreServerPages) {
+      setState(() {
+        _displayedCount = targetCount;
+      });
+      return;
+    }
+
+    // Otherwise fetch next page from server
     setState(() {
       _isLoadingMore = true;
     });
 
     try {
-      final nextPage = _currentPage + 1;
-      final newItems =
-          await UpdateService.fetchReleasesHistory(page: nextPage, perPage: 20);
+      final nextPage = _serverPage + 1;
+      final newItems = await UpdateService.fetchReleasesHistory(
+        page: nextPage,
+        perPage: _serverPerPage,
+      );
 
       if (mounted) {
         setState(() {
-          _currentPage = nextPage;
-          _releases.addAll(newItems);
-          _hasMore = newItems.length >= 20;
+          _serverPage = nextPage;
+          for (final item in newItems) {
+            if (!_allFetchedReleases.any((r) => r.version == item.version)) {
+              _allFetchedReleases.add(item);
+            }
+          }
+          _hasMoreServerPages = newItems.length >= _serverPerPage;
+          _displayedCount = targetCount;
           _isLoadingMore = false;
         });
       }
     } catch (_) {
       if (mounted) {
         setState(() {
+          _displayedCount = targetCount;
           _isLoadingMore = false;
         });
       }
@@ -1318,7 +1352,7 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                           ),
                         ),
                       )
-                    : _releases.isEmpty
+                    : _displayedReleases.isEmpty
                         ? const Center(
                             child: Text(
                               'No release notes found.',
@@ -1327,10 +1361,10 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                            itemCount: _releases.length + 1,
+                            itemCount: _displayedReleases.length + 1,
                             itemBuilder: (context, index) {
                               // Bottom Load More / Completed item
-                              if (index == _releases.length) {
+                              if (index == _displayedReleases.length) {
                                 if (_hasMore) {
                                   return Padding(
                                     padding: const EdgeInsets.only(
@@ -1392,7 +1426,7 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                                 }
                               }
 
-                              final release = _releases[index];
+                              final release = _displayedReleases[index];
                               final isCurrent =
                                   release.version == _currentVersion;
                               final changelog = ChangelogParser.parse(
