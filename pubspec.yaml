@@ -53,6 +53,7 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   github_release_apk_updater: ^1.0.7
   package_info_plus: ^10.2.1
+  flutter_timezone: ^5.1.0
 
 dev_dependencies:
   flutter_test:

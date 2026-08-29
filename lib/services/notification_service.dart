@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:github_release_apk_updater/github_release_apk_updater.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -21,14 +22,29 @@ class NotificationService {
           'Notifications for upcoming 365-day card transaction deadlines',
       importance: Importance.high,
       priority: Priority.high,
+      icon: '@drawable/ic_notification',
     ),
     iOS: DarwinNotificationDetails(),
   );
 
   static Future<void> init() async {
     tz.initializeTimeZones();
+    try {
+      final timeZoneInfo = await FlutterTimezone.getLocalTimezone()
+          .timeout(const Duration(seconds: 2));
+      final timeZoneName = timeZoneInfo.identifier;
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+    } catch (_) {
+      try {
+        final dynamic timeZoneInfo = await FlutterTimezone.getLocalTimezone()
+            .timeout(const Duration(seconds: 2));
+        final String timeZoneName = timeZoneInfo.toString();
+        tz.setLocalLocation(tz.getLocation(timeZoneName));
+      } catch (_) {}
+    }
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@drawable/ic_notification');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -72,7 +88,7 @@ class NotificationService {
       progress: progressPercent,
       ongoing: true,
       onlyAlertOnce: true,
-      icon: '@mipmap/ic_launcher',
+      icon: '@drawable/ic_notification',
     );
 
     await _notificationsPlugin.show(
@@ -96,7 +112,7 @@ class NotificationService {
       showProgress: false,
       ongoing: false,
       autoCancel: true,
-      icon: '@mipmap/ic_launcher',
+      icon: '@drawable/ic_notification',
     );
 
     await _notificationsPlugin.show(
@@ -113,13 +129,14 @@ class NotificationService {
   }
 
   static Future<void> requestPermissions() async {
-    final androidImplementation =
-        _notificationsPlugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
-    if (androidImplementation != null) {
-      await androidImplementation.requestNotificationsPermission();
-      await androidImplementation.requestExactAlarmsPermission();
-    }
+    try {
+      final androidImplementation =
+          _notificationsPlugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      if (androidImplementation != null) {
+        await androidImplementation.requestNotificationsPermission();
+      }
+    } catch (_) {}
   }
 
   static Future<void> syncCardNotifications(
@@ -163,24 +180,49 @@ class NotificationService {
       final idOffset = reminder['idOffset'] as int;
       final notificationId = cardHash + idOffset;
 
-      final reminderDate = deactivationDate.subtract(Duration(days: daysBefore));
+      final reminderDate =
+          deactivationDate.subtract(Duration(days: daysBefore));
+      // Schedule for 9:00 AM on the reminder day
+      final morningReminder = DateTime(
+        reminderDate.year,
+        reminderDate.month,
+        reminderDate.day,
+        9,
+        0,
+      );
 
-      if (reminderDate.isAfter(now)) {
-        final scheduledTZDate = tz.TZDateTime.from(reminderDate, tz.local);
+      final targetDate =
+          morningReminder.isAfter(now) ? morningReminder : reminderDate;
 
-        final cardDigitsInfo = card.lastFourDigits != null && card.lastFourDigits!.isNotEmpty
-            ? ' (•• ${card.lastFourDigits})'
-            : '';
+      if (targetDate.isAfter(now)) {
+        final scheduledTZDate = tz.TZDateTime.from(targetDate, tz.local);
 
-        await _notificationsPlugin.zonedSchedule(
-          id: notificationId,
-          title: '💳 Card Transaction Reminder',
-          body:
-              '${card.cardName}$cardDigitsInfo needs a transaction in $daysBefore day(s) to avoid deactivation!',
-          scheduledDate: scheduledTZDate,
-          notificationDetails: _notificationDetails,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        );
+        final cardDigitsInfo =
+            card.lastFourDigits != null && card.lastFourDigits!.isNotEmpty
+                ? ' (•• ${card.lastFourDigits})'
+                : '';
+
+        try {
+          await _notificationsPlugin.zonedSchedule(
+            id: notificationId,
+            title: '💳 Card Transaction Reminder',
+            body:
+                '${card.cardName}$cardDigitsInfo needs a transaction in $daysBefore day(s) to avoid deactivation!',
+            scheduledDate: scheduledTZDate,
+            notificationDetails: _notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          );
+        } catch (_) {
+          await _notificationsPlugin.zonedSchedule(
+            id: notificationId,
+            title: '💳 Card Transaction Reminder',
+            body:
+                '${card.cardName}$cardDigitsInfo needs a transaction in $daysBefore day(s) to avoid deactivation!',
+            scheduledDate: scheduledTZDate,
+            notificationDetails: _notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          );
+        }
       }
     }
   }
@@ -201,15 +243,26 @@ class NotificationService {
     assert(kDebugMode);
     final scheduledDate =
         tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
-    await _notificationsPlugin.zonedSchedule(
-      id: _debugScheduledId,
-      title: '💳 CardMinder Scheduled Test',
-      body: 'This test notification was scheduled 1 minute ago.',
-      scheduledDate: scheduledDate,
-      notificationDetails: _notificationDetails,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-    );
-    return scheduledDate.toLocal();
+    try {
+      await _notificationsPlugin.zonedSchedule(
+        id: _debugScheduledId,
+        title: '💳 CardMinder Scheduled Test',
+        body: 'This test notification was scheduled 1 minute ago.',
+        scheduledDate: scheduledDate,
+        notificationDetails: _notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+    } catch (_) {
+      await _notificationsPlugin.zonedSchedule(
+        id: _debugScheduledId,
+        title: '💳 CardMinder Scheduled Test',
+        body: 'This test notification was scheduled 1 minute ago.',
+        scheduledDate: scheduledDate,
+        notificationDetails: _notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    }
+    return DateTime.now().add(const Duration(minutes: 1));
   }
 
   /// Debug-only: list notifications the OS has queued.

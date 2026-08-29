@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/card_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/notification_log_service.dart';
+import '../services/notification_service.dart';
+import '../services/update_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/page_transitions.dart';
 import '../widgets/card_tile.dart';
@@ -27,11 +29,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final cards = ref.read(cardNotifierProvider).cards;
       ref
           .read(notificationLogNotifierProvider.notifier)
           .updateLogsForCards(cards);
+
+      try {
+        await NotificationService.requestPermissions();
+        await NotificationService.syncCardNotifications(cards);
+        await UpdateService.cleanupOldApks();
+      } catch (_) {}
     });
   }
 
