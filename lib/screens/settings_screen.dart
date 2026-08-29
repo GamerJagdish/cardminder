@@ -12,6 +12,7 @@ import '../providers/card_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/backup_service.dart';
 import '../services/notification_service.dart';
+import '../services/update_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/backup_dialogs.dart';
 
@@ -25,6 +26,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _developerClickCount = 0;
   bool _showClownRain = false;
+  bool _isCheckingUpdate = false;
 
   void _handleDeveloperTap() {
     setState(() {
@@ -62,30 +64,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _openGitHub(BuildContext context) async {
-    const urlStr = 'https://github.com/GamerJagdish/cardminder';
+  Future<void> _openUrl(
+    BuildContext context,
+    String urlStr,
+    String label,
+  ) async {
     final Uri url = Uri.parse(urlStr);
     try {
       if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-        await Clipboard.setData(const ClipboardData(text: urlStr));
+        await Clipboard.setData(ClipboardData(text: urlStr));
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('GitHub link copied to clipboard!'),
-              behavior: SnackBarBehavior.floating,
-            ),
+          showAppSuccessSnackBar(
+            context,
+            title: 'Link Copied',
+            message: '$label link copied to clipboard!',
           );
         }
       }
     } catch (e) {
-      await Clipboard.setData(const ClipboardData(text: urlStr));
+      await Clipboard.setData(ClipboardData(text: urlStr));
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('GitHub link copied to clipboard!'),
-            behavior: SnackBarBehavior.floating,
-          ),
+        showAppSuccessSnackBar(
+          context,
+          title: 'Link Copied',
+          message: '$label link copied to clipboard!',
         );
+      }
+    }
+  }
+
+  Future<void> _handleCheckForUpdates() async {
+    if (_isCheckingUpdate) return;
+    setState(() {
+      _isCheckingUpdate = true;
+    });
+    try {
+      await UpdateService.checkForUpdates(context);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCheckingUpdate = false;
+        });
       }
     }
   }
@@ -921,6 +940,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               child: Column(
                 children: [
+                  // 1. Developer: GamerJagdish (unchanged)
                   InkWell(
                     onTap: _handleDeveloperTap,
                     borderRadius: BorderRadius.circular(12),
@@ -929,7 +949,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(10),
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: isDark
                                   ? const Color(0xFF0F172A)
@@ -939,12 +961,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             child: _developerClickCount >= 12
                                 ? const Text(
                                     '🤡',
-                                    style: TextStyle(fontSize: 20),
+                                    style: TextStyle(fontSize: 18),
                                   )
                                 : Icon(
                                     Icons.person_outline_rounded,
-                                    color: Theme.of(context).colorScheme.primary,
-                                    size: 22,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    size: 20,
                                   ),
                           ),
                           const SizedBox(width: 14),
@@ -966,7 +989,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -976,34 +1000,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  Divider(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
+                  const SizedBox(height: 12),
+                  Divider(
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 0.1)),
                   const SizedBox(height: 10),
 
-                  // Clickable GitHub Tile
+                  // 2. Donate: https://gamerjagdish.com/donate
                   InkWell(
-                    onTap: () => _openGitHub(context),
+                    onTap: () => _openUrl(
+                      context,
+                      'https://gamerjagdish.com/donate',
+                      'Donate',
+                    ),
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 6.0),
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(10),
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: isDark
                                   ? const Color(0xFF0F172A)
                                   : const Color(0xFFF1F5F9),
                               shape: BoxShape.circle,
                             ),
-                            child: SvgPicture.asset(
-                              'assets/logos/github.svg',
-                              width: 20,
-                              height: 20,
-                              colorFilter: isDark
-                                  ? const ColorFilter.mode(
-                                      Colors.white, BlendMode.srcIn)
-                                  : null,
+                            child: Icon(
+                              Icons.favorite_outline_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 20,
                             ),
                           ),
                           const SizedBox(width: 14),
@@ -1012,11 +1041,171 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Contribute',
+                                  'Donate',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'gamerjagdish.com/donate',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.open_in_new_rounded,
+                            size: 18,
+                            color: AppTheme.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Divider(
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 0.1)),
+                  const SizedBox(height: 10),
+
+                  // 3. Check for update: github_release_apk_updater + shows current version
+                  InkWell(
+                    onTap: _isCheckingUpdate ? null : _handleCheckForUpdates,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFFF1F5F9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.system_update_alt_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Check for Updates',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                FutureBuilder<String>(
+                                  future: UpdateService.getAppVersion(),
+                                  builder: (context, snapshot) {
+                                    final ver = snapshot.data ?? '1.2.0';
+                                    return Text(
+                                      'Version $ver',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppTheme.textMuted,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (_isCheckingUpdate)
+                            SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            )
+                          else
+                            const Icon(
+                              Icons.refresh_rounded,
+                              size: 18,
+                              color: AppTheme.textMuted,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Divider(
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 0.1)),
+                  const SizedBox(height: 10),
+
+                  // 4. Source Code: https://github.com/GamerJagdish/cardminder
+                  InkWell(
+                    onTap: () => _openUrl(
+                      context,
+                      'https://github.com/GamerJagdish/cardminder',
+                      'Source Code',
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFFF1F5F9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: SvgPicture.asset(
+                              'assets/logos/github.svg',
+                              width: 19,
+                              height: 19,
+                              colorFilter: isDark
+                                  ? const ColorFilter.mode(
+                                      Colors.white, BlendMode.srcIn)
+                                  : ColorFilter.mode(
+                                      Theme.of(context).colorScheme.onSurface,
+                                      BlendMode.srcIn,
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Source Code',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
