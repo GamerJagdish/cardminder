@@ -55,21 +55,44 @@ class BackupService {
     return enc.IV.fromUtf8('CM_IV_16_BYTES!!');
   }
 
-  /// Resolves the default persistent backup directory
+  /// Resolves the default persistent backup directory (public Documents/CardMinder on Android)
   static Future<String> getDefaultBackupDirectory() async {
     try {
       if (Platform.isAndroid) {
+        // 1. Target public user-accessible Documents/CardMinder
+        final publicDocs =
+            Directory('/storage/emulated/0/Documents/CardMinder');
+        try {
+          if (!await publicDocs.exists()) {
+            await publicDocs.create(recursive: true);
+          }
+          return publicDocs.path;
+        } catch (_) {
+          // 2. Fallback to public Download/CardMinder if Documents has permission restrictions
+          try {
+            final publicDownloads =
+                Directory('/storage/emulated/0/Download/CardMinder');
+            if (!await publicDownloads.exists()) {
+              await publicDownloads.create(recursive: true);
+            }
+            return publicDownloads.path;
+          } catch (_) {
+            // 3. Fallback to app external storage
+          }
+        }
+
         final ext = await getExternalStorageDirectory();
         if (ext != null) {
-          final cardMinderBackups = Directory('${ext.path}/Backups');
+          final cardMinderBackups = Directory('${ext.path}/CardMinder');
           if (!await cardMinderBackups.exists()) {
             await cardMinderBackups.create(recursive: true);
           }
           return cardMinderBackups.path;
         }
       }
+
       final docs = await getApplicationDocumentsDirectory();
-      final backups = Directory('${docs.path}/Backups');
+      final backups = Directory('${docs.path}/CardMinder');
       if (!await backups.exists()) {
         await backups.create(recursive: true);
       }
