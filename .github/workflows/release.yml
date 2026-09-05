@@ -90,32 +90,97 @@ jobs:
       - name: Generate Commit Changelog
         if: steps.version_changed.outputs.should_release == 'true'
         id: changelog
+        env:
+          TAG_NAME: ${{ env.TAG_NAME }}
+          REPO_NAME: ${{ github.repository }}
         run: |
-          echo "Generating changelog..."
-          
-          # Find previous tag if available
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || true)
-          
-          if [ -n "$PREV_TAG" ]; then
-            echo "Previous tag found: $PREV_TAG"
-            LOG_RANGE="$PREV_TAG..HEAD"
-          else
-            echo "No previous tag found. Generating log from initial commit."
-            LOG_RANGE="HEAD"
-          fi
+          python3 - << 'EOF'
+          import subprocess
+          import re
+          import os
 
-          # Format git commits with full title and description
-          CHANGELOG_FILE="CHANGELOG_RELEASE.md"
-          echo "## What's Changed in $VERSION" > $CHANGELOG_FILE
-          echo "" >> $CHANGELOG_FILE
-          
-          if [ "$LOG_RANGE" = "HEAD" ]; then
-            git log --pretty=format:"* **%s**%n%b" >> $CHANGELOG_FILE
-          else
-            git log $LOG_RANGE --pretty=format:"* **%s**%n%b" >> $CHANGELOG_FILE
-          fi
-          
-          echo "" >> $CHANGELOG_FILE
+          tag = os.environ.get('TAG_NAME', '')
+          repo = os.environ.get('REPO_NAME', 'GamerJagdish/cardminder')
+
+          try:
+              prev_tag = subprocess.check_output(['git', 'describe', '--tags', '--abbrev=0', 'HEAD^'], encoding='utf-8').strip()
+          except Exception:
+              prev_tag = ''
+
+          range_spec = f'{prev_tag}..HEAD' if prev_tag else 'HEAD'
+
+          sep_record = '\x1e'
+          sep_field = '\x1f'
+
+          cmd = ['git', 'log', range_spec, f'--pretty=format:{sep_record}%h{sep_field}%an{sep_field}%ae{sep_field}%s{sep_field}%b']
+          raw = subprocess.check_output(cmd, encoding='utf-8')
+          records = [r for r in raw.split(sep_record) if r.strip()]
+
+          def get_username(name, email):
+              m = re.match(r'^[0-9]+\+([^@]+)@users\.noreply\.github\.com$', email)
+              if m:
+                  return m.group(1)
+              if 'imgbot' in name.lower() or 'imgbot' in email.lower():
+                  return 'imgbot[bot]'
+              if re.match(r'^[a-zA-Z0-9_-]+$', name):
+                  return name
+              return 'GamerJagdish'
+
+          commits = []
+          for rec in records:
+              parts = rec.strip().split(sep_field)
+              if len(parts) < 4:
+                  continue
+              h, author, email, subj = parts[0], parts[1], parts[2], parts[3]
+              body = parts[4].strip() if len(parts) > 4 else ''
+              
+              user = get_username(author, email)
+              commit_url = f'https://github.com/{repo}/commit/{h}'
+              commits.append(f'* {subj} by @{user} in {commit_url}')
+              
+              if body:
+                  for b_line in body.split('\n'):
+                      b_line = b_line.strip()
+                      if not b_line:
+                          continue
+                      b_line = re.sub(r'^[\*\-\+]\s+', '', b_line)
+                      commits.append(f'  * {b_line}')
+
+          new_contributors = {}
+          if prev_tag:
+              for rec in reversed(records):
+                  parts = rec.strip().split(sep_field)
+                  if len(parts) < 4:
+                      continue
+                  h, author, email, subj = parts[0], parts[1], parts[2], parts[3]
+                  user = get_username(author, email)
+                  if user not in new_contributors:
+                      try:
+                          prior = subprocess.check_output(['git', 'log', prev_tag, f'--author={email}', '--oneline'], encoding='utf-8').strip()
+                          if not prior:
+                              new_contributors[user] = h
+                      except Exception:
+                          pass
+
+          changelog = ["## What's Changed"]
+          changelog.extend(commits)
+
+          if new_contributors:
+              changelog.append('')
+              changelog.append('## New Contributors')
+              for u, h in new_contributors.items():
+                  changelog.append(f'* @{u} made their first contribution in https://github.com/{repo}/commit/{h}')
+
+          changelog.append('')
+          if prev_tag:
+              changelog.append(f'**Full Changelog**: https://github.com/{repo}/compare/{prev_tag}...{tag}')
+          else:
+              changelog.append(f'**Full Changelog**: https://github.com/{repo}/commits/{tag}')
+
+          with open('CHANGELOG_RELEASE.md', 'w', encoding='utf-8') as f:
+              f.write('\n'.join(changelog) + '\n')
+          print("Changelog generated successfully.")
+          EOF
 
       - name: Decode Android Release Keystore and Config
         if: steps.version_changed.outputs.should_release == 'true'
