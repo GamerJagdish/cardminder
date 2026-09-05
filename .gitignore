@@ -48,3 +48,6 @@ app.*.map.json
 *.jks
 *.keystore
 key.properties
+
+# F-droid stuff
+com.gamerjagdish.cardminder.yml
