@@ -51,9 +51,12 @@ class ChangelogParser {
       'other:': [],
     };
 
+    String? currentCategory;
+
     for (var line in lines) {
+      if (line.trim().isEmpty) continue;
+      final isIndented = line.startsWith('  ') || line.startsWith('\t');
       var trimmed = line.trim();
-      if (trimmed.isEmpty) continue;
 
       // Ignore markdown headers
       if (trimmed.startsWith('#')) continue;
@@ -62,6 +65,12 @@ class ChangelogParser {
       if (trimmed.toLowerCase().contains('full changelog')) continue;
       if (trimmed.toLowerCase().contains('compare/')) continue;
       if (trimmed.toLowerCase().startsWith('see full')) continue;
+
+      // Check if this line looks like a commit header (contains author / commit URL)
+      final hasCommitMeta =
+          RegExp(r'\s+by\s+@\S+', caseSensitive: false).hasMatch(trimmed) ||
+              RegExp(r'\s+in\s+https?://\S+', caseSensitive: false)
+                  .hasMatch(trimmed);
 
       // Remove bullet list characters (*, -, +, 1., 2.)
       trimmed = trimmed.replaceFirst(RegExp(r'^[\*\-\+]\s+'), '');
@@ -86,25 +95,25 @@ class ChangelogParser {
       trimmed = trimmed.trim();
       if (trimmed.isEmpty) continue;
 
-      String category = 'other:';
-      String content = trimmed;
       final lower = trimmed.toLowerCase();
+      String? matchedCategory;
+      String content = trimmed;
 
       if (lower.startsWith('feat:') ||
           lower.startsWith('feat!:') ||
           lower.startsWith('feature:')) {
-        category = 'feature:';
+        matchedCategory = 'feature:';
         content = trimmed.substring(trimmed.indexOf(':') + 1).trim();
       } else if (lower.startsWith('fix:') ||
           lower.startsWith('fix!:') ||
           lower.startsWith('bugfix:')) {
-        category = 'fix:';
+        matchedCategory = 'fix:';
         content = trimmed.substring(trimmed.indexOf(':') + 1).trim();
       } else if (lower.startsWith('refactor:') ||
           lower.startsWith('refactor!:') ||
           lower.startsWith('perf:') ||
           lower.startsWith('perf!:')) {
-        category = 'refactor:';
+        matchedCategory = 'refactor:';
         content = trimmed.substring(trimmed.indexOf(':') + 1).trim();
       } else if (lower.startsWith('chore:') ||
           lower.startsWith('chore!:') ||
@@ -114,14 +123,34 @@ class ChangelogParser {
           lower.startsWith('ci:') ||
           lower.startsWith('build:') ||
           lower.startsWith('revert:')) {
-        category = 'chore:';
+        matchedCategory = 'chore:';
         content = trimmed.substring(trimmed.indexOf(':') + 1).trim();
       }
 
-      if (content.isNotEmpty) {
-        content = content[0].toUpperCase() + content.substring(1);
-        if (!groups[category]!.contains(content)) {
-          groups[category]!.add(content);
+      if (matchedCategory != null) {
+        currentCategory = matchedCategory;
+        if (content.isNotEmpty) {
+          content = content[0].toUpperCase() + content.substring(1);
+          if (!groups[currentCategory]!.contains(content)) {
+            groups[currentCategory]!.add(content);
+          }
+        }
+      } else if ((isIndented || !hasCommitMeta) &&
+          currentCategory != null &&
+          groups[currentCategory]!.isNotEmpty) {
+        // Description sub-bullet belonging to the previous entry
+        if (content.isNotEmpty) {
+          content = content[0].toUpperCase() + content.substring(1);
+          final parentIdx = groups[currentCategory]!.length - 1;
+          groups[currentCategory]![parentIdx] += '\n   • $content';
+        }
+      } else {
+        currentCategory = 'other:';
+        if (content.isNotEmpty) {
+          content = content[0].toUpperCase() + content.substring(1);
+          if (!groups['other:']!.contains(content)) {
+            groups['other:']!.add(content);
+          }
         }
       }
     }
