@@ -18,6 +18,8 @@ jobs:
 
     permissions:
       contents: write
+      id-token: write
+      attestations: write
 
     steps:
       - name: Checkout Code Repository
@@ -149,6 +151,45 @@ jobs:
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk release_apks/CardMinder-${{ env.VERSION }}-arm64-v8a.apk
           cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk release_apks/CardMinder-${{ env.VERSION }}-armeabi-v7a.apk
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk release_apks/CardMinder-${{ env.VERSION }}-x86_64.apk
+
+      - name: Configure SSH Signing and Create Signed Tag
+        if: steps.version_changed.outputs.should_release == 'true'
+        env:
+          SSH_SIGNING_KEY: ${{ secrets.SSH_SIGNING_KEY }}
+        run: |
+          if [ -n "$SSH_SIGNING_KEY" ]; then
+            echo "Configuring SSH key for signed git tag..."
+            mkdir -p ~/.ssh
+            trap 'rm -f ~/.ssh/id_signing' EXIT
+            printf '%s\n' "$SSH_SIGNING_KEY" | tr -d '\r' > ~/.ssh/id_signing
+            chmod 600 ~/.ssh/id_signing
+
+            git config --global user.name "GamerJagdish"
+            git config --global user.email "83897547+GamerJagdish@users.noreply.github.com"
+            git config --global gpg.format ssh
+            git config --global user.signingkey ~/.ssh/id_signing
+            git config --global tag.gpgsign true
+
+            git fetch --tags origin || true
+            if ! git rev-parse "${{ env.TAG_NAME }}" >/dev/null 2>&1; then
+              echo "Creating signed tag: ${{ env.TAG_NAME }}"
+              git tag -s "${{ env.TAG_NAME }}" -m "Release ${{ env.TAG_NAME }}"
+              git push origin "${{ env.TAG_NAME }}"
+            else
+              echo "Tag ${{ env.TAG_NAME }} already exists."
+            fi
+
+            rm -f ~/.ssh/id_signing
+            echo "SSH signing key cleaned up successfully."
+          else
+            echo "SSH_SIGNING_KEY secret not set. Skipping signed tag creation."
+          fi
+
+      - name: Attest APK Artifacts
+        if: steps.version_changed.outputs.should_release == 'true'
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: 'release_apks/*.apk'
 
       - name: Create or Update GitHub Release
         if: steps.version_changed.outputs.should_release == 'true'
