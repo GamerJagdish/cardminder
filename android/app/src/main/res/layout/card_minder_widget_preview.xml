@@ -9,33 +9,79 @@
     <!-- Widget Header Bar -->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
 
-        <TextView
+        <!-- Header Left: App Icon + App Branding -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:text="CARDMINDER"
-            android:textColor="#0F172A"
-            android:textSize="12sp"
-            android:textStyle="bold" />
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
+            <FrameLayout
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:background="@drawable/widget_header_icon_bg">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_notification"
+                    android:tint="@color/widget_icon_tint" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CardMinder"
+                    android:textColor="@color/widget_header_title"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CARD DEADLINES"
+                    android:textColor="@color/widget_header_subtitle"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Header Right: Total Cards Count Pill Badge -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/widget_count_badge_bg"
+            android:paddingLeft="9dp"
+            android:paddingTop="3dp"
+            android:paddingRight="9dp"
+            android:paddingBottom="3dp"
             android:text="3 CARDS"
-            android:textColor="#94A3B8"
-            android:textSize="10sp"
+            android:textColor="@color/widget_badge_text"
+            android:textSize="9sp"
             android:textStyle="bold" />
     </RelativeLayout>
 
+    <!-- Header Divider Line -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="7dp"
         android:layout_marginBottom="6dp"
-        android:background="#E2E8F0" />
+        android:background="@color/widget_divider" />
 
     <!-- Preview Multi-Card List -->
     <LinearLayout
@@ -47,129 +93,312 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/widget_card_item_bg"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="3dp">
+            android:padding="5dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#1E293B"
-                android:paddingLeft="5dp"
-                android:paddingTop="2dp"
-                android:paddingRight="5dp"
-                android:paddingBottom="2dp"
-                android:text="7712"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+            <!-- Mini Credit Card Graphic -->
+            <FrameLayout
+                android:layout_width="42dp"
+                android:layout_height="26dp"
+                android:background="@drawable/widget_preview_card_1">
 
-            <TextView
+                <FrameLayout
+                    android:layout_width="9dp"
+                    android:layout_height="7dp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/widget_preview_chip" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|right"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginRight="4dp"
+                    android:text="VISA"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="6sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|left"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginBottom="2dp"
+                    android:text="7712"
+                    android:textColor="#FFFFFF"
+                    android:textSize="7sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:orientation="vertical"
                 android:paddingLeft="8dp"
-                android:text="HDFC Regalia Gold"
-                android:textColor="#0F172A"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:paddingRight="6dp">
 
-            <TextView
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="HDFC Regalia Gold"
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Visa • •••• 7712"
+                    android:textColor="@color/widget_text_secondary"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="18d"
-                android:textColor="#EF4444"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical|right"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:text="18d"
+                    android:textColor="@color/widget_status_critical_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_badge_critical"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="2dp"
+                    android:text="URGENT"
+                    android:textColor="@color/widget_status_critical_text"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Card Row 2 (Warning: Amber) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/widget_card_item_bg"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="3dp">
+            android:padding="5dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#1E293B"
-                android:paddingLeft="5dp"
-                android:paddingTop="2dp"
-                android:paddingRight="5dp"
-                android:paddingBottom="2dp"
-                android:text="4821"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+            <!-- Mini Credit Card Graphic -->
+            <FrameLayout
+                android:layout_width="42dp"
+                android:layout_height="26dp"
+                android:background="@drawable/widget_preview_card_2">
 
-            <TextView
+                <FrameLayout
+                    android:layout_width="9dp"
+                    android:layout_height="7dp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/widget_preview_chip" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|right"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginRight="4dp"
+                    android:text="MC"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="6sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|left"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginBottom="2dp"
+                    android:text="4821"
+                    android:textColor="#FFFFFF"
+                    android:textSize="7sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:orientation="vertical"
                 android:paddingLeft="8dp"
-                android:text="ICICI Sapphiro"
-                android:textColor="#0F172A"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:paddingRight="6dp">
 
-            <TextView
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="ICICI Sapphiro"
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Mastercard • •••• 4821"
+                    android:textColor="@color/widget_text_secondary"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="45d"
-                android:textColor="#F59E0B"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical|right"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:text="45d"
+                    android:textColor="@color/widget_status_warning_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_badge_warning"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="2dp"
+                    android:text="WARNING"
+                    android:textColor="@color/widget_status_warning_text"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Card Row 3 (Safe: Green) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/widget_card_item_bg"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="3dp">
+            android:padding="5dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#1E293B"
-                android:paddingLeft="5dp"
-                android:paddingTop="2dp"
-                android:paddingRight="5dp"
-                android:paddingBottom="2dp"
-                android:text="3306"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+            <!-- Mini Credit Card Graphic -->
+            <FrameLayout
+                android:layout_width="42dp"
+                android:layout_height="26dp"
+                android:background="@drawable/widget_preview_card_3">
 
-            <TextView
+                <FrameLayout
+                    android:layout_width="9dp"
+                    android:layout_height="7dp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/widget_preview_chip" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|right"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginRight="4dp"
+                    android:text="VISA"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="6sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|left"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginBottom="2dp"
+                    android:text="3306"
+                    android:textColor="#FFFFFF"
+                    android:textSize="7sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:orientation="vertical"
                 android:paddingLeft="8dp"
-                android:text="SBI Cashback"
-                android:textColor="#0F172A"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:paddingRight="6dp">
 
-            <TextView
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="SBI Cashback"
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Visa • •••• 3306"
+                    android:textColor="@color/widget_text_secondary"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="120d"
-                android:textColor="#10B981"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical|right"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:text="120d"
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_badge_safe"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="2dp"
+                    android:text="SAFE"
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
