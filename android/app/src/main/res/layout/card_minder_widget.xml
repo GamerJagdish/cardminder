@@ -9,36 +9,124 @@
 
     <!-- Widget Header Bar -->
     <RelativeLayout
+        android:id="@+id/widget_header"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/widget_title"
+        <!-- Header Left: App Icon + App Branding -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:text="CARDMINDER"
-            android:textColor="#0F172A"
-            android:textSize="12sp"
-            android:textStyle="bold" />
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
+            <FrameLayout
+                android:id="@+id/widget_header_icon_container"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:background="@drawable/widget_header_icon_bg">
+
+                <ImageView
+                    android:id="@+id/widget_header_icon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_notification"
+                    android:tint="@color/widget_icon_tint" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/widget_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CardMinder"
+                    android:textColor="@color/widget_header_title"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_tracker_tag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CARD DEADLINES"
+                    android:textColor="@color/widget_header_subtitle"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Header Right: Total Cards Count Pill Badge -->
         <TextView
             android:id="@+id/widget_cards_count_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/widget_count_badge_bg"
+            android:paddingLeft="9dp"
+            android:paddingTop="3dp"
+            android:paddingRight="9dp"
+            android:paddingBottom="3dp"
             android:text="0 CARDS"
-            android:textColor="#94A3B8"
-            android:textSize="10sp"
+            android:textColor="@color/widget_badge_text"
+            android:textSize="9sp"
             android:textStyle="bold" />
     </RelativeLayout>
 
+    <!-- Header Divider Line -->
     <FrameLayout
+        android:id="@+id/widget_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="7dp"
         android:layout_marginBottom="6dp"
-        android:background="#E2E8F0" />
+        android:background="@color/widget_divider" />
+
+    <!-- Empty State View -->
+    <LinearLayout
+        android:id="@+id/widget_empty_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/widget_empty_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_notification"
+            android:tint="@color/widget_icon_tint" />
+
+        <TextView
+            android:id="@+id/widget_empty_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="All cards are active"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_empty_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Tap to manage your cards"
+            android:textColor="@color/widget_empty_text"
+            android:textSize="10sp" />
+    </LinearLayout>
 
     <!-- Multi-Card List Container (up to 5 rows in 4x2 space) -->
     <LinearLayout
@@ -52,46 +140,78 @@
             android:id="@+id/widget_row_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/widget_card_item_bg"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="3dp">
+            android:padding="5dp">
 
-            <TextView
-                android:id="@+id/widget_digits_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#1E293B"
-                android:paddingLeft="5dp"
-                android:paddingTop="2dp"
-                android:paddingRight="5dp"
-                android:paddingBottom="2dp"
-                android:text="7712"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/widget_card_image_1"
+                android:layout_width="42dp"
+                android:layout_height="26dp"
+                android:scaleType="fitCenter" />
 
-            <TextView
-                android:id="@+id/widget_name_1"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:orientation="vertical"
                 android:paddingLeft="8dp"
-                android:text="No Cards Tracked"
-                android:textColor="#0F172A"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:paddingRight="6dp">
 
-            <TextView
-                android:id="@+id/widget_days_1"
+                <TextView
+                    android:id="@+id/widget_name_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Card Name"
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_subtitle_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Visa"
+                    android:textColor="@color/widget_text_secondary"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="—"
-                android:textColor="#10B981"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical|right"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/widget_days_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:text="30d"
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_status_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_badge_safe"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="2dp"
+                    android:text="SAFE"
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Card Row 2 -->
@@ -99,47 +219,79 @@
             android:id="@+id/widget_row_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/widget_card_item_bg"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="3dp"
+            android:padding="5dp"
             android:visibility="gone">
 
-            <TextView
-                android:id="@+id/widget_digits_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#1E293B"
-                android:paddingLeft="5dp"
-                android:paddingTop="2dp"
-                android:paddingRight="5dp"
-                android:paddingBottom="2dp"
-                android:text="4821"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/widget_card_image_2"
+                android:layout_width="42dp"
+                android:layout_height="26dp"
+                android:scaleType="fitCenter" />
 
-            <TextView
-                android:id="@+id/widget_name_2"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:orientation="vertical"
                 android:paddingLeft="8dp"
-                android:text=""
-                android:textColor="#0F172A"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:paddingRight="6dp">
 
-            <TextView
-                android:id="@+id/widget_days_2"
+                <TextView
+                    android:id="@+id/widget_name_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text=""
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_subtitle_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text=""
+                    android:textColor="@color/widget_text_secondary"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#EF4444"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical|right"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/widget_days_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:text=""
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_status_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_badge_safe"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="2dp"
+                    android:text="SAFE"
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Card Row 3 -->
@@ -147,47 +299,79 @@
             android:id="@+id/widget_row_3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/widget_card_item_bg"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="3dp"
+            android:padding="5dp"
             android:visibility="gone">
 
-            <TextView
-                android:id="@+id/widget_digits_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#1E293B"
-                android:paddingLeft="5dp"
-                android:paddingTop="2dp"
-                android:paddingRight="5dp"
-                android:paddingBottom="2dp"
-                android:text="3306"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/widget_card_image_3"
+                android:layout_width="42dp"
+                android:layout_height="26dp"
+                android:scaleType="fitCenter" />
 
-            <TextView
-                android:id="@+id/widget_name_3"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:orientation="vertical"
                 android:paddingLeft="8dp"
-                android:text=""
-                android:textColor="#0F172A"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:paddingRight="6dp">
 
-            <TextView
-                android:id="@+id/widget_days_3"
+                <TextView
+                    android:id="@+id/widget_name_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text=""
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_subtitle_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text=""
+                    android:textColor="@color/widget_text_secondary"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#10B981"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical|right"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/widget_days_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:text=""
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_status_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_badge_safe"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="2dp"
+                    android:text="SAFE"
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Card Row 4 -->
@@ -195,47 +379,79 @@
             android:id="@+id/widget_row_4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/widget_card_item_bg"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="3dp"
+            android:padding="5dp"
             android:visibility="gone">
 
-            <TextView
-                android:id="@+id/widget_digits_4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#1E293B"
-                android:paddingLeft="5dp"
-                android:paddingTop="2dp"
-                android:paddingRight="5dp"
-                android:paddingBottom="2dp"
-                android:text="0000"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/widget_card_image_4"
+                android:layout_width="42dp"
+                android:layout_height="26dp"
+                android:scaleType="fitCenter" />
 
-            <TextView
-                android:id="@+id/widget_name_4"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:orientation="vertical"
                 android:paddingLeft="8dp"
-                android:text=""
-                android:textColor="#0F172A"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:paddingRight="6dp">
 
-            <TextView
-                android:id="@+id/widget_days_4"
+                <TextView
+                    android:id="@+id/widget_name_4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text=""
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_subtitle_4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text=""
+                    android:textColor="@color/widget_text_secondary"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#10B981"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical|right"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/widget_days_4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:text=""
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_status_4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_badge_safe"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="2dp"
+                    android:text="SAFE"
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Card Row 5 -->
@@ -243,47 +459,79 @@
             android:id="@+id/widget_row_5"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/widget_card_item_bg"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="3dp"
+            android:padding="5dp"
             android:visibility="gone">
 
-            <TextView
-                android:id="@+id/widget_digits_5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#1E293B"
-                android:paddingLeft="5dp"
-                android:paddingTop="2dp"
-                android:paddingRight="5dp"
-                android:paddingBottom="2dp"
-                android:text="0000"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/widget_card_image_5"
+                android:layout_width="42dp"
+                android:layout_height="26dp"
+                android:scaleType="fitCenter" />
 
-            <TextView
-                android:id="@+id/widget_name_5"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:orientation="vertical"
                 android:paddingLeft="8dp"
-                android:text=""
-                android:textColor="#0F172A"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:paddingRight="6dp">
 
-            <TextView
-                android:id="@+id/widget_days_5"
+                <TextView
+                    android:id="@+id/widget_name_5"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text=""
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_subtitle_5"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text=""
+                    android:textColor="@color/widget_text_secondary"
+                    android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#10B981"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical|right"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/widget_days_5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:text=""
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_status_5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/widget_badge_safe"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="2dp"
+                    android:text="SAFE"
+                    android:textColor="@color/widget_status_safe_text"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
