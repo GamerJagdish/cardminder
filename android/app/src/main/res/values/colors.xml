@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget Light Mode Colors (High Contrast & Crisp) -->
+    <color name="widget_bg">#FFFFFF</color>
+    <color name="widget_border">#CBD5E1</color>
+    <color name="widget_header_title">#0F172A</color>
+    <color name="widget_header_subtitle">#334155</color>
+    <color name="widget_header_icon_bg">#EEF2F6</color>
+    <color name="widget_icon_tint">#0F172A</color>
+    <color name="widget_badge_bg">#EEF2F6</color>
+    <color name="widget_badge_border">#CBD5E1</color>
+    <color name="widget_badge_text">#0F172A</color>
+    <color name="widget_divider">#E2E8F0</color>
+    <color name="widget_card_item_bg">#F8FAFC</color>
+    <color name="widget_card_item_border">#E2E8F0</color>
+    <color name="widget_text_primary">#0F172A</color>
+    <color name="widget_text_secondary">#334155</color>
+    <color name="widget_empty_text">#334155</color>
+
+    <!-- Urgency Status Colors (Light Mode - Bold, High-Contrast Text) -->
+    <color name="widget_status_safe_text">#047857</color>
+    <color name="widget_status_safe_bg">#DCFCE7</color>
+    <color name="widget_status_warning_text">#B45309</color>
+    <color name="widget_status_warning_bg">#FEF3C7</color>
+    <color name="widget_status_critical_text">#B91C1C</color>
+    <color name="widget_status_critical_bg">#FEE2E2</color>
+    <color name="widget_status_expired_text">#334155</color>
+    <color name="widget_status_expired_bg">#E2E8F0</color>
+</resources>

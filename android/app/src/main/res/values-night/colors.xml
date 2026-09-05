@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget Dark Mode Colors -->
+    <color name="widget_bg">#1E293B</color>
+    <color name="widget_border">#334155</color>
+    <color name="widget_header_title">#F8FAFC</color>
+    <color name="widget_header_subtitle">#94A3B8</color>
+    <color name="widget_header_icon_bg">#0F172A</color>
+    <color name="widget_icon_tint">#F8FAFC</color>
+    <color name="widget_badge_bg">#0F172A</color>
+    <color name="widget_badge_border">#334155</color>
+    <color name="widget_badge_text">#F8FAFC</color>
+    <color name="widget_divider">#334155</color>
+    <color name="widget_card_item_bg">#0F172A</color>
+    <color name="widget_card_item_border">#1E293B</color>
+    <color name="widget_text_primary">#F8FAFC</color>
+    <color name="widget_text_secondary">#94A3B8</color>
+    <color name="widget_empty_text">#94A3B8</color>
+
+    <!-- Urgency Status Colors (Dark Mode) -->
+    <color name="widget_status_safe_text">#34D399</color>
+    <color name="widget_status_safe_bg">#064E3B</color>
+    <color name="widget_status_warning_text">#FDE047</color>
+    <color name="widget_status_warning_bg">#78350F</color>
+    <color name="widget_status_critical_text">#FCA5A5</color>
+    <color name="widget_status_critical_bg">#7F1D1D</color>
+    <color name="widget_status_expired_text">#94A3B8</color>
+    <color name="widget_status_expired_bg">#1E293B</color>
+</resources>
