@@ -35,6 +35,38 @@ void main() {
       expect(release.formattedDate, '');
       expect(release.formattedSize, '10.0 MB');
     });
+
+    test('architecture and displayTitle extract correctly from apkFileName', () {
+      final releaseX86 = AppReleaseInfo(
+        version: '1.2.5',
+        apkUrl: 'https://example.com/cardminder.apk',
+        releaseNotes: 'Notes',
+        apkFileName: 'CardMinder-1.2.5-x86_64.apk',
+        apkSizeBytes: 27892121,
+      );
+      expect(releaseX86.architecture, 'x86_64');
+      expect(releaseX86.displayTitle, 'CardMinder 1.2.5 (x86_64)');
+
+      final releaseArm = AppReleaseInfo(
+        version: 'v1.2.5',
+        apkUrl: 'https://example.com/cardminder.apk',
+        releaseNotes: 'Notes',
+        apkFileName: 'CardMinder-1.2.5-arm64-v8a.apk',
+        apkSizeBytes: 27892121,
+      );
+      expect(releaseArm.architecture, 'arm64-v8a');
+      expect(releaseArm.displayTitle, 'CardMinder 1.2.5 (arm64-v8a)');
+
+      final releaseGeneric = AppReleaseInfo(
+        version: '1.2.5',
+        apkUrl: 'https://example.com/cardminder.apk',
+        releaseNotes: 'Notes',
+        apkFileName: 'cardminder-v1.2.5.apk',
+        apkSizeBytes: 27892121,
+      );
+      expect(releaseGeneric.architecture, '');
+      expect(releaseGeneric.displayTitle, 'CardMinder 1.2.5');
+    });
   });
 
   group('UpdateScreen Widget', () {
@@ -42,7 +74,7 @@ void main() {
       version: '1.2.5',
       apkUrl: 'https://example.com/cardminder.apk',
       releaseNotes: "## What's Changed\n* feat: shiny new feature",
-      apkFileName: 'cardminder-v1.2.5.apk',
+      apkFileName: 'CardMinder-1.2.5-x86_64.apk',
       apkSizeBytes: 27892121,
       publishedAt: DateTime(2026, 9, 5),
     );
@@ -75,13 +107,15 @@ void main() {
 
       // Verify title & app name
       expect(find.text('Update Available'), findsOneWidget);
-      expect(find.text('CardMinder'), findsOneWidget);
-      expect(find.text('cardminder-v1.2.5.apk'), findsOneWidget);
+      expect(find.text('CardMinder 1.2.5 (x86_64)'), findsOneWidget);
 
-      // Verify version progression and badges
-      expect(find.text('v1.2.4 -> v1.2.5'), findsOneWidget);
+      // Verify date and size badges
       expect(find.text('26.6 MB'), findsOneWidget);
       expect(find.text('Sep 5, 2026'), findsOneWidget);
+
+      // Verify What's New section (no star/sparkle icon)
+      expect(find.text("WHAT'S NEW"), findsOneWidget);
+      expect(find.byIcon(Icons.auto_awesome_rounded), findsNothing);
 
       // Verify primary download button says "Download" (no icon, no size in text)
       expect(find.text('Download'), findsOneWidget);

@@ -36,6 +36,40 @@ class AppReleaseInfo {
     if (publishedAt == null) return '';
     return DateFormat('MMM d, y').format(publishedAt!);
   }
+
+  String get cleanVersion {
+    if (version.startsWith('v.') || version.startsWith('V.')) {
+      return version.substring(2);
+    }
+    if (version.startsWith('v') || version.startsWith('V')) {
+      return version.substring(1);
+    }
+    return version;
+  }
+
+  String get architecture {
+    final name = apkFileName.toLowerCase();
+    if (name.contains('arm64-v8a') || name.contains('arm64')) {
+      return 'arm64-v8a';
+    } else if (name.contains('armeabi-v7a') || name.contains('armv7')) {
+      return 'armeabi-v7a';
+    } else if (name.contains('x86_64')) {
+      return 'x86_64';
+    } else if (name.contains('x86')) {
+      return 'x86';
+    } else if (name.contains('universal') || name.contains('all-devices')) {
+      return 'universal';
+    }
+    return '';
+  }
+
+  String get displayTitle {
+    final arch = architecture;
+    if (arch.isNotEmpty) {
+      return 'CardMinder $cleanVersion ($arch)';
+    }
+    return 'CardMinder $cleanVersion';
+  }
 }
 
 class CategorizedChangelog {
@@ -748,6 +782,22 @@ class _UpdateScreenState extends State<UpdateScreen> {
     final isDownloading = _downloadManager.isDownloading;
     final isReadyToInstall = _cachedApkPath != null && !isDownloading;
 
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    final screenHeight = mediaQuery.size.height;
+    final horizontalInset = screenWidth < 500 ? 16.0 : 24.0;
+    final availableWidth = screenWidth - (horizontalInset * 2);
+
+    final double dialogWidth;
+    if (screenWidth >= 1000) {
+      dialogWidth = 640.0;
+    } else if (screenWidth >= 600) {
+      dialogWidth = (screenWidth * 0.70).clamp(480.0, 620.0);
+    } else {
+      dialogWidth = availableWidth;
+    }
+    final targetWidth = dialogWidth.clamp(0.0, availableWidth);
+
     return PopScope(
       canPop: true,
       child: Dialog(
@@ -756,12 +806,16 @@ class _UpdateScreenState extends State<UpdateScreen> {
         ),
         backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
         surfaceTintColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: horizontalInset,
+          vertical: 24,
+        ),
         clipBehavior: Clip.antiAlias,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.90,
-            maxWidth: 420,
+            maxHeight: screenHeight * 0.90,
+            maxWidth: targetWidth,
+            minWidth: targetWidth,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -788,7 +842,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                   shrinkWrap: true,
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 18),
                   children: [
-                    // Hero Card: CardMinder -> apk file name -> version & (date + size)
+                    // Hero Card: CardMinder <version> (<arch>) -> (date + size)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(18),
@@ -806,50 +860,17 @@ class _UpdateScreenState extends State<UpdateScreen> {
                       child: Column(
                         children: [
                           Text(
-                            'CardMinder',
+                            widget.release.displayTitle,
                             style: TextStyle(
                               fontSize: 21,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            widget.release.apkFileName,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppTheme.textMuted,
-                              fontFamily: 'monospace',
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 14),
-                          // Version upgrade pill without icon
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentEmerald
-                                  .withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: AppTheme.accentEmerald
-                                    .withValues(alpha: 0.25),
-                                width: 0.8,
-                              ),
-                            ),
-                            child: Text(
-                              'v${widget.currentVersion} -> v${widget.release.version}',
-                              style: const TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.accentEmerald,
-                              ),
-                            ),
+                            textAlign: TextAlign.center,
                           ),
                           if (widget.release.formattedDate.isNotEmpty ||
                               widget.release.formattedSize.isNotEmpty) ...[
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 12),
                             // Date pill and then Size pill together
                             Wrap(
                               spacing: 8,
@@ -932,25 +953,18 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     ),
                     const SizedBox(height: 22),
 
-                    // "What's New" Section Header (Icon on the right side)
-                    Row(
-                      children: [
-                        Text(
-                          "WHAT'S NEW",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.1,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                    // "What's New" Section Header (Centered, no icon)
+                    Center(
+                      child: Text(
+                        "WHAT'S NEW",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.auto_awesome_rounded,
-                          size: 19,
-                          color: AppTheme.accentEmerald,
-                        ),
-                      ],
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                     const SizedBox(height: 12),
 
