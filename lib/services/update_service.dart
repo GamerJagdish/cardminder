@@ -209,6 +209,189 @@ class ChangelogParser {
   }
 }
 
+class ChangelogSectionHelper {
+  static String categoryTitle(String key) {
+    switch (key) {
+      case 'feature:':
+        return 'Features';
+      case 'fix:':
+        return 'Bug Fixes';
+      case 'refactor:':
+        return 'Improvements';
+      case 'chore:':
+        return 'Maintenance';
+      case 'other:':
+      default:
+        return 'Other Changes';
+    }
+  }
+
+  static Color categoryColor(String key) {
+    switch (key) {
+      case 'feature:':
+        return AppTheme.accentEmerald;
+      case 'fix:':
+        return const Color(0xFFF43F5E); // Rose 500
+      case 'refactor:':
+        return const Color(0xFF38BDF8); // Sky 400
+      case 'chore:':
+        return const Color(0xFFA78BFA); // Violet 400
+      case 'other:':
+      default:
+        return const Color(0xFF94A3B8); // Slate 400
+    }
+  }
+
+  static Widget buildCategorizedNotes({
+    required BuildContext context,
+    required CategorizedChangelog changelog,
+    required String rawNotes,
+    required bool isDark,
+  }) {
+    if (changelog.isEmpty) {
+      final fallback = rawNotes.trim().isNotEmpty
+          ? rawNotes.trim()
+          : 'Performance enhancements and bug fixes.';
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xFF0F172A)
+              : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDark
+                ? const Color(0xFF1E293B)
+                : const Color(0xFFE2E8F0),
+          ),
+        ),
+        child: Text(
+          fallback,
+          style: TextStyle(
+            fontSize: 14.5,
+            height: 1.55,
+            letterSpacing: 0.15,
+            color: isDark
+                ? const Color(0xFFCBD5E1)
+                : const Color(0xFF334155),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final entry in changelog.categories.entries) ...[
+          // Category Pill Badge
+          Container(
+            margin: const EdgeInsets.only(top: 8, bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+            decoration: BoxDecoration(
+              color: categoryColor(entry.key)
+                  .withValues(alpha: isDark ? 0.14 : 0.10),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: categoryColor(entry.key)
+                    .withValues(alpha: isDark ? 0.28 : 0.20),
+                width: 0.8,
+              ),
+            ),
+            child: Text(
+              categoryTitle(entry.key),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: categoryColor(entry.key),
+                letterSpacing: 0.3,
+              ),
+            ),
+          ),
+          // List of items in this category
+          for (int i = 0; i < entry.value.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(left: 2, bottom: 12, right: 2),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 8.5, right: 10, left: 2),
+                    width: 5.5,
+                    height: 5.5,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isDark
+                          ? const Color(0xFF64748B)
+                          : const Color(0xFF94A3B8),
+                    ),
+                  ),
+                  Expanded(
+                    child: _buildItemContent(entry.value[i], isDark),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 4),
+        ],
+      ],
+    );
+  }
+
+  static Widget _buildItemContent(String rawItem, bool isDark) {
+    if (rawItem.contains('\n')) {
+      final parts = rawItem.split('\n');
+      final title = parts.first;
+      final subLines = parts.sublist(1);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14.5,
+              height: 1.50,
+              letterSpacing: 0.15,
+              color: isDark
+                  ? const Color(0xFFE2E8F0)
+                  : const Color(0xFF1E293B),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          for (final sub in subLines)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, left: 4),
+              child: Text(
+                sub.trim(),
+                style: TextStyle(
+                  fontSize: 13.5,
+                  height: 1.50,
+                  letterSpacing: 0.1,
+                  color: isDark
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF64748B),
+                ),
+              ),
+            ),
+        ],
+      );
+    }
+
+    return Text(
+      rawItem,
+      style: TextStyle(
+        fontSize: 14.5,
+        height: 1.55,
+        letterSpacing: 0.15,
+        color: isDark
+            ? const Color(0xFFCBD5E1)
+            : const Color(0xFF334155),
+        fontWeight: FontWeight.w400,
+      ),
+    );
+  }
+}
+
 class UpdateDownloadManager extends ChangeNotifier {
   static final UpdateDownloadManager instance = UpdateDownloadManager._();
   UpdateDownloadManager._();
@@ -950,93 +1133,30 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     ),
                     const SizedBox(height: 22),
 
-                    // "What's New" Section Header (Centered, no icon)
+                    // "What's New" Section Header (Centered, muted, easy on eyes)
                     Center(
                       child: Text(
                         "WHAT'S NEW",
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 12.5,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 1.1,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          letterSpacing: 1.2,
+                          color: isDark
+                              ? const Color(0xFF94A3B8)
+                              : const Color(0xFF64748B),
                         ),
                         textAlign: TextAlign.center,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
 
-                    // Categorized Release Notes (logs increased by 2)
-                    if (!changelog.isEmpty) ...[
-                      for (final entry in changelog.categories.entries) ...[
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6, bottom: 8),
-                          child: Text(
-                            entry.key,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
-                              fontFamily: 'monospace',
-                            ),
-                          ),
-                        ),
-                        for (int i = 0; i < entry.value.length; i++)
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 4, bottom: 8, right: 4),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${i + 1}. ',
-                                  style: TextStyle(
-                                    fontSize: 15.5,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    entry.value[i],
-                                    style: TextStyle(
-                                      fontSize: 15.5,
-                                      height: 1.45,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withValues(alpha: 0.9),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        const SizedBox(height: 8),
-                      ],
-                    ] else
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Text(
-                          widget.release.releaseNotes.trim().isNotEmpty
-                              ? widget.release.releaseNotes.trim()
-                              : 'Performance enhancements and bug fixes.',
-                          style: TextStyle(
-                            fontSize: 15,
-                            height: 1.4,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.85),
-                          ),
-                        ),
-                      ),
+                    // Categorized Release Notes
+                    ChangelogSectionHelper.buildCategorizedNotes(
+                      context: context,
+                      changelog: changelog,
+                      rawNotes: widget.release.releaseNotes,
+                      isDark: isDark,
+                    ),
                   ],
                 ),
               ),
@@ -1708,95 +1828,25 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                                                 .formattedDate.isNotEmpty)
                                               Text(
                                                 release.formattedDate,
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: AppTheme.textMuted,
+                                                style: TextStyle(
+                                                  fontSize: 12.5,
+                                                  color: isDark
+                                                      ? const Color(0xFF94A3B8)
+                                                      : const Color(0xFF64748B),
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
                                           ],
                                         ),
-                                        const SizedBox(height: 10),
+                                        const SizedBox(height: 6),
 
                                         // Categorized notes
-                                        if (!changelog.isEmpty) ...[
-                                          for (final entry in changelog
-                                              .categories.entries) ...[
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 4, bottom: 6),
-                                              child: Text(
-                                                entry.key,
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .primary,
-                                                  fontFamily: 'monospace',
-                                                ),
-                                              ),
-                                            ),
-                                            for (int i = 0;
-                                                i < entry.value.length;
-                                                i++)
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 2,
-                                                    bottom: 6,
-                                                    right: 2),
-                                                child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      '${i + 1}. ',
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Theme.of(context)
-                                                            .colorScheme
-                                                            .onSurface,
-                                                      ),
-                                                    ),
-                                                    Expanded(
-                                                      child: Text(
-                                                        entry.value[i],
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          height: 1.45,
-                                                          color:
-                                                              Theme.of(context)
-                                                                  .colorScheme
-                                                                  .onSurface
-                                                                  .withValues(
-                                                                      alpha:
-                                                                          0.9),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            const SizedBox(height: 6),
-                                          ],
-                                        ] else
-                                          Text(
-                                            release.releaseNotes
-                                                    .trim()
-                                                    .isNotEmpty
-                                                ? release.releaseNotes.trim()
-                                                : 'Performance improvements and bug fixes.',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              height: 1.4,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface
-                                                  .withValues(alpha: 0.85),
-                                            ),
-                                          ),
+                                        ChangelogSectionHelper.buildCategorizedNotes(
+                                          context: context,
+                                          changelog: changelog,
+                                          rawNotes: release.releaseNotes,
+                                          isDark: isDark,
+                                        ),
                                       ],
                                     ),
                                   );
