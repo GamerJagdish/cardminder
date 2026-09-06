@@ -147,7 +147,9 @@ class NotificationService {
   }
 
   static Future<void> cancelUpdateNotification() async {
-    await _notificationsPlugin.cancel(id: updateNotificationId);
+    try {
+      await _notificationsPlugin.cancel(id: updateNotificationId);
+    } catch (_) {}
   }
 
   static Future<void> requestPermissions() async {
