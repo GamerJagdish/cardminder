@@ -553,11 +553,9 @@ class UpdateService {
       if (!context.mounted) return;
 
       if (isNewer) {
-        showModalBottomSheet(
+        showDialog(
           context: context,
-          isScrollControlled: true,
-          useSafeArea: true,
-          backgroundColor: Colors.transparent,
+          barrierDismissible: true,
           builder: (dialogCtx) => UpdateScreen(
             release: release!,
             updater: updater,
@@ -752,373 +750,361 @@ class _UpdateScreenState extends State<UpdateScreen> {
 
     return PopScope(
       canPop: true,
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.92,
-        decoration: BoxDecoration(
-          color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          border: Border(
-            top: BorderSide(
-              color: isDark
-                  ? const Color(0xFF334155)
-                  : const Color(0xFFE2E8F0),
-              width: 1.2,
-            ),
-          ),
+      child: Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
         ),
-        child: Column(
-          children: [
-            // Top Drag Handle
-            Center(
-              child: Container(
-                width: 38,
-                height: 4.5,
-                margin: const EdgeInsets.only(top: 10, bottom: 2),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF475569)
-                      : const Color(0xFFCBD5E1),
-                  borderRadius: BorderRadius.circular(2.5),
+        backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
+        surfaceTintColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        clipBehavior: Clip.antiAlias,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.82,
+            maxWidth: 420,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 1. Top Bar: Header (No close button, no drag handle)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF1F5F9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.system_update_alt_rounded,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 21,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Update Available',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+              const Divider(height: 1),
 
-            // 1. Top Bar: Header & Dismiss
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF1F5F9),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.system_update_alt_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Update Available',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded),
-                    color: AppTheme.textMuted,
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-
-            // 2. Scrollable Body
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-                children: [
-                  // Hero Card: CardMinder -> apk file name -> version & size & date
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF0F172A)
-                          : const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF1E293B)
-                            : const Color(0xFFE2E8F0),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          'CardMinder',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          widget.release.apkFileName,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.textMuted,
-                            fontFamily: 'monospace',
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 14),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          alignment: WrapAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: AppTheme.accentEmerald
-                                    .withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: AppTheme.accentEmerald
-                                      .withValues(alpha: 0.25),
-                                  width: 0.8,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.arrow_upward_rounded,
-                                    size: 13,
-                                    color: AppTheme.accentEmerald,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'v${widget.currentVersion} -> v${widget.release.version}',
-                                    style: const TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.accentEmerald,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (widget.release.formattedSize.isNotEmpty)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF1E293B)
-                                      : const Color(0xFFE2E8F0),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.storage_rounded,
-                                      size: 12,
-                                      color: isDark
-                                          ? const Color(0xFF94A3B8)
-                                          : const Color(0xFF64748B),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      widget.release.formattedSize,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            if (widget.release.formattedDate.isNotEmpty)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF1E293B)
-                                      : const Color(0xFFE2E8F0),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.calendar_today_rounded,
-                                      size: 11,
-                                      color: isDark
-                                          ? const Color(0xFF94A3B8)
-                                          : const Color(0xFF64748B),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      widget.release.formattedDate,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-
-                  // "What's New" Section Header
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.auto_awesome_rounded,
-                        size: 18,
-                        color: AppTheme.accentEmerald,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "WHAT'S NEW",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.1,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Categorized Release Notes
-                  if (!changelog.isEmpty) ...[
-                    for (final entry in changelog.categories.entries) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6, bottom: 8),
-                        child: Text(
-                          entry.key,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                            fontFamily: 'monospace',
-                          ),
-                        ),
-                      ),
-                      for (int i = 0; i < entry.value.length; i++)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 4, bottom: 8, right: 4),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${i + 1}. ',
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  entry.value[i],
-                                  style: TextStyle(
-                                    fontSize: 13.5,
-                                    height: 1.45,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.9),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                    ],
-                  ] else
+              // 2. Scrollable Body
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                  children: [
+                    // Hero Card: CardMinder -> apk file name -> version & (date + size)
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0xFF0F172A)
                             : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF1E293B)
+                              : const Color(0xFFE2E8F0),
+                        ),
                       ),
-                      child: Text(
-                        widget.release.releaseNotes.trim().isNotEmpty
-                            ? widget.release.releaseNotes.trim()
-                            : 'Performance enhancements and bug fixes.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          height: 1.4,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.85),
+                      child: Column(
+                        children: [
+                          Text(
+                            'CardMinder',
+                            style: TextStyle(
+                              fontSize: 21,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            widget.release.apkFileName,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppTheme.textMuted,
+                              fontFamily: 'monospace',
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 14),
+                          // Version upgrade pill without icon
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentEmerald
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppTheme.accentEmerald
+                                    .withValues(alpha: 0.25),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              'v${widget.currentVersion} -> v${widget.release.version}',
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.accentEmerald,
+                              ),
+                            ),
+                          ),
+                          if (widget.release.formattedDate.isNotEmpty ||
+                              widget.release.formattedSize.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            // Date pill and then Size pill together
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 6,
+                              alignment: WrapAlignment.center,
+                              children: [
+                                if (widget.release.formattedDate.isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFE2E8F0),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.calendar_today_rounded,
+                                          size: 12,
+                                          color: isDark
+                                              ? const Color(0xFF94A3B8)
+                                              : const Color(0xFF64748B),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          widget.release.formattedDate,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                if (widget.release.formattedSize.isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFE2E8F0),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.storage_rounded,
+                                          size: 13,
+                                          color: isDark
+                                              ? const Color(0xFF94A3B8)
+                                              : const Color(0xFF64748B),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          widget.release.formattedSize,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+
+                    // "What's New" Section Header
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.auto_awesome_rounded,
+                          size: 19,
+                          color: AppTheme.accentEmerald,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "WHAT'S NEW",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.1,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Categorized Release Notes (logs increased by 2)
+                    if (!changelog.isEmpty) ...[
+                      for (final entry in changelog.categories.entries) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6, bottom: 8),
+                          child: Text(
+                            entry.key,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ),
+                        for (int i = 0; i < entry.value.length; i++)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 4, bottom: 8, right: 4),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${i + 1}. ',
+                                  style: TextStyle(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    entry.value[i],
+                                    style: TextStyle(
+                                      fontSize: 15.5,
+                                      height: 1.45,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.9),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(height: 8),
+                      ],
+                    ] else
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(
+                          widget.release.releaseNotes.trim().isNotEmpty
+                              ? widget.release.releaseNotes.trim()
+                              : 'Performance enhancements and bug fixes.',
+                          style: TextStyle(
+                            fontSize: 15,
+                            height: 1.4,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.85),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              // 3. Sticky Bottom Action Bar
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
+                  border: Border(
+                    top: BorderSide(
+                      color: isDark
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 280),
+                      transitionBuilder: (child, animation) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        );
+                      },
+                      child: isDownloading
+                          ? _buildMorphingProgressButton(context, isDark)
+                          : (isReadyToInstall
+                              ? _buildInstallButton(context, isDark)
+                              : _buildInitialDownloadButton(context, isDark)),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.textMuted,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          'Later',
+                          style: TextStyle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
-
-            // 3. Sticky Bottom Action Bar
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
-              decoration: BoxDecoration(
-                color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
-                border: Border(
-                  top: BorderSide(
-                    color: isDark
-                        ? const Color(0xFF1E293B)
-                        : const Color(0xFFE2E8F0),
-                  ),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                top: false,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 280),
-                  transitionBuilder: (child, animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    );
-                  },
-                  child: isDownloading
-                      ? _buildMorphingProgressButton(context, isDark)
-                      : (isReadyToInstall
-                          ? _buildInstallButton(context, isDark)
-                          : _buildInitialDownloadButton(context, isDark)),
+                  ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1128,7 +1114,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
     return SizedBox(
       key: const ValueKey('initial_download_btn'),
       width: double.infinity,
-      height: 52,
+      height: 50,
       child: ElevatedButton(
         onPressed: _startDownload,
         style: ElevatedButton.styleFrom(
@@ -1140,22 +1126,13 @@ class _UpdateScreenState extends State<UpdateScreen> {
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.download_rounded, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              widget.release.formattedSize.isNotEmpty
-                  ? 'Download Update (${widget.release.formattedSize})'
-                  : 'Download Update',
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.2,
-              ),
-            ),
-          ],
+        child: const Text(
+          'Download',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.2,
+          ),
         ),
       ),
     );
@@ -1174,156 +1151,127 @@ class _UpdateScreenState extends State<UpdateScreen> {
       }
     }
 
-    return Column(
+    return LayoutBuilder(
       key: const ValueKey('morphing_progress_btn'),
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final fillWidth =
-                (constraints.maxWidth * progress).clamp(0.0, constraints.maxWidth);
+      builder: (context, constraints) {
+        final fillWidth =
+            (constraints.maxWidth * progress).clamp(0.0, constraints.maxWidth);
 
-            return Container(
-              height: 52,
-              width: constraints.maxWidth,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFFE2E8F0),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isDark
-                      ? const Color(0xFF334155)
-                      : const Color(0xFFCBD5E1),
-                  width: 1,
+        return Container(
+          height: 50,
+          width: constraints.maxWidth,
+          decoration: BoxDecoration(
+            color: isDark
+                ? const Color(0xFF1E293B)
+                : const Color(0xFFE2E8F0),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark
+                  ? const Color(0xFF334155)
+                  : const Color(0xFFCBD5E1),
+              width: 1,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Stack(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  width: fillWidth > 0 ? fillWidth : 0.0,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentEmerald
+                        .withValues(alpha: isDark ? 0.35 : 0.25),
+                  ),
                 ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Stack(
-                  children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOut,
-                      width: fillWidth > 0 ? fillWidth : 0.0,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentEmerald
-                            .withValues(alpha: isDark ? 0.35 : 0.25),
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                value: progress > 0 ? progress : null,
-                                valueColor:
-                                    const AlwaysStoppedAnimation<Color>(
-                                        AppTheme.accentEmerald),
-                                backgroundColor: isDark
-                                    ? Colors.white.withValues(alpha: 0.1)
-                                    : Colors.black.withValues(alpha: 0.08),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Downloading...',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '$percentInt%',
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppTheme.accentEmerald,
-                                          fontFamily: 'monospace',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  if (sizeInfo.isNotEmpty)
-                                    Text(
-                                      sizeInfo,
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        color: AppTheme.textMuted,
-                                        fontFamily: 'monospace',
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                ],
-                              ),
-                            ),
-                            Tooltip(
-                              message: 'Cancel download',
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: _cancelDownload,
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    width: 32,
-                                    height: 32,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: isDark
-                                          ? Colors.white.withValues(alpha: 0.12)
-                                          : Colors.black.withValues(alpha: 0.08),
-                                    ),
-                                    child: Icon(
-                                      Icons.close_rounded,
-                                      size: 18,
+                                  Text(
+                                    'Downloading...',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .onSurface
-                                          .withValues(alpha: 0.8),
+                                          .onSurface,
                                     ),
                                   ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '$percentInt%',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.accentEmerald,
+                                      fontFamily: 'monospace',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (sizeInfo.isNotEmpty)
+                                Text(
+                                  sizeInfo,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textMuted,
+                                    fontFamily: 'monospace',
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
+                          ),
+                        ),
+                        Tooltip(
+                          message: 'Cancel download',
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: _cancelDownload,
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.12)
+                                      : Colors.black.withValues(alpha: 0.08),
+                                ),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 18,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.8),
                                 ),
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Dismissing will continue downloading in background',
-          style: TextStyle(
-            fontSize: 11,
-            color: AppTheme.textMuted.withValues(alpha: 0.8),
+              ],
+            ),
           ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -1333,8 +1281,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
             color: AppTheme.accentEmerald.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
@@ -1348,14 +1296,17 @@ class _UpdateScreenState extends State<UpdateScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.check_circle_rounded,
-                  size: 16, color: AppTheme.accentEmerald),
+                  size: 17, color: AppTheme.accentEmerald),
               SizedBox(width: 8),
-              Text(
-                'Update downloaded and verified',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.accentEmerald,
+              Flexible(
+                child: Text(
+                  'Update downloaded and verified',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.accentEmerald,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -1363,7 +1314,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
         ),
         SizedBox(
           width: double.infinity,
-          height: 52,
+          height: 50,
           child: ElevatedButton(
             onPressed: _installApk,
             style: ElevatedButton.styleFrom(
@@ -1377,12 +1328,12 @@ class _UpdateScreenState extends State<UpdateScreen> {
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.system_update_rounded, size: 20),
+                Icon(Icons.system_update_rounded, size: 21),
                 SizedBox(width: 8),
                 Text(
                   'Install Update',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.2,
                   ),

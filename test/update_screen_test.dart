@@ -54,7 +54,7 @@ void main() {
       UpdateDownloadManager.instance.downloadedApkPath = null;
     });
 
-    testWidgets('renders initial UpdateScreen correctly without Later button',
+    testWidgets('renders initial UpdateScreen dialog with Download and Later buttons',
         (WidgetTester tester) async {
       final updater = GithubReleaseApkUpdater();
 
@@ -83,14 +83,14 @@ void main() {
       expect(find.text('26.6 MB'), findsOneWidget);
       expect(find.text('Sep 5, 2026'), findsOneWidget);
 
-      // Verify download button exists with size
-      expect(find.text('Download Update (26.6 MB)'), findsOneWidget);
+      // Verify primary download button says "Download" (no icon, no size in text)
+      expect(find.text('Download'), findsOneWidget);
 
-      // Verify that "Later" button is removed
-      expect(find.text('Later'), findsNothing);
+      // Verify full-width Later button exists underneath
+      expect(find.text('Later'), findsOneWidget);
 
-      // Verify close button exists
-      expect(find.byIcon(Icons.close_rounded), findsOneWidget);
+      // Verify header close icon is removed
+      expect(find.byIcon(Icons.close_rounded), findsNothing);
     });
 
     testWidgets('displays morphing progress button when downloading and cancels on X tap',
@@ -126,9 +126,12 @@ void main() {
       expect(find.text('Downloading...'), findsOneWidget);
       expect(find.text('52%'), findsOneWidget);
       expect(find.text('13.8 / 26.6 MB'), findsOneWidget);
+
+      // Circular progress indicator and background text are removed
+      expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(
         find.text('Dismissing will continue downloading in background'),
-        findsOneWidget,
+        findsNothing,
       );
 
       // Tap inline 'X' cancel button inside progress button
@@ -137,10 +140,11 @@ void main() {
       await tester.tap(cancelBtn);
       await tester.pumpAndSettle();
 
-      // Download is cancelled and button smoothly reverts to initial download button
+      // Download is cancelled and button smoothly reverts to initial "Download" button
       expect(UpdateDownloadManager.instance.isDownloading, isFalse);
       expect(find.byKey(const ValueKey('initial_download_btn')), findsOneWidget);
-      expect(find.text('Download Update (26.6 MB)'), findsOneWidget);
+      expect(find.text('Download'), findsOneWidget);
+      expect(find.text('Later'), findsOneWidget);
     });
 
     testWidgets('displays install button when download is completed',
@@ -172,6 +176,7 @@ void main() {
       expect(find.byKey(const ValueKey('install_action_btn')), findsOneWidget);
       expect(find.text('Update downloaded and verified'), findsOneWidget);
       expect(find.text('Install Update'), findsOneWidget);
+      expect(find.text('Later'), findsOneWidget);
     });
   });
 }
