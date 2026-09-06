@@ -689,13 +689,10 @@ class UpdateService {
     return [];
   }
 
-  /// Opens the full changelog modal sheet.
+  /// Opens the full changelog dialog.
   static void showChangelog(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
       builder: (dialogCtx) => const ChangelogScreen(),
     );
   }
@@ -1469,327 +1466,379 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.92,
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(
-          top: BorderSide(
-            color: isDark
-                ? const Color(0xFF334155)
-                : const Color(0xFFE2E8F0),
-            width: 1.2,
-          ),
-        ),
-      ),
-      child: Column(
-        children: [
-          // 1. Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF0F172A)
-                            : const Color(0xFFF1F5F9),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.article_outlined,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Changelog',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close_rounded),
-                  color: AppTheme.textMuted,
-                  visualDensity: VisualDensity.compact,
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    final screenHeight = mediaQuery.size.height;
+    final horizontalInset = screenWidth < 500 ? 16.0 : 24.0;
+    final availableWidth = screenWidth - (horizontalInset * 2);
 
-          // 2. Body List
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _errorMessage != null
-                    ? Center(
+    final double dialogWidth;
+    if (screenWidth >= 1000) {
+      dialogWidth = 640.0;
+    } else if (screenWidth >= 600) {
+      dialogWidth = (screenWidth * 0.70).clamp(480.0, 620.0);
+    } else {
+      dialogWidth = availableWidth;
+    }
+    final targetWidth = dialogWidth.clamp(0.0, availableWidth);
+
+    return PopScope(
+      canPop: true,
+      child: Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
+        surfaceTintColor: Colors.transparent,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: horizontalInset,
+          vertical: 24,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: screenHeight * 0.90,
+            maxWidth: targetWidth,
+            minWidth: targetWidth,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 1. Top Bar: Header (Centered, no icon, no divider)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 22, 20, 16),
+                child: Center(
+                  child: Text(
+                    'Changelog',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+
+              // 2. Body List
+              Flexible(
+                child: _isLoading
+                    ? const Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.cloud_off_rounded,
-                                  size: 48, color: AppTheme.textMuted),
-                              const SizedBox(height: 12),
-                              Text(
-                                _errorMessage!,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppTheme.textMuted,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: _loadInitialData,
-                                child: const Text('Retry'),
-                              ),
-                            ],
-                          ),
+                          padding: EdgeInsets.all(40),
+                          child: CircularProgressIndicator(),
                         ),
                       )
-                    : _displayedReleases.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'No release notes found.',
-                              style: TextStyle(color: AppTheme.textMuted),
+                    : _errorMessage != null
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.cloud_off_rounded,
+                                      size: 48, color: AppTheme.textMuted),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    _errorMessage!,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: AppTheme.textMuted,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: _loadInitialData,
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
                             ),
                           )
-                        : ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                            itemCount: _displayedReleases.length + 1,
-                            itemBuilder: (context, index) {
-                              // Bottom Load More / Completed item
-                              if (index == _displayedReleases.length) {
-                                if (_hasMore) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 12, bottom: 20),
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      child: OutlinedButton(
-                                        onPressed:
-                                            _isLoadingMore ? null : _loadMore,
-                                        style: OutlinedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 14),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(14),
-                                          ),
-                                        ),
-                                        child: _isLoadingMore
-                                            ? SizedBox(
-                                                width: 18,
-                                                height: 18,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  strokeWidth: 2.2,
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                          Color>(
-                                                    Theme.of(context)
-                                                        .colorScheme
-                                                        .primary,
-                                                  ),
-                                                ),
-                                              )
-                                            : const Text(
-                                                'Load More',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 16, bottom: 24),
-                                    child: Center(
-                                      child: Text(
-                                        "You've reached the beginning of the changelog",
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: AppTheme.textMuted
-                                              .withValues(alpha: 0.8),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                              }
-
-                              final release = _displayedReleases[index];
-                              final isCurrent =
-                                  release.version == _currentVersion;
-                              final changelog = ChangelogParser.parse(
-                                  release.releaseNotes);
-
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 16),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF0F172A)
-                                      : const Color(0xFFF8FAFC),
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: isCurrent
-                                        ? AppTheme.accentEmerald
-                                            .withValues(alpha: 0.5)
-                                        : isDark
-                                            ? const Color(0xFF1E293B)
-                                            : const Color(0xFFE2E8F0),
-                                    width: isCurrent ? 1.4 : 1.0,
+                        : _displayedReleases.isEmpty
+                            ? const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(40),
+                                  child: Text(
+                                    'No release notes found.',
+                                    style: TextStyle(color: AppTheme.textMuted),
                                   ),
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Version Title Row
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'version ${release.version}',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface,
-                                          ),
-                                        ),
-                                        if (isCurrent) ...[
-                                          const SizedBox(width: 8),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 3),
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.accentEmerald
-                                                  .withValues(alpha: 0.15),
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            child: const Text(
-                                              'current',
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppTheme.accentEmerald,
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 4, 20, 18),
+                                itemCount: _displayedReleases.length + 1,
+                                itemBuilder: (context, index) {
+                                  // Bottom Load More / Completed item
+                                  if (index == _displayedReleases.length) {
+                                    if (_hasMore) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 8, bottom: 12),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          child: OutlinedButton(
+                                            onPressed: _isLoadingMore
+                                                ? null
+                                                : _loadMore,
+                                            style: OutlinedButton.styleFrom(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 14),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(14),
                                               ),
                                             ),
+                                            child: _isLoadingMore
+                                                ? SizedBox(
+                                                    width: 18,
+                                                    height: 18,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      strokeWidth: 2.2,
+                                                      valueColor:
+                                                          AlwaysStoppedAnimation<
+                                                              Color>(
+                                                        Theme.of(context)
+                                                            .colorScheme
+                                                            .primary,
+                                                      ),
+                                                    ),
+                                                  )
+                                                : const Text(
+                                                    'Load More',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
                                           ),
-                                        ],
-                                        const Spacer(),
-                                        if (release.formattedDate.isNotEmpty)
-                                          Text(
-                                            release.formattedDate,
-                                            style: const TextStyle(
+                                        ),
+                                      );
+                                    } else {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 12, bottom: 16),
+                                        child: Center(
+                                          child: Text(
+                                            "You've reached the beginning of the changelog",
+                                            style: TextStyle(
                                               fontSize: 12,
-                                              color: AppTheme.textMuted,
-                                              fontWeight: FontWeight.w500,
+                                              color: AppTheme.textMuted
+                                                  .withValues(alpha: 0.8),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+
+                                  final release = _displayedReleases[index];
+                                  final isCurrent =
+                                      release.version == _currentVersion;
+                                  final changelog = ChangelogParser.parse(
+                                      release.releaseNotes);
+
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF0F172A)
+                                          : const Color(0xFFF8FAFC),
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: Border.all(
+                                        color: isCurrent
+                                            ? AppTheme.accentEmerald
+                                                .withValues(alpha: 0.5)
+                                            : isDark
+                                                ? const Color(0xFF1E293B)
+                                                : const Color(0xFFE2E8F0),
+                                        width: isCurrent ? 1.4 : 1.0,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // Version Title Row
+                                        Row(
+                                          children: [
+                                            Text(
+                                              'version ${release.version}',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface,
+                                              ),
+                                            ),
+                                            if (isCurrent) ...[
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 3),
+                                                decoration: BoxDecoration(
+                                                  color: AppTheme.accentEmerald
+                                                      .withValues(alpha: 0.15),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: const Text(
+                                                  'current',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.bold,
+                                                    color:
+                                                        AppTheme.accentEmerald,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                            const Spacer(),
+                                            if (release
+                                                .formattedDate.isNotEmpty)
+                                              Text(
+                                                release.formattedDate,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppTheme.textMuted,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+
+                                        // Categorized notes
+                                        if (!changelog.isEmpty) ...[
+                                          for (final entry in changelog
+                                              .categories.entries) ...[
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 4, bottom: 6),
+                                              child: Text(
+                                                entry.key,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary,
+                                                  fontFamily: 'monospace',
+                                                ),
+                                              ),
+                                            ),
+                                            for (int i = 0;
+                                                i < entry.value.length;
+                                                i++)
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 2,
+                                                    bottom: 6,
+                                                    right: 2),
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      '${i + 1}. ',
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .onSurface,
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        entry.value[i],
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          height: 1.45,
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .onSurface
+                                                                  .withValues(
+                                                                      alpha:
+                                                                          0.9),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            const SizedBox(height: 6),
+                                          ],
+                                        ] else
+                                          Text(
+                                            release.releaseNotes
+                                                    .trim()
+                                                    .isNotEmpty
+                                                ? release.releaseNotes.trim()
+                                                : 'Performance improvements and bug fixes.',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              height: 1.4,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.85),
                                             ),
                                           ),
                                       ],
                                     ),
-                                    const SizedBox(height: 10),
+                                  );
+                                },
+                              ),
+              ),
 
-                                    // Categorized notes
-                                    if (!changelog.isEmpty) ...[
-                                      for (final entry
-                                          in changelog.categories.entries) ...[
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 4, bottom: 6),
-                                          child: Text(
-                                            entry.key,
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .primary,
-                                              fontFamily: 'monospace',
-                                            ),
-                                          ),
-                                        ),
-                                        for (int i = 0;
-                                            i < entry.value.length;
-                                            i++)
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 2, bottom: 6, right: 2),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  '${i + 1}. ',
-                                                  style: TextStyle(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  child: Text(
-                                                    entry.value[i],
-                                                    style: TextStyle(
-                                                      fontSize: 13,
-                                                      height: 1.4,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .onSurface
-                                                          .withValues(
-                                                              alpha: 0.9),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        const SizedBox(height: 6),
-                                      ],
-                                    ] else
-                                      Text(
-                                        release.releaseNotes.trim().isNotEmpty
-                                            ? release.releaseNotes.trim()
-                                            : 'Performance improvements and bug fixes.',
-                                        style: TextStyle(
-                                          fontSize: 12.5,
-                                          height: 1.4,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withValues(alpha: 0.85),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
+              // 3. Sticky Bottom Action Bar
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: TextButton.styleFrom(
+                      foregroundColor: isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B),
+                      backgroundColor: isDark
+                          ? Colors.white.withValues(alpha: 0.04)
+                          : Colors.black.withValues(alpha: 0.03),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

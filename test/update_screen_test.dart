@@ -213,4 +213,28 @@ void main() {
       expect(find.text('Close'), findsOneWidget);
     });
   });
+
+  group('ChangelogScreen Widget', () {
+    testWidgets('renders ChangelogScreen as Dialog with centered header and Close button',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const Scaffold(
+            body: ChangelogScreen(),
+          ),
+        ),
+      );
+
+      // Verify title & Dialog layout
+      expect(find.text('Changelog'), findsOneWidget);
+      expect(find.byType(Dialog), findsOneWidget);
+
+      // Verify Close button exists underneath
+      expect(find.text('Close'), findsOneWidget);
+
+      // Verify header close icon is removed
+      expect(find.byIcon(Icons.close_rounded), findsNothing);
+    });
+  });
 }
