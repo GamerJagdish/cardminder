@@ -760,52 +760,33 @@ class _UpdateScreenState extends State<UpdateScreen> {
         clipBehavior: Clip.antiAlias,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.82,
+            maxHeight: MediaQuery.of(context).size.height * 0.90,
             maxWidth: 420,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 1. Top Bar: Header (No close button, no drag handle)
+              // 1. Top Bar: Header (Centered, no icon, no divider)
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF0F172A)
-                            : const Color(0xFFF1F5F9),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.system_update_alt_rounded,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 21,
-                      ),
+                padding: const EdgeInsets.fromLTRB(20, 22, 20, 16),
+                child: Center(
+                  child: Text(
+                    'Update Available',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Update Available',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
-              const Divider(height: 1),
 
               // 2. Scrollable Body
               Flexible(
                 child: ListView(
                   shrinkWrap: true,
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 18),
                   children: [
                     // Hero Card: CardMinder -> apk file name -> version & (date + size)
                     Container(
@@ -818,8 +799,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isDark
-                              ? const Color(0xFF1E293B)
-                              : const Color(0xFFE2E8F0),
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFFE2E8F0),
                         ),
                       ),
                       child: Column(
@@ -951,15 +932,9 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     ),
                     const SizedBox(height: 22),
 
-                    // "What's New" Section Header
+                    // "What's New" Section Header (Icon on the right side)
                     Row(
                       children: [
-                        const Icon(
-                          Icons.auto_awesome_rounded,
-                          size: 19,
-                          color: AppTheme.accentEmerald,
-                        ),
-                        const SizedBox(width: 8),
                         Text(
                           "WHAT'S NEW",
                           style: TextStyle(
@@ -968,6 +943,12 @@ class _UpdateScreenState extends State<UpdateScreen> {
                             letterSpacing: 1.1,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.auto_awesome_rounded,
+                          size: 19,
+                          color: AppTheme.accentEmerald,
                         ),
                       ],
                     ),
@@ -1051,16 +1032,9 @@ class _UpdateScreenState extends State<UpdateScreen> {
 
               // 3. Sticky Bottom Action Bar
               Container(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
                 decoration: BoxDecoration(
                   color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
-                  border: Border(
-                    top: BorderSide(
-                      color: isDark
-                          ? const Color(0xFF1E293B)
-                          : const Color(0xFFE2E8F0),
-                    ),
-                  ),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1086,13 +1060,18 @@ class _UpdateScreenState extends State<UpdateScreen> {
                       child: TextButton(
                         onPressed: () => Navigator.of(context).pop(),
                         style: TextButton.styleFrom(
-                          foregroundColor: AppTheme.textMuted,
+                          foregroundColor: isDark
+                              ? const Color(0xFF94A3B8)
+                              : const Color(0xFF64748B),
+                          backgroundColor: isDark
+                              ? Colors.white.withValues(alpha: 0.04)
+                              : Colors.black.withValues(alpha: 0.03),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         child: const Text(
-                          'Later',
+                          'Close',
                           style: TextStyle(
                             fontSize: 15.5,
                             fontWeight: FontWeight.w600,
@@ -1122,16 +1101,20 @@ class _UpdateScreenState extends State<UpdateScreen> {
               isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy,
           foregroundColor: isDark ? Colors.black : Colors.white,
           elevation: 0,
+          alignment: Alignment.center,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-        child: const Text(
-          'Download',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.2,
+        child: const Center(
+          child: Text(
+            'Download',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.2,
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
       ),
@@ -1188,82 +1171,88 @@ class _UpdateScreenState extends State<UpdateScreen> {
                 ),
                 Positioned.fill(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
+                    padding: const EdgeInsets.symmetric(horizontal: 48),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Downloading...',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '$percentInt%',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.accentEmerald,
-                                      fontFamily: 'monospace',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (sizeInfo.isNotEmpty)
-                                Text(
-                                  sizeInfo,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppTheme.textMuted,
-                                    fontFamily: 'monospace',
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                            ],
-                          ),
-                        ),
-                        Tooltip(
-                          message: 'Cancel download',
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: _cancelDownload,
-                              borderRadius: BorderRadius.circular(16),
-                              child: Container(
-                                width: 32,
-                                height: 32,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isDark
-                                      ? Colors.white.withValues(alpha: 0.12)
-                                      : Colors.black.withValues(alpha: 0.08),
-                                ),
-                                child: Icon(
-                                  Icons.close_rounded,
-                                  size: 18,
+                              Text(
+                                'Downloading...',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.8),
+                                      .onSurface,
                                 ),
                               ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '$percentInt%',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.accentEmerald,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (sizeInfo.isNotEmpty)
+                            Text(
+                              sizeInfo,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textMuted,
+                                fontFamily: 'monospace',
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 12,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: Tooltip(
+                      message: 'Cancel download',
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _cancelDownload,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.12)
+                                  : Colors.black.withValues(alpha: 0.08),
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 18,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.8),
                             ),
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

@@ -54,7 +54,7 @@ void main() {
       UpdateDownloadManager.instance.downloadedApkPath = null;
     });
 
-    testWidgets('renders initial UpdateScreen dialog with Download and Later buttons',
+    testWidgets('renders initial UpdateScreen dialog with Download and Close buttons',
         (WidgetTester tester) async {
       final updater = GithubReleaseApkUpdater();
 
@@ -86,8 +86,8 @@ void main() {
       // Verify primary download button says "Download" (no icon, no size in text)
       expect(find.text('Download'), findsOneWidget);
 
-      // Verify full-width Later button exists underneath
-      expect(find.text('Later'), findsOneWidget);
+      // Verify full-width Close button exists underneath
+      expect(find.text('Close'), findsOneWidget);
 
       // Verify header close icon is removed
       expect(find.byIcon(Icons.close_rounded), findsNothing);
@@ -144,7 +144,7 @@ void main() {
       expect(UpdateDownloadManager.instance.isDownloading, isFalse);
       expect(find.byKey(const ValueKey('initial_download_btn')), findsOneWidget);
       expect(find.text('Download'), findsOneWidget);
-      expect(find.text('Later'), findsOneWidget);
+      expect(find.text('Close'), findsOneWidget);
     });
 
     testWidgets('displays install button when download is completed',
@@ -176,7 +176,7 @@ void main() {
       expect(find.byKey(const ValueKey('install_action_btn')), findsOneWidget);
       expect(find.text('Update downloaded and verified'), findsOneWidget);
       expect(find.text('Install Update'), findsOneWidget);
-      expect(find.text('Later'), findsOneWidget);
+      expect(find.text('Close'), findsOneWidget);
     });
   });
 }
