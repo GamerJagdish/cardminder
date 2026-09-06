@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:github_release_apk_updater/github_release_apk_updater.dart';
+import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import '../theme/app_theme.dart';
@@ -14,6 +15,7 @@ class AppReleaseInfo {
   final String releaseNotes;
   final String apkFileName;
   final int apkSizeBytes;
+  final DateTime? publishedAt;
 
   AppReleaseInfo({
     required this.version,
@@ -21,12 +23,18 @@ class AppReleaseInfo {
     required this.releaseNotes,
     required this.apkFileName,
     required this.apkSizeBytes,
+    this.publishedAt,
   });
 
   String get formattedSize {
     if (apkSizeBytes <= 0) return '';
     final mb = apkSizeBytes / (1024 * 1024);
     return '${mb.toStringAsFixed(1)} MB';
+  }
+
+  String get formattedDate {
+    if (publishedAt == null) return '';
+    return DateFormat('MMM d, y').format(publishedAt!);
   }
 }
 
@@ -454,6 +462,10 @@ class UpdateService {
           final apkFileName =
               targetAsset['name'] as String? ?? 'cardminder.apk';
           final apkSizeBytes = targetAsset['size'] as int? ?? 0;
+          final publishedAtRaw =
+              (data['published_at'] ?? data['created_at']) as String?;
+          final publishedAt =
+              publishedAtRaw != null ? DateTime.tryParse(publishedAtRaw) : null;
 
           return AppReleaseInfo(
             version: version,
@@ -461,6 +473,7 @@ class UpdateService {
             releaseNotes: body,
             apkFileName: apkFileName,
             apkSizeBytes: apkSizeBytes,
+            publishedAt: publishedAt,
           );
         }
       }
@@ -616,6 +629,11 @@ class UpdateService {
             }
           }
 
+          final publishedAtRaw =
+              (data['published_at'] ?? data['created_at']) as String?;
+          final publishedAt =
+              publishedAtRaw != null ? DateTime.tryParse(publishedAtRaw) : null;
+
           releases.add(
             AppReleaseInfo(
               version: version,
@@ -623,6 +641,7 @@ class UpdateService {
               releaseNotes: body,
               apkFileName: apkFileName,
               apkSizeBytes: apkSizeBytes,
+              publishedAt: publishedAt,
             ),
           );
         }
@@ -1516,6 +1535,16 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                                             ),
                                           ),
                                         ],
+                                        const Spacer(),
+                                        if (release.formattedDate.isNotEmpty)
+                                          Text(
+                                            release.formattedDate,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: AppTheme.textMuted,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
                                       ],
                                     ),
                                     const SizedBox(height: 10),
