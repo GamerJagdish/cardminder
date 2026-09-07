@@ -144,27 +144,14 @@ class CardDetailsScreen extends ConsumerWidget {
                             color: urgency.badgeBgColor(isDark),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: urgency.badgeTextColor(isDark),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                urgency.label,
-                                style: TextStyle(
-                                  color: urgency.badgeTextColor(isDark),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            urgency.label,
+                            style: TextStyle(
+                              color: urgency.badgeTextColor(isDark),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
