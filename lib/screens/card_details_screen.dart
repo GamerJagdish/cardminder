@@ -202,6 +202,8 @@ class CardDetailsScreen extends ConsumerWidget {
                         child: _MetaItem(
                           label: 'LAST TRANSACTION',
                           value: dateFormat.format(currentCard.lastTransactionDate),
+                          onTap: () => _editLastTransactionDate(
+                              context, ref, currentCard),
                         ),
                       ),
                       Expanded(
@@ -345,6 +347,38 @@ class CardDetailsScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _editLastTransactionDate(
+    BuildContext context,
+    WidgetRef ref,
+    CreditCard currentCard,
+  ) async {
+    final now = DateTime.now();
+    final initialDate = currentCard.lastTransactionDate.isAfter(now)
+        ? now
+        : currentCard.lastTransactionDate;
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2000),
+      lastDate: now,
+    );
+
+    if (pickedDate != null) {
+      await ref
+          .read(cardNotifierProvider.notifier)
+          .updateTransactionDate(currentCard.id, pickedDate);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Updated last transaction date for ${currentCard.cardName}'),
+            backgroundColor: AppTheme.accentEmerald,
+          ),
+        );
+      }
+    }
+  }
+
   void _confirmDelete(BuildContext context, WidgetRef ref, CreditCard targetCard) async {
     final confirm = await showDeleteConfirmationDialog(
       context: context,
@@ -363,22 +397,40 @@ class CardDetailsScreen extends ConsumerWidget {
 class _MetaItem extends StatelessWidget {
   final String label;
   final String value;
+  final VoidCallback? onTap;
 
-  const _MetaItem({required this.label, required this.value});
+  const _MetaItem({
+    required this.label,
+    required this.value,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textMuted,
-            letterSpacing: 0.5,
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textMuted,
+                letterSpacing: 0.5,
+              ),
+            ),
+            if (onTap != null) ...[
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.edit_outlined,
+                size: 11,
+                color: AppTheme.textMuted,
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 4),
         Text(
@@ -391,5 +443,21 @@ class _MetaItem extends StatelessWidget {
         ),
       ],
     );
+
+    if (onTap != null) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+            child: content,
+          ),
+        ),
+      );
+    }
+
+    return content;
   }
 }
