@@ -319,138 +319,156 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
 
     showDialog(
       context: context,
-      builder: (dialogCtx) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
-            Theme.of(context).cardTheme.color,
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+      builder: (dialogCtx) {
+        final mediaQuery = MediaQuery.of(dialogCtx);
+        final isLandscape = mediaQuery.orientation == Orientation.landscape;
+        final availableWidth = mediaQuery.size.width - 48.0;
+        final dialogWidth = availableWidth.clamp(300.0, 400.0);
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: isLandscape || mediaQuery.size.height < 500 ? 12 : 24,
+          ),
+          clipBehavior: Clip.antiAlias,
+          backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
+              Theme.of(context).cardTheme.color,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: dialogWidth,
+              minWidth: dialogWidth,
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.pin_outlined,
-                      color: primaryColor,
-                      size: 22,
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.pin_outlined,
+                          color: primaryColor,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Last 4 Digits',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Last 4 Digits',
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Enter the last 4 digits of your card:',
+                    style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: tempController,
+                    autofocus: true,
+                    maxLength: 4,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) {
+                      final val = tempController.text.trim();
+                      setState(() {
+                        _digitsController.text =
+                            val.isNotEmpty ? val : '0001';
+                      });
+                      Navigator.pop(dialogCtx);
+                    },
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 4,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      hintText: '0001',
+                      counterText: '',
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFCBD5E1),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(dialogCtx),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isDark
+                                ? AppTheme.primaryAccentDark
+                                : AppTheme.primaryNavy,
+                            foregroundColor:
+                                isDark ? Colors.black : Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            final val = tempController.text.trim();
+                            setState(() {
+                              _digitsController.text =
+                                  val.isNotEmpty ? val : '0001';
+                            });
+                            Navigator.pop(dialogCtx);
+                          },
+                          child: Text(
+                            'Save',
+                            style: TextStyle(
+                              color: isDark ? Colors.black : Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Enter the last 4 digits of your card:',
-                style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: tempController,
-                autofocus: true,
-                maxLength: 4,
-                keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) {
-                  final val = tempController.text.trim();
-                  setState(() {
-                    _digitsController.text =
-                        val.isNotEmpty ? val : '0001';
-                  });
-                  Navigator.pop(dialogCtx);
-                },
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 4,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.center,
-                decoration: const InputDecoration(
-                  hintText: '0001',
-                  counterText: '',
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFCBD5E1),
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () => Navigator.pop(dialogCtx),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? AppTheme.primaryAccentDark
-                            : AppTheme.primaryNavy,
-                        foregroundColor: isDark ? Colors.black : Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        final val = tempController.text.trim();
-                        setState(() {
-                          _digitsController.text =
-                              val.isNotEmpty ? val : '0001';
-                        });
-                        Navigator.pop(dialogCtx);
-                      },
-                      child: Text(
-                        'Save',
-                        style: TextStyle(
-                          color: isDark ? Colors.black : Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
