@@ -259,7 +259,7 @@ class ChangelogSectionHelper {
           color: isDark
               ? const Color(0xFF0F172A)
               : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isDark
                 ? const Color(0xFF1E293B)
@@ -387,6 +387,43 @@ class ChangelogSectionHelper {
             ? const Color(0xFFCBD5E1)
             : const Color(0xFF334155),
         fontWeight: FontWeight.w400,
+      ),
+    );
+  }
+}
+
+class _BottomScrollHintOverlay extends StatelessWidget {
+  final bool isDark;
+
+  const _BottomScrollHintOverlay({
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaceColor = isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite;
+
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      height: 24,
+      child: IgnorePointer(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                surfaceColor.withValues(alpha: 0.0),
+                surfaceColor.withValues(alpha: 0.35),
+                surfaceColor.withValues(alpha: 0.85),
+              ],
+              stops: const [0.0, 0.45, 1.0],
+            ),
+          ),
+          child: const SizedBox.expand(),
+        ),
       ),
     );
   }
@@ -1035,148 +1072,160 @@ class _UpdateScreenState extends State<UpdateScreen> {
 
               // 2. Scrollable Body
               Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 18),
-                  children: [
-                    // Hero Card: CardMinder <version> (<arch>) -> (date + size)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF0F172A)
-                            : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isDark
-                            ? const Color(0xFF1E293B)
-                            : const Color(0xFFE2E8F0),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            widget.release.displayTitle,
-                            style: TextStyle(
-                              fontSize: 21,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            textAlign: TextAlign.center,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Stack(
+                    children: [
+                      ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(context)
+                            .copyWith(scrollbars: false),
+                        child: ListView(
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+                          children: [
+                              // Hero Card: CardMinder <version> (<arch>) -> (date + size)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(18),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF0F172A)
+                                      : const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: isDark
+                                      ? const Color(0xFF1E293B)
+                                      : const Color(0xFFE2E8F0),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      widget.release.displayTitle,
+                                      style: TextStyle(
+                                        fontSize: 21,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    if (widget.release.formattedDate.isNotEmpty ||
+                                        widget.release.formattedSize.isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      // Date pill and then Size pill together
+                                      Wrap(
+                                        spacing: 8,
+                                        runSpacing: 6,
+                                        alignment: WrapAlignment.center,
+                                        children: [
+                                          if (widget.release.formattedDate.isNotEmpty)
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 10, vertical: 5),
+                                              decoration: BoxDecoration(
+                                                color: isDark
+                                                    ? const Color(0xFF1E293B)
+                                                    : const Color(0xFFE2E8F0),
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.calendar_today_rounded,
+                                                    size: 12,
+                                                    color: isDark
+                                                        ? const Color(0xFF94A3B8)
+                                                        : const Color(0xFF64748B),
+                                                  ),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    widget.release.formattedDate,
+                                                    style: TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          if (widget.release.formattedSize.isNotEmpty)
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 10, vertical: 5),
+                                              decoration: BoxDecoration(
+                                                color: isDark
+                                                    ? const Color(0xFF1E293B)
+                                                    : const Color(0xFFE2E8F0),
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.storage_rounded,
+                                                    size: 13,
+                                                    color: isDark
+                                                        ? const Color(0xFF94A3B8)
+                                                        : const Color(0xFF64748B),
+                                                  ),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    widget.release.formattedSize,
+                                                    style: TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 22),
+
+                              // "What's New" Section Header (Centered, muted, easy on eyes)
+                              Center(
+                                child: Text(
+                                  "WHAT'S NEW",
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                    color: isDark
+                                        ? const Color(0xFF94A3B8)
+                                        : const Color(0xFF64748B),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Categorized Release Notes
+                              ChangelogSectionHelper.buildCategorizedNotes(
+                                context: context,
+                                changelog: changelog,
+                                rawNotes: widget.release.releaseNotes,
+                                isDark: isDark,
+                              ),
+                            ],
                           ),
-                          if (widget.release.formattedDate.isNotEmpty ||
-                              widget.release.formattedSize.isNotEmpty) ...[
-                            const SizedBox(height: 12),
-                            // Date pill and then Size pill together
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 6,
-                              alignment: WrapAlignment.center,
-                              children: [
-                                if (widget.release.formattedDate.isNotEmpty)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? const Color(0xFF1E293B)
-                                          : const Color(0xFFE2E8F0),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.calendar_today_rounded,
-                                          size: 12,
-                                          color: isDark
-                                              ? const Color(0xFF94A3B8)
-                                              : const Color(0xFF64748B),
-                                        ),
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          widget.release.formattedDate,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                if (widget.release.formattedSize.isNotEmpty)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? const Color(0xFF1E293B)
-                                          : const Color(0xFFE2E8F0),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.storage_rounded,
-                                          size: 13,
-                                          color: isDark
-                                              ? const Color(0xFF94A3B8)
-                                              : const Color(0xFF64748B),
-                                        ),
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          widget.release.formattedSize,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 22),
-
-                    // "What's New" Section Header (Centered, muted, easy on eyes)
-                    Center(
-                      child: Text(
-                        "WHAT'S NEW",
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                          color: isDark
-                              ? const Color(0xFF94A3B8)
-                              : const Color(0xFF64748B),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
+                        _BottomScrollHintOverlay(isDark: isDark),
+                      ],
                     ),
-                    const SizedBox(height: 14),
-
-                    // Categorized Release Notes
-                    ChangelogSectionHelper.buildCategorizedNotes(
-                      context: context,
-                      changelog: changelog,
-                      rawNotes: widget.release.releaseNotes,
-                      isDark: isDark,
-                    ),
-                  ],
+                  ),
                 ),
-              ),
 
               // 3. Sticky Bottom Action Bar
               Container(
@@ -1725,171 +1774,218 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                                   ),
                                 ),
                               )
-                            : ListView.builder(
-                                shrinkWrap: true,
-                                padding:
-                                    const EdgeInsets.fromLTRB(20, 4, 20, 18),
-                                itemCount: _displayedReleases.length + 1,
-                                itemBuilder: (context, index) {
-                                  // Bottom Load More / Completed item
-                                  if (index == _displayedReleases.length) {
-                                    if (_hasMore) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                            top: 8, bottom: 12),
-                                        child: SizedBox(
-                                          width: double.infinity,
-                                          child: OutlinedButton(
-                                            onPressed: _isLoadingMore
-                                                ? null
-                                                : _loadMore,
-                                            style: OutlinedButton.styleFrom(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 14),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(14),
-                                              ),
-                                            ),
-                                            child: _isLoadingMore
-                                                ? SizedBox(
-                                                    width: 18,
-                                                    height: 18,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      strokeWidth: 2.2,
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation<
-                                                              Color>(
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .primary,
+                            : ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Stack(
+                                  children: [
+                                    ScrollConfiguration(
+                                      behavior:
+                                          ScrollConfiguration.of(context)
+                                              .copyWith(scrollbars: false),
+                                      child: ListView.builder(
+                                        shrinkWrap: true,
+                                        padding: const EdgeInsets.fromLTRB(
+                                            20, 6, 20, 24),
+                                        itemCount:
+                                            _displayedReleases.length + 1,
+                                        itemBuilder: (context, index) {
+                                          // Bottom Load More / Completed item
+                                          if (index ==
+                                              _displayedReleases.length) {
+                                            if (_hasMore) {
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 8, bottom: 12),
+                                                child: SizedBox(
+                                                  width: double.infinity,
+                                                  child: OutlinedButton(
+                                                    onPressed: _isLoadingMore
+                                                        ? null
+                                                        : _loadMore,
+                                                    style:
+                                                        OutlinedButton.styleFrom(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                              vertical: 14),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                14),
                                                       ),
                                                     ),
-                                                  )
-                                                : const Text(
-                                                    'Load More',
+                                                    child: _isLoadingMore
+                                                        ? SizedBox(
+                                                            width: 18,
+                                                            height: 18,
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                              strokeWidth: 2.2,
+                                                              valueColor:
+                                                                  AlwaysStoppedAnimation<
+                                                                      Color>(
+                                                                Theme.of(context)
+                                                                    .colorScheme
+                                                                    .primary,
+                                                              ),
+                                                            ),
+                                                          )
+                                                        : const Text(
+                                                            'Load More',
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 14,
+                                                            ),
+                                                          ),
+                                                  ),
+                                                ),
+                                              );
+                                            } else {
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 12, bottom: 16),
+                                                child: Center(
+                                                  child: Text(
+                                                    "You've reached the beginning of the changelog",
                                                     style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 14,
+                                                      fontSize: 12,
+                                                      color: AppTheme.textMuted
+                                                          .withValues(
+                                                              alpha: 0.8),
                                                     ),
                                                   ),
-                                          ),
-                                        ),
-                                      );
-                                    } else {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                            top: 12, bottom: 16),
-                                        child: Center(
-                                          child: Text(
-                                            "You've reached the beginning of the changelog",
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: AppTheme.textMuted
-                                                  .withValues(alpha: 0.8),
+                                                ),
+                                              );
+                                            }
+                                          }
+
+                                          final release =
+                                              _displayedReleases[index];
+                                          final isCurrent = release.version ==
+                                              _currentVersion;
+                                          final changelog =
+                                              ChangelogParser.parse(
+                                                  release.releaseNotes);
+
+                                          return Container(
+                                            margin: const EdgeInsets.only(
+                                                bottom: 16),
+                                            padding: const EdgeInsets.all(16),
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? const Color(0xFF0F172A)
+                                                  : const Color(0xFFF8FAFC),
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                              border: Border.all(
+                                                color: isCurrent
+                                                    ? AppTheme.accentEmerald
+                                                        .withValues(alpha: 0.5)
+                                                    : isDark
+                                                        ? const Color(
+                                                            0xFF1E293B)
+                                                        : const Color(
+                                                            0xFFE2E8F0),
+                                                width: isCurrent ? 1.4 : 1.0,
+                                              ),
                                             ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  }
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                // Version Title Row
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      'version ${release.version}',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .onSurface,
+                                                      ),
+                                                    ),
+                                                    if (isCurrent) ...[
+                                                      const SizedBox(width: 8),
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                          horizontal: 8,
+                                                          vertical: 3,
+                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: AppTheme
+                                                              .accentEmerald
+                                                              .withValues(
+                                                                  alpha: 0.15),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(8),
+                                                          border: Border.all(
+                                                            color: AppTheme
+                                                                .accentEmerald
+                                                                .withValues(
+                                                                    alpha: 0.3),
+                                                            width: 0.8,
+                                                          ),
+                                                        ),
+                                                        child: const Text(
+                                                          'current',
+                                                          style: TextStyle(
+                                                            fontSize: 11,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: AppTheme
+                                                                .accentEmerald,
+                                                            letterSpacing: 0.5,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                    const Spacer(),
+                                                    if (release
+                                                        .formattedDate.isNotEmpty)
+                                                      Text(
+                                                        release.formattedDate,
+                                                        style: TextStyle(
+                                                          fontSize: 12.5,
+                                                          color: isDark
+                                                              ? const Color(
+                                                                  0xFF94A3B8)
+                                                              : const Color(
+                                                                  0xFF64748B),
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 6),
 
-                                  final release = _displayedReleases[index];
-                                  final isCurrent =
-                                      release.version == _currentVersion;
-                                  final changelog = ChangelogParser.parse(
-                                      release.releaseNotes);
-
-                                  return Container(
-                                    margin: const EdgeInsets.only(bottom: 16),
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? const Color(0xFF0F172A)
-                                          : const Color(0xFFF8FAFC),
-                                      borderRadius: BorderRadius.circular(18),
-                                      border: Border.all(
-                                        color: isCurrent
-                                            ? AppTheme.accentEmerald
-                                                .withValues(alpha: 0.5)
-                                            : isDark
-                                                ? const Color(0xFF1E293B)
-                                                : const Color(0xFFE2E8F0),
-                                        width: isCurrent ? 1.4 : 1.0,
+                                                // Categorized notes
+                                                ChangelogSectionHelper
+                                                    .buildCategorizedNotes(
+                                                  context: context,
+                                                  changelog: changelog,
+                                                  rawNotes:
+                                                      release.releaseNotes,
+                                                  isDark: isDark,
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        // Version Title Row
-                                        Row(
-                                          children: [
-                                            Text(
-                                              'version ${release.version}',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onSurface,
-                                              ),
-                                            ),
-                                            if (isCurrent) ...[
-                                              const SizedBox(width: 8),
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 3),
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.accentEmerald
-                                                      .withValues(alpha: 0.15),
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                child: const Text(
-                                                  'current',
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.bold,
-                                                    color:
-                                                        AppTheme.accentEmerald,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                            const Spacer(),
-                                            if (release
-                                                .formattedDate.isNotEmpty)
-                                              Text(
-                                                release.formattedDate,
-                                                style: TextStyle(
-                                                  fontSize: 12.5,
-                                                  color: isDark
-                                                      ? const Color(0xFF94A3B8)
-                                                      : const Color(0xFF64748B),
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 6),
-
-                                        // Categorized notes
-                                        ChangelogSectionHelper.buildCategorizedNotes(
-                                          context: context,
-                                          changelog: changelog,
-                                          rawNotes: release.releaseNotes,
-                                          isDark: isDark,
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                                    _BottomScrollHintOverlay(isDark: isDark),
+                                  ],
+                                ),
                               ),
               ),
 
