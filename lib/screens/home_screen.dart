@@ -51,144 +51,163 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     showDialog(
       context: context,
-      builder: (dialogCtx) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
-            Theme.of(context).cardTheme.color,
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+      builder: (dialogCtx) {
+        final mediaQuery = MediaQuery.of(dialogCtx);
+        final isLandscape = mediaQuery.orientation == Orientation.landscape;
+        final availableWidth = mediaQuery.size.width - 48.0;
+        final dialogWidth = availableWidth.clamp(300.0, 400.0);
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: isLandscape || mediaQuery.size.height < 500 ? 12 : 24,
+          ),
+          clipBehavior: Clip.antiAlias,
+          backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
+              Theme.of(context).cardTheme.color,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: dialogWidth,
+              minWidth: dialogWidth,
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.person_outline_rounded,
-                      color: primaryColor,
-                      size: 22,
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.person_outline_rounded,
+                          color: primaryColor,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Edit Your Name',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Edit Your Name',
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    maxLength: 25,
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) {
+                      final newName = controller.text.trim();
+                      if (newName.isNotEmpty) {
+                        final settings = ref.read(settingsNotifierProvider);
+                        ref
+                            .read(settingsNotifierProvider.notifier)
+                            .updateSettings(
+                                settings.copyWith(userName: newName),
+                                cards.cast());
+                      }
+                      Navigator.pop(dialogCtx);
+                    },
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                maxLength: 25,
-                textCapitalization: TextCapitalization.words,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) {
-                  final newName = controller.text.trim();
-                  if (newName.isNotEmpty) {
-                    final settings = ref.read(settingsNotifierProvider);
-                    ref
-                        .read(settingsNotifierProvider.notifier)
-                        .updateSettings(
-                            settings.copyWith(userName: newName),
-                            cards.cast());
-                  }
-                  Navigator.pop(dialogCtx);
-                },
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Enter your name',
-                  counterText: '',
-                  hintStyle: const TextStyle(
-                    color: AppTheme.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFCBD5E1),
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () => Navigator.pop(dialogCtx),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    decoration: InputDecoration(
+                      hintText: 'Enter your name',
+                      counterText: '',
+                      hintStyle: const TextStyle(
+                        color: AppTheme.textMuted,
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? AppTheme.primaryAccentDark
-                            : AppTheme.primaryNavy,
-                        foregroundColor: isDark ? Colors.black : Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFCBD5E1),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(dialogCtx),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
-                      onPressed: () {
-                        final newName = controller.text.trim();
-                        if (newName.isNotEmpty) {
-                          final settings = ref.read(settingsNotifierProvider);
-                          ref
-                              .read(settingsNotifierProvider.notifier)
-                              .updateSettings(
-                                  settings.copyWith(userName: newName),
-                                  cards.cast());
-                        }
-                        Navigator.pop(dialogCtx);
-                      },
-                      child: Text(
-                        'Save',
-                        style: TextStyle(
-                          color: isDark ? Colors.black : Colors.white,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isDark
+                                ? AppTheme.primaryAccentDark
+                                : AppTheme.primaryNavy,
+                            foregroundColor:
+                                isDark ? Colors.black : Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            final newName = controller.text.trim();
+                            if (newName.isNotEmpty) {
+                              final settings =
+                                  ref.read(settingsNotifierProvider);
+                              ref
+                                  .read(settingsNotifierProvider.notifier)
+                                  .updateSettings(
+                                      settings.copyWith(userName: newName),
+                                      cards.cast());
+                            }
+                            Navigator.pop(dialogCtx);
+                          },
+                          child: Text(
+                            'Save',
+                            style: TextStyle(
+                              color: isDark ? Colors.black : Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
