@@ -52,124 +52,187 @@ class CardDetailsScreen extends ConsumerWidget {
         ),
         title: Text(currentCard.cardName),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Featured Card Graphic (Tap to Edit)
-            CreditCardView(
-              card: currentCard,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  slideUpRoute(AddEditCardScreen(cardToEdit: currentCard)),
-                );
-              },
-            ),
-
-            const SizedBox(height: 20),
-
-            // Countdown Progress Banner Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardTheme.color,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
                 children: [
-                  // Circular Progress Ring
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: CircularProgressIndicator(
-                          value: 1.0 - progress,
-                          strokeWidth: 8,
-                          backgroundColor: isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFE2E8F0),
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            isDark
-                                ? (urgency == UrgencyStatus.safe
-                                    ? const Color(0xFF34D399)
-                                    : urgency.badgeTextColor(isDark))
-                                : urgency.color,
-                          ),
-                        ),
-                      ),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${currentCard.daysRemaining}',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const Text(
-                            'DAYS',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textMuted,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  // Featured Card Graphic (Tap to Edit)
+                  CreditCardView(
+                    card: currentCard,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        slideUpRoute(AddEditCardScreen(cardToEdit: currentCard)),
+                      );
+                    },
                   ),
-                  const SizedBox(width: 20),
 
-                  // Text Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 20),
+
+                  // Countdown Progress Banner Card
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardTheme.color,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: urgency.badgeBgColor(isDark),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            urgency.label,
-                            style: TextStyle(
-                              color: urgency.badgeTextColor(isDark),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
-                              letterSpacing: 0.5,
+                        // Circular Progress Ring
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox(
+                              width: 80,
+                              height: 80,
+                              child: CircularProgressIndicator(
+                                value: 1.0 - progress,
+                                strokeWidth: 8,
+                                backgroundColor: isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  isDark
+                                      ? (urgency == UrgencyStatus.safe
+                                          ? const Color(0xFF34D399)
+                                          : urgency.badgeTextColor(isDark))
+                                      : urgency.color,
+                                ),
+                              ),
                             ),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${currentCard.daysRemaining}',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                                const Text(
+                                  'DAYS',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 20),
+
+                        // Text Info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: urgency.badgeBgColor(isDark),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  urgency.label,
+                                  style: TextStyle(
+                                    color: urgency.badgeTextColor(isDark),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '${currentCard.daysRemaining} days left',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              const Text(
+                                'to avoid deactivation',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.textMuted,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${currentCard.daysRemaining} days left',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Metadata 2x2 Grid
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardTheme.color,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          'to avoid deactivation',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppTheme.textMuted,
-                          ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _MetaItem(
+                                label: 'LAST TRANSACTION',
+                                value: dateFormat.format(currentCard.lastTransactionDate),
+                                onTap: () => _editLastTransactionDate(
+                                    context, ref, currentCard),
+                              ),
+                            ),
+                            Expanded(
+                              child: _MetaItem(
+                                label: 'DEADLINE',
+                                value: dateFormat.format(currentCard.deactivationDate),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _MetaItem(
+                                label: 'NETWORK',
+                                value: currentCard.network,
+                              ),
+                            ),
+                            Expanded(
+                              child: _MetaItem(
+                                label: 'EXPIRES',
+                                value: currentCard.expiryDateString,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -177,172 +240,126 @@ class CardDetailsScreen extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
 
-            const SizedBox(height: 16),
-
-            // Metadata 2x2 Grid
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardTheme.color,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+          // Sticky Bottom Action Bar
+          SafeArea(
+            top: false,
+            child: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MetaItem(
-                          label: 'LAST TRANSACTION',
-                          value: dateFormat.format(currentCard.lastTransactionDate),
-                          onTap: () => _editLastTransactionDate(
-                              context, ref, currentCard),
-                        ),
-                      ),
-                      Expanded(
-                        child: _MetaItem(
-                          label: 'DEADLINE',
-                          value: dateFormat.format(currentCard.deactivationDate),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MetaItem(
-                          label: 'NETWORK',
-                          value: currentCard.network,
-                        ),
-                      ),
-                      Expanded(
-                        child: _MetaItem(
-                          label: 'EXPIRES',
-                          value: currentCard.expiryDateString,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Primary Action Button: "Mark Transaction Today"
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  ref
-                      .read(cardNotifierProvider.notifier)
-                      .markUsedToday(currentCard.id);
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          '${currentCard.cardName} reset for ${currentCard.deactivationPeriodDays} days!'),
-                      backgroundColor: AppTheme.accentEmerald,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark
-                      ? AppTheme.primaryAccentDark
-                      : AppTheme.primaryNavy,
-                  foregroundColor: isDark ? Colors.black : Colors.white,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Text(
-                  'Mark Transaction Today',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.black : Colors.white,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Secondary Actions Row: Solid Edit & Delete Buttons (No Icons)
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 50,
+                  // Primary Action Button: "Mark Transaction Today"
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          slideUpRoute(
-                            AddEditCardScreen(cardToEdit: currentCard),
+                        ref
+                            .read(cardNotifierProvider.notifier)
+                            .markUsedToday(currentCard.id);
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                '${currentCard.cardName} reset for ${currentCard.deactivationPeriodDays} days!'),
+                            backgroundColor: AppTheme.accentEmerald,
                           ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isDark
-                            ? const Color(0xFF334155)
+                            ? AppTheme.primaryAccentDark
                             : AppTheme.primaryNavy,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
+                        foregroundColor: isDark ? Colors.black : Colors.white,
+                        elevation: 2,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
-                        'Edit',
+                      child: Text(
+                        'Mark Transaction Today',
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: isDark ? Colors.black : Colors.white,
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SizedBox(
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () => _confirmDelete(context, ref, currentCard),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.accentRose,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+
+                  const SizedBox(height: 10),
+
+                  // Secondary Actions Row: Solid Edit & Delete Buttons (No Icons)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                slideUpRoute(
+                                  AddEditCardScreen(cardToEdit: currentCard),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isDark
+                                  ? const Color(0xFF334155)
+                                  : AppTheme.primaryNavy,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              'Edit',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'Delete',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: () => _confirmDelete(context, ref, currentCard),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.accentRose,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
