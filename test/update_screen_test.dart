@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'package:cardminder/models/app_settings.dart';
+import 'package:cardminder/services/backup_service.dart';
 import 'package:cardminder/services/update_service.dart';
 import 'package:cardminder/theme/app_theme.dart';
+import 'package:cardminder/widgets/backup_dialogs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:github_release_apk_updater/github_release_apk_updater.dart';
@@ -212,6 +216,42 @@ void main() {
       expect(find.text('Install Update'), findsOneWidget);
       expect(find.text('Close'), findsOneWidget);
     });
+
+    testWidgets('UpdateScreen dynamically widens dialog in landscape orientation',
+        (WidgetTester tester) async {
+      final updater = GithubReleaseApkUpdater();
+      tester.view.physicalSize = const Size(800, 400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Scaffold(
+            body: UpdateScreen(
+              release: release,
+              updater: updater,
+              currentVersion: '1.2.4',
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // On 800px landscape, width is (800 * 0.85) = 680.0
+      final constrainedBoxes = tester.widgetList<ConstrainedBox>(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.byType(ConstrainedBox),
+        ),
+      );
+      final dialogBox = constrainedBoxes.firstWhere(
+        (box) => box.constraints.minWidth == 680.0,
+      );
+      expect(dialogBox.constraints.maxWidth, 680.0);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('ChangelogScreen Widget', () {
@@ -235,6 +275,115 @@ void main() {
 
       // Verify header close icon is removed
       expect(find.byIcon(Icons.close_rounded), findsNothing);
+    });
+
+    testWidgets('dynamically widens dialog in landscape orientation',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const Scaffold(
+            body: ChangelogScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // On 800px landscape, width is (800 * 0.85) = 680.0
+      final constrainedBoxes = tester.widgetList<ConstrainedBox>(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.byType(ConstrainedBox),
+        ),
+      );
+      final dialogBox = constrainedBoxes.firstWhere(
+        (box) => box.constraints.minWidth == 680.0,
+      );
+      expect(dialogBox.constraints.maxWidth, 680.0);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('Dialog overflow prevention tests in landscape/constrained viewport', () {
+    testWidgets('SetBackupPinDialog renders without overflow and is scrollable',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 320);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const Scaffold(
+            body: SetBackupPinDialog(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Set Backup PIN'), findsOneWidget);
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('UnlockBackupPinDialog renders without overflow and is scrollable',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 320);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Scaffold(
+            body: UnlockBackupPinDialog(
+              file: File('dummy_backup.cardminder'),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Unlock Backup'), findsOneWidget);
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('RestoreConfirmDialog renders without overflow and is scrollable',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 320);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final backupData = BackupData(
+        cards: [],
+        settings: AppSettings(userName: 'Test User'),
+        exportDate: DateTime(2026, 9, 5, 12, 0),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Scaffold(
+            body: RestoreConfirmDialog(
+              backupData: backupData,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Restore Backup?'), findsOneWidget);
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }
