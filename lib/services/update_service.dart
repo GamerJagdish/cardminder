@@ -1793,50 +1793,62 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                                           if (index ==
                                               _displayedReleases.length) {
                                             if (_hasMore) {
+                                              final buttonBg = isDark
+                                                  ? const Color(0xFF0F172A)
+                                                  : const Color(0xFFF1F5F9);
+                                              final buttonBorder = isDark
+                                                  ? const Color(0xFF1E293B)
+                                                  : const Color(0xFFE2E8F0);
+                                              final buttonFg = isDark
+                                                  ? const Color(0xFF94A3B8)
+                                                  : const Color(0xFF475569);
+
                                               return Padding(
                                                 padding: const EdgeInsets.only(
-                                                    top: 8, bottom: 12),
+                                                    top: 4, bottom: 12),
                                                 child: SizedBox(
                                                   width: double.infinity,
                                                   child: OutlinedButton(
                                                     onPressed: _isLoadingMore
                                                         ? null
                                                         : _loadMore,
-                                                    style:
-                                                        OutlinedButton.styleFrom(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                              vertical: 14),
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                                14),
+                                                    style: OutlinedButton.styleFrom(
+                                                      backgroundColor: buttonBg,
+                                                      disabledBackgroundColor: buttonBg,
+                                                      foregroundColor: buttonFg,
+                                                      disabledForegroundColor:
+                                                          buttonFg.withValues(alpha: 0.6),
+                                                      side: BorderSide(
+                                                        color: buttonBorder,
+                                                        width: 1.0,
                                                       ),
+                                                      padding: const EdgeInsets.symmetric(
+                                                          vertical: 12),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(14),
+                                                      ),
+                                                      elevation: 0,
                                                     ),
                                                     child: _isLoadingMore
                                                         ? SizedBox(
                                                             width: 18,
                                                             height: 18,
-                                                            child:
-                                                                CircularProgressIndicator(
-                                                              strokeWidth: 2.2,
+                                                            child: CircularProgressIndicator(
+                                                              strokeWidth: 2.0,
                                                               valueColor:
-                                                                  AlwaysStoppedAnimation<
-                                                                      Color>(
-                                                                Theme.of(context)
-                                                                    .colorScheme
-                                                                    .primary,
+                                                                  AlwaysStoppedAnimation<Color>(
+                                                                buttonFg,
                                                               ),
                                                             ),
                                                           )
-                                                        : const Text(
+                                                        : Text(
                                                             'Load More',
                                                             style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
                                                               fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight.w600,
+                                                              color: buttonFg,
                                                             ),
                                                           ),
                                                   ),
