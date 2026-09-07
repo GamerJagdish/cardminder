@@ -527,13 +527,16 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
           ),
           title: Text(isEditing ? 'Edit Card' : 'Add New Card'),
         ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        body: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(top: 20.0, bottom: 16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
               // CARD CAROUSEL SLIDER (Swipe to select card color)
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.0),
@@ -1065,44 +1068,49 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
-
-              // Bottom Save Button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _onSave,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark
-                          ? AppTheme.primaryAccentDark
-                          : AppTheme.primaryNavy,
-                      foregroundColor: isDark ? Colors.black : Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 2,
-                    ),
-                    child: Text(
-                      isEditing ? 'Save Changes' : 'Add Card',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.black : Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
       ),
     ),
-  );
-}
+    // Sticky Bottom Save Button
+    SafeArea(
+      top: false,
+      child: Container(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+        child: SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: _onSave,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark
+                  ? AppTheme.primaryAccentDark
+                  : AppTheme.primaryNavy,
+              foregroundColor: isDark ? Colors.black : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 2,
+            ),
+            child: Text(
+              isEditing ? 'Save Changes' : 'Add Card',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.black : Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+      ),
+    );
+  }
 }
 
 class _FieldLabel extends StatelessWidget {
