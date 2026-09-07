@@ -965,16 +965,28 @@ class _UpdateScreenState extends State<UpdateScreen> {
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
     final screenHeight = mediaQuery.size.height;
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final horizontalInset = screenWidth < 500 ? 16.0 : 24.0;
+    final verticalInset = isLandscape || screenHeight < 500 ? 12.0 : 24.0;
     final availableWidth = screenWidth - (horizontalInset * 2);
 
     final double dialogWidth;
-    if (screenWidth >= 1000) {
-      dialogWidth = 640.0;
-    } else if (screenWidth >= 600) {
-      dialogWidth = (screenWidth * 0.70).clamp(480.0, 620.0);
+    if (isLandscape) {
+      if (screenWidth >= 1100) {
+        dialogWidth = 860.0;
+      } else if (screenWidth >= 650) {
+        dialogWidth = (screenWidth * 0.85).clamp(560.0, 820.0);
+      } else {
+        dialogWidth = availableWidth;
+      }
     } else {
-      dialogWidth = availableWidth;
+      if (screenWidth >= 1000) {
+        dialogWidth = 640.0;
+      } else if (screenWidth >= 600) {
+        dialogWidth = (screenWidth * 0.72).clamp(480.0, 620.0);
+      } else {
+        dialogWidth = availableWidth;
+      }
     }
     final targetWidth = dialogWidth.clamp(0.0, availableWidth);
 
@@ -988,12 +1000,12 @@ class _UpdateScreenState extends State<UpdateScreen> {
         surfaceTintColor: Colors.transparent,
         insetPadding: EdgeInsets.symmetric(
           horizontal: horizontalInset,
-          vertical: 24,
+          vertical: verticalInset,
         ),
         clipBehavior: Clip.antiAlias,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: screenHeight * 0.90,
+            maxHeight: screenHeight * (isLandscape ? 0.94 : 0.90),
             maxWidth: targetWidth,
             minWidth: targetWidth,
           ),
@@ -1002,7 +1014,12 @@ class _UpdateScreenState extends State<UpdateScreen> {
             children: [
               // 1. Top Bar: Header (Centered, no icon, no divider)
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 22, 20, 16),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  isLandscape ? 14 : 22,
+                  20,
+                  isLandscape ? 10 : 16,
+                ),
                 child: Center(
                   child: Text(
                     'Update Available',
@@ -1163,7 +1180,12 @@ class _UpdateScreenState extends State<UpdateScreen> {
 
               // 3. Sticky Bottom Action Bar
               Container(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  isLandscape ? 8 : 10,
+                  20,
+                  isLandscape ? 10 : 16,
+                ),
                 decoration: BoxDecoration(
                   color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
                 ),
@@ -1589,16 +1611,28 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
     final screenHeight = mediaQuery.size.height;
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final horizontalInset = screenWidth < 500 ? 16.0 : 24.0;
+    final verticalInset = isLandscape || screenHeight < 500 ? 12.0 : 24.0;
     final availableWidth = screenWidth - (horizontalInset * 2);
 
     final double dialogWidth;
-    if (screenWidth >= 1000) {
-      dialogWidth = 640.0;
-    } else if (screenWidth >= 600) {
-      dialogWidth = (screenWidth * 0.70).clamp(480.0, 620.0);
+    if (isLandscape) {
+      if (screenWidth >= 1100) {
+        dialogWidth = 860.0;
+      } else if (screenWidth >= 650) {
+        dialogWidth = (screenWidth * 0.85).clamp(560.0, 820.0);
+      } else {
+        dialogWidth = availableWidth;
+      }
     } else {
-      dialogWidth = availableWidth;
+      if (screenWidth >= 1000) {
+        dialogWidth = 640.0;
+      } else if (screenWidth >= 600) {
+        dialogWidth = (screenWidth * 0.72).clamp(480.0, 620.0);
+      } else {
+        dialogWidth = availableWidth;
+      }
     }
     final targetWidth = dialogWidth.clamp(0.0, availableWidth);
 
@@ -1612,12 +1646,12 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
         surfaceTintColor: Colors.transparent,
         insetPadding: EdgeInsets.symmetric(
           horizontal: horizontalInset,
-          vertical: 24,
+          vertical: verticalInset,
         ),
         clipBehavior: Clip.antiAlias,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: screenHeight * 0.90,
+            maxHeight: screenHeight * (isLandscape ? 0.94 : 0.90),
             maxWidth: targetWidth,
             minWidth: targetWidth,
           ),
@@ -1626,7 +1660,12 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
             children: [
               // 1. Top Bar: Header (Centered, no icon, no divider)
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 22, 20, 16),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  isLandscape ? 14 : 22,
+                  20,
+                  isLandscape ? 10 : 16,
+                ),
                 child: Center(
                   child: Text(
                     'Changelog',
@@ -1856,7 +1895,12 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
 
               // 3. Sticky Bottom Action Bar
               Container(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  isLandscape ? 8 : 10,
+                  20,
+                  isLandscape ? 10 : 16,
+                ),
                 decoration: BoxDecoration(
                   color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
                 ),
