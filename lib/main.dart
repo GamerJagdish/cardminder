@@ -63,6 +63,7 @@ class CardMinderApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _parseThemeMode(themeModeStr),
+      themeAnimationDuration: Duration.zero,
       home: const HomeScreen(),
     );
   }
