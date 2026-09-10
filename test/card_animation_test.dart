@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cardminder/models/credit_card.dart';
+import 'package:cardminder/widgets/animated_odometer.dart';
 import 'package:cardminder/widgets/credit_card_view.dart';
 import 'package:cardminder/theme/app_theme.dart';
 
@@ -174,6 +175,47 @@ void main() {
           expect(upwardReach, lessThanOrEqualTo(13.0));
         }
       }
+    });
+
+    testWidgets('AnimatedOdometerText renders and rolls values smoothly',
+        (WidgetTester tester) async {
+      int count = 12;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return Column(
+                  children: [
+                    AnimatedOdometerText(
+                      value: count,
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => setState(() => count = 365),
+                      child: const Text('Roll'),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('2'), findsOneWidget);
+
+      await tester.tap(find.text('Roll'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+
+      expect(find.text('3'), findsOneWidget);
+      expect(find.text('6'), findsOneWidget);
+      expect(find.text('5'), findsOneWidget);
     });
   });
 }

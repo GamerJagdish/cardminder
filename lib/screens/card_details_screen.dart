@@ -6,6 +6,7 @@ import '../models/credit_card.dart';
 import '../providers/card_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/page_transitions.dart';
+import '../widgets/animated_odometer.dart';
 import '../widgets/credit_card_view.dart';
 import '../widgets/delete_confirmation_dialog.dart';
 import 'add_edit_card_screen.dart';
@@ -21,6 +22,7 @@ class CardDetailsScreen extends ConsumerStatefulWidget {
 
 class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
   bool _isResetting = false;
+  bool _showCelebration = false;
 
   @override
   Widget build(BuildContext context) {
@@ -82,16 +84,31 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Countdown Progress Banner Card
-                  Container(
+                  // Countdown Progress Banner Card with Celebration Ripple
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeOutCubic,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardTheme.color,
+                      color: _showCelebration
+                          ? AppTheme.accentEmerald
+                              .withValues(alpha: isDark ? 0.20 : 0.10)
+                          : Theme.of(context).cardTheme.color,
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _showCelebration
+                            ? AppTheme.accentEmerald
+                                .withValues(alpha: isDark ? 0.5 : 0.35)
+                            : Colors.transparent,
+                        width: 1.5,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 10,
+                          color: _showCelebration
+                              ? AppTheme.accentEmerald
+                                  .withValues(alpha: isDark ? 0.25 : 0.15)
+                              : Colors.black.withValues(alpha: 0.02),
+                          blurRadius: _showCelebration ? 18 : 10,
                           offset: const Offset(0, 4),
                         ),
                       ],
@@ -109,7 +126,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
                                 tween: Tween<double>(
                                     begin: 0.0,
                                     end: (1.0 - progress).clamp(0.0, 1.0)),
-                                duration: const Duration(milliseconds: 650),
+                                duration: const Duration(milliseconds: 750),
                                 curve: Curves.easeOutCubic,
                                 builder: (context, animatedValue, _) {
                                   return CircularProgressIndicator(
@@ -132,31 +149,14 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
                             Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 350),
-                                  transitionBuilder: (child, animation) {
-                                    return ScaleTransition(
-                                      scale: CurvedAnimation(
-                                        parent: animation,
-                                        curve: Curves.easeOutBack,
-                                      ),
-                                      child: FadeTransition(
-                                        opacity: animation,
-                                        child: child,
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    '${currentCard.daysRemaining}',
-                                    key: ValueKey(
-                                        'days-${currentCard.daysRemaining}'),
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w900,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                    ),
+                                AnimatedOdometerText(
+                                  value: currentCard.daysRemaining,
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface,
                                   ),
                                 ),
                                 const Text(
@@ -178,38 +178,70 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: urgency.badgeBgColor(isDark),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  urgency.label,
-                                  style: TextStyle(
-                                    color: urgency.badgeTextColor(isDark),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 11,
-                                    letterSpacing: 0.5,
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: urgency.badgeBgColor(isDark),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      urgency.label,
+                                      style: TextStyle(
+                                        color: urgency.badgeTextColor(isDark),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 11,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  if (_showCelebration) ...[
+                                    const SizedBox(width: 8),
+                                    const Icon(
+                                      Icons.check_circle_rounded,
+                                      color: AppTheme.accentEmerald,
+                                      size: 18,
+                                    ),
+                                  ],
+                                ],
                               ),
                               const SizedBox(height: 8),
-                              Text(
-                                '${currentCard.daysRemaining} days left',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
+                              Row(
+                                children: [
+                                  AnimatedOdometerText(
+                                    value: currentCard.daysRemaining,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'days left',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 2),
-                              const Text(
-                                'to avoid deactivation',
+                              Text(
+                                _showCelebration
+                                    ? 'Card refreshed & active!'
+                                    : 'to avoid deactivation',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: AppTheme.textMuted,
+                                  color: _showCelebration
+                                      ? AppTheme.accentEmerald
+                                      : AppTheme.textMuted,
+                                  fontWeight: _showCelebration
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
                                 ),
                               ),
                             ],
@@ -297,15 +329,21 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
                       onPressed: _isResetting
                           ? null
                           : () async {
-                              setState(() => _isResetting = true);
-                              HapticFeedback.mediumImpact();
+                              setState(() {
+                                _isResetting = true;
+                                _showCelebration = true;
+                              });
+                              HapticFeedback.heavyImpact();
+                              await Future.delayed(
+                                  const Duration(milliseconds: 140));
+                              HapticFeedback.lightImpact();
+
                               await ref
                                   .read(cardNotifierProvider.notifier)
                                   .markUsedToday(currentCard.id);
-                              HapticFeedback.lightImpact();
 
                               await Future.delayed(
-                                  const Duration(milliseconds: 700));
+                                  const Duration(milliseconds: 950));
                               if (!context.mounted) return;
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
