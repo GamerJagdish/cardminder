@@ -81,6 +81,10 @@ class _CreditCardViewState extends State<CreditCardView>
   @override
   void didUpdateWidget(CreditCardView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.card.id != widget.card.id ||
+        (!widget.enableTilt && oldWidget.enableTilt)) {
+      _resetTiltImmediately();
+    }
     if (_isUrgent(widget.card)) {
       if (!_breathingController.isAnimating) {
         _breathingController.repeat(reverse: true);
@@ -130,9 +134,12 @@ class _CreditCardViewState extends State<CreditCardView>
   }
 
   void _releaseTilt() {
-    if (!widget.enableTilt) return;
     if (_currentOffset == Offset.zero && !_isInteracting) return;
     _isInteracting = false;
+    if (!widget.enableTilt) {
+      _resetTiltImmediately();
+      return;
+    }
     _springAnimation = Tween<Offset>(
       begin: _currentOffset,
       end: Offset.zero,

@@ -21,16 +21,28 @@ class CardDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+  late String _currentCardId;
   bool _isResetting = false;
   bool _showCelebration = false;
+
+  // Vertical Pull-Down Dismiss
   double _pullDownOffset = 0.0;
   late AnimationController _springBackController;
   late Animation<double> _springBackAnimation;
 
+  // Horizontal 3D Card Deck Switcher
+  double _dragOffset = 0.0;
+  Axis? _dragAxis;
+  Offset? _panStartPosition;
+  late AnimationController _deckController;
+  late Animation<double> _deckAnimation;
+
   @override
   void initState() {
     super.initState();
+    _currentCardId = widget.card.id;
+
     _springBackController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 320),
@@ -40,23 +52,46 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
         });
       });
     _springBackAnimation = const AlwaysStoppedAnimation<double>(0.0);
+
+    _deckController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 280),
+    )..addListener(() {
+        setState(() {
+          _dragOffset = _deckAnimation.value;
+        });
+      });
+    _deckAnimation = const AlwaysStoppedAnimation<double>(0.0);
   }
 
   @override
   void dispose() {
     _springBackController.dispose();
+    _deckController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final card = widget.card;
-    // Dynamically watch card state to reflect instant edits
-    final cards = ref.watch(cardNotifierProvider).cards;
-    final currentCard = cards.firstWhere(
-      (c) => c.id == card.id,
-      orElse: () => card,
-    );
+    final cardState = ref.watch(cardNotifierProvider);
+    final filteredCards = cardState.filteredCards;
+    final activeIndex =
+        filteredCards.indexWhere((c) => c.id == _currentCardId);
+    final currentIndex = activeIndex != -1
+        ? activeIndex
+        : (filteredCards.isNotEmpty ? 0 : -1);
+
+    final currentCard = currentIndex != -1
+        ? filteredCards[currentIndex]
+        : cardState.cards.firstWhere(
+            (c) => c.id == _currentCardId,
+            orElse: () => widget.card,
+          );
+
+    final hasPrev = currentIndex > 0;
+    final hasNext = currentIndex < filteredCards.length - 1;
+    final prevCard = hasPrev ? filteredCards[currentIndex - 1] : null;
+    final nextCard = hasNext ? filteredCards[currentIndex + 1] : null;
 
     final dateFormat = DateFormat('MMM dd, yyyy');
     final urgency = currentCard.status;
@@ -79,21 +114,39 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
             child: GestureDetector(
               onTap: () => Navigator.pop(context, currentCard.id),
               child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardTheme.color,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isDark
-                      ? const Color(0xFF334155)
-                      : const Color(0xFFE2E8F0),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardTheme.color,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFE2E8F0),
+                  ),
                 ),
+                child: const Icon(Icons.arrow_back_rounded, size: 20),
               ),
-              child: const Icon(Icons.arrow_back_rounded, size: 20),
+            ),
+          ),
+          title: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.0, 0.2),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+              );
+            },
+            child: Text(
+              currentCard.cardName,
+              key: ValueKey('title-${currentCard.id}'),
             ),
           ),
         ),
-        title: Text(currentCard.cardName),
-      ),
       body: Column(
         children: [
           Expanded(
@@ -121,6 +174,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
                         child: IgnorePointer(
                           child: CreditCardView(
                             card: currentCard,
+                            heroTag: null,
                             isInteractive: false,
                             enableTilt: false,
                           ),
@@ -299,63 +353,69 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
                   const SizedBox(height: 16),
 
                   // Metadata 2x2 Grid
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardTheme.color,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _MetaItem(
-                                label: 'LAST TRANSACTION',
-                                value: dateFormat.format(currentCard.lastTransactionDate),
-                                onTap: () => _editLastTransactionDate(
-                                    context, ref, currentCard),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Container(
+                      key: ValueKey('meta-${currentCard.id}'),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardTheme.color,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _MetaItem(
+                                  label: 'LAST TRANSACTION',
+                                  value: dateFormat
+                                      .format(currentCard.lastTransactionDate),
+                                  onTap: () => _editLastTransactionDate(
+                                      context, ref, currentCard),
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              child: _MetaItem(
-                                label: 'DEADLINE',
-                                value: dateFormat.format(currentCard.deactivationDate),
+                              Expanded(
+                                child: _MetaItem(
+                                  label: 'DEADLINE',
+                                  value: dateFormat
+                                      .format(currentCard.deactivationDate),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _MetaItem(
-                                label: 'NETWORK',
-                                value: currentCard.network,
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _MetaItem(
+                                  label: 'NETWORK',
+                                  value: currentCard.network,
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              child: _MetaItem(
-                                label: 'EXPIRES',
-                                value: currentCard.expiryDateString,
+                              Expanded(
+                                child: _MetaItem(
+                                  label: 'EXPIRES',
+                                  value: currentCard.expiryDateString,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
 
-              // Layer 1 (On Top): Interactive Pull-Down Indicator & Card
+              // Layer 1 (On Top): Interactive Pull-Down Indicator & 3D Card Deck
                   Positioned(
                     top: 0,
                     left: 0,
@@ -377,25 +437,116 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
                           ),
                         ),
 
-                        // Featured Card Graphic (Interactive Pull Down to Dismiss & Tap to Edit)
+                        // Interactive 3D Card Deck (Horizontal 3D Slide & Vertical Pull-Down)
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onVerticalDragUpdate: (details) {
-                            if (details.primaryDelta != null &&
-                                (details.primaryDelta! > 0 || _pullDownOffset > 0)) {
+                          onTap: () {
+                            if (_pullDownOffset > 10 || _dragOffset.abs() > 10) {
+                              return;
+                            }
+                            Navigator.push(
+                              context,
+                              slideUpRoute(
+                                AddEditCardScreen(cardToEdit: currentCard),
+                              ),
+                            );
+                          },
+                          onPanStart: (details) {
+                            if (_deckController.isAnimating ||
+                                _springBackController.isAnimating) {
+                              return;
+                            }
+                            _panStartPosition = details.localPosition;
+                            _dragAxis = null;
+                            _deckController.stop();
+                            _springBackController.stop();
+                          },
+                          onPanUpdate: (details) {
+                            if (_panStartPosition == null) return;
+                            final totalDx =
+                                details.localPosition.dx - _panStartPosition!.dx;
+                            final totalDy =
+                                details.localPosition.dy - _panStartPosition!.dy;
+
+                            if (_dragAxis == null) {
+                              if (totalDx.abs() > 8 || totalDy.abs() > 8) {
+                                if (totalDy > 8 &&
+                                    totalDy.abs() > totalDx.abs() * 1.2) {
+                                  _dragAxis = Axis.vertical;
+                                } else if (totalDx.abs() > 8) {
+                                  _dragAxis = Axis.horizontal;
+                                }
+                              }
+                            }
+
+                            if (_dragAxis == Axis.vertical) {
+                              if (totalDy > 0 || _pullDownOffset > 0) {
+                                setState(() {
+                                  _pullDownOffset =
+                                      (totalDy * 0.85).clamp(0.0, 240.0);
+                                });
+                              }
+                            } else if (_dragAxis == Axis.horizontal) {
+                              double dx = totalDx;
+                              if ((dx > 0 && !hasPrev) || (dx < 0 && !hasNext)) {
+                                dx = dx * 0.28;
+                              }
                               setState(() {
-                                _pullDownOffset =
-                                    (_pullDownOffset + details.primaryDelta! * 0.85)
-                                        .clamp(0.0, 240.0);
+                                _dragOffset = dx;
                               });
                             }
                           },
-                          onVerticalDragEnd: (details) {
-                            final velocity = details.primaryVelocity ?? 0.0;
-                            if (_pullDownOffset > 85.0 || velocity > 650.0) {
-                              HapticFeedback.lightImpact();
-                              Navigator.pop(context, currentCard.id);
-                            } else if (_pullDownOffset > 0.0) {
+                          onPanEnd: (details) {
+                            final velocityX =
+                                details.velocity.pixelsPerSecond.dx;
+                            final velocityY =
+                                details.velocity.pixelsPerSecond.dy;
+                            final screenWidth =
+                                MediaQuery.of(context).size.width;
+
+                            if (_dragAxis == Axis.vertical) {
+                              if (_pullDownOffset > 85.0 || velocityY > 650.0) {
+                                HapticFeedback.lightImpact();
+                                Navigator.pop(context, currentCard.id);
+                              } else if (_pullDownOffset > 0.0) {
+                                _springBackAnimation = Tween<double>(
+                                  begin: _pullDownOffset,
+                                  end: 0.0,
+                                ).animate(CurvedAnimation(
+                                  parent: _springBackController,
+                                  curve: Curves.easeOutBack,
+                                ));
+                                _springBackController.forward(from: 0.0);
+                              }
+                            } else if (_dragAxis == Axis.horizontal) {
+                              final isFlingNext =
+                                  _dragOffset < -65.0 || velocityX < -500.0;
+                              final isFlingPrev =
+                                  _dragOffset > 65.0 || velocityX > 500.0;
+
+                              if (isFlingNext && hasNext && nextCard != null) {
+                                _completeCardSwitch(
+                                  toNext: true,
+                                  targetCard: nextCard,
+                                  screenWidth: screenWidth,
+                                );
+                              } else if (isFlingPrev &&
+                                  hasPrev &&
+                                  prevCard != null) {
+                                _completeCardSwitch(
+                                  toNext: false,
+                                  targetCard: prevCard,
+                                  screenWidth: screenWidth,
+                                );
+                              } else {
+                                _springBackDeck();
+                              }
+                            }
+                            _dragAxis = null;
+                            _panStartPosition = null;
+                          },
+                          onPanCancel: () {
+                            if (_pullDownOffset > 0) {
                               _springBackAnimation = Tween<double>(
                                 begin: _pullDownOffset,
                                 end: 0.0,
@@ -405,23 +556,25 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
                               ));
                               _springBackController.forward(from: 0.0);
                             }
+                            if (_dragOffset != 0) {
+                              _springBackDeck();
+                            }
+                            _dragAxis = null;
+                            _panStartPosition = null;
                           },
                           child: Transform.translate(
                             offset: Offset(0.0, _pullDownOffset),
                             child: Transform.scale(
                               scale: (1.0 - (_pullDownOffset / 1000))
                                   .clamp(0.88, 1.0),
-                              child: CreditCardView(
-                                card: currentCard,
-                                heroTag: 'card-hero-${currentCard.id}',
-                                onTap: () {
-                                  if (_pullDownOffset > 10) return;
-                                  Navigator.push(
-                                    context,
-                                    slideUpRoute(
-                                        AddEditCardScreen(cardToEdit: currentCard)),
-                                  );
-                                },
+                              child: _build3DCardDeck(
+                                context: context,
+                                currentCard: currentCard,
+                                prevCard: prevCard,
+                                nextCard: nextCard,
+                                hasPrev: hasPrev,
+                                hasNext: hasNext,
+                                isDark: isDark,
                               ),
                             ),
                           ),
@@ -640,6 +793,169 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
         Navigator.pop(context);
       }
     }
+  }
+
+  void _completeCardSwitch({
+    required bool toNext,
+    required CreditCard targetCard,
+    required double screenWidth,
+  }) {
+    HapticFeedback.lightImpact();
+    final targetEndOffset = toNext ? -screenWidth : screenWidth;
+
+    _deckAnimation = Tween<double>(
+      begin: _dragOffset,
+      end: targetEndOffset,
+    ).animate(CurvedAnimation(
+      parent: _deckController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    void statusListener(AnimationStatus status) {
+      if (status == AnimationStatus.completed) {
+        _deckController.removeStatusListener(statusListener);
+        if (mounted) {
+          setState(() {
+            _currentCardId = targetCard.id;
+            _dragOffset = 0.0;
+            _deckAnimation = const AlwaysStoppedAnimation<double>(0.0);
+            _deckController.reset();
+          });
+        }
+      }
+    }
+
+    _deckController.addStatusListener(statusListener);
+    _deckController.forward(from: 0.0);
+  }
+
+  void _springBackDeck() {
+    if (_dragOffset.abs() > 20) {
+      HapticFeedback.selectionClick();
+    }
+    _deckAnimation = Tween<double>(
+      begin: _dragOffset,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _deckController,
+      curve: Curves.easeOutBack,
+    ));
+
+    void statusListener(AnimationStatus status) {
+      if (status == AnimationStatus.completed) {
+        _deckController.removeStatusListener(statusListener);
+        if (mounted) {
+          setState(() {
+            _dragOffset = 0.0;
+            _deckAnimation = const AlwaysStoppedAnimation<double>(0.0);
+            _deckController.reset();
+          });
+        }
+      }
+    }
+
+    _deckController.addStatusListener(statusListener);
+    _deckController.forward(from: 0.0);
+  }
+
+  Widget _build3DCardDeck({
+    required BuildContext context,
+    required CreditCard currentCard,
+    required CreditCard? prevCard,
+    required CreditCard? nextCard,
+    required bool hasPrev,
+    required bool hasNext,
+    required bool isDark,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final dragFraction = (_dragOffset / screenWidth).clamp(-1.0, 1.0);
+    final absOffset = _dragOffset.abs();
+    final switchProgress = (absOffset / 200.0).clamp(0.0, 1.0);
+
+    // Determine which background card to display in the 3D depth stack
+    final CreditCard? backgroundCard = _dragOffset < 0
+        ? nextCard
+        : (_dragOffset > 0 ? prevCard : (hasNext ? nextCard : null));
+
+    // Background card transforms (emerging from 3D depth)
+    final bgScale = 0.92 + (0.08 * switchProgress);
+    final bgOpacity = _dragOffset == 0.0
+        ? (hasNext ? (isDark ? 0.20 : 0.28) : 0.0)
+        : (0.35 + 0.65 * switchProgress).clamp(0.0, 1.0);
+    final bgTranslateY = (1.0 - switchProgress) * 10.0;
+    final bgAngleY = _dragOffset < 0
+        ? (1.0 - switchProgress) * 0.12
+        : (_dragOffset > 0 ? -(1.0 - switchProgress) * 0.12 : 0.0);
+
+    final bgMatrix = Matrix4.identity()
+      ..setEntry(3, 2, 0.0012)
+      ..translateByDouble(0.0, bgTranslateY, -35.0 * (1.0 - switchProgress), 1.0)
+      ..rotateY(bgAngleY);
+
+    // Front card transforms (interactive 3D perspective rotation, wrist tilt, tension scale)
+    final frontAngleY = -dragFraction * 0.70;
+    final frontAngleZ = dragFraction * 0.12;
+    final frontScale =
+        (1.0 - (absOffset / screenWidth) * 0.08).clamp(0.92, 1.0);
+    final frontOpacity =
+        absOffset > 70 ? (1.0 - (absOffset - 70) / (screenWidth * 0.7)).clamp(0.0, 1.0) : 1.0;
+
+    final frontMatrix = Matrix4.identity()
+      ..setEntry(3, 2, 0.0012)
+      ..translateByDouble(_dragOffset, 0.0, 0.0, 1.0)
+      ..rotateY(frontAngleY)
+      ..rotateZ(frontAngleZ);
+
+    return SizedBox(
+      height: 195,
+      width: double.infinity,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          // 1. Background Card Layer (Physical 3D Depth Layer)
+          if (backgroundCard != null && bgOpacity > 0.01)
+            Transform(
+              transform: bgMatrix,
+              alignment: Alignment.center,
+              child: Transform.scale(
+                scale: bgScale,
+                child: Opacity(
+                  opacity: bgOpacity,
+                  child: IgnorePointer(
+                    child: CreditCardView(
+                      key: ValueKey('bg-card-${backgroundCard.id}'),
+                      card: backgroundCard,
+                      heroTag: null,
+                      isInteractive: false,
+                      enableTilt: false,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          // 2. Foreground Active Card Layer (3D perspective tilt & interactive motion)
+          Transform(
+            transform: frontMatrix,
+            alignment: Alignment.center,
+            child: Transform.scale(
+              scale: frontScale,
+              child: Opacity(
+                opacity: frontOpacity,
+                child: CreditCardView(
+                  key: ValueKey('front-card-${currentCard.id}'),
+                  card: currentCard,
+                  heroTag: 'card-hero-${currentCard.id}',
+                  isInteractive: true,
+                  enableTilt: _dragOffset == 0.0 && _pullDownOffset == 0.0,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
