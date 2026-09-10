@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 import '../models/credit_card.dart';
 import '../providers/card_provider.dart';
 import '../theme/app_theme.dart';
@@ -18,6 +19,7 @@ class AddEditCardScreen extends ConsumerStatefulWidget {
 
 class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   final _formKey = GlobalKey<FormState>();
+  late String _cardId;
   late TextEditingController _nameController;
   late TextEditingController _digitsController;
   late TextEditingController _monthController;
@@ -48,10 +50,15 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   void initState() {
     super.initState();
     final card = widget.cardToEdit;
-    _nameController = TextEditingController(text: card?.cardName ?? '');
-    _digitsController = TextEditingController(text: card?.lastFourDigits ?? '0001');
-    _monthController = TextEditingController(text: card?.expiryMonth ?? '12');
-    _yearController = TextEditingController(text: card?.expiryYear ?? '28');
+    _cardId = card?.id ?? const Uuid().v4();
+    _nameController = TextEditingController(text: card?.cardName ?? '')
+      ..addListener(() => setState(() {}));
+    _digitsController = TextEditingController(text: card?.lastFourDigits ?? '0001')
+      ..addListener(() => setState(() {}));
+    _monthController = TextEditingController(text: card?.expiryMonth ?? '12')
+      ..addListener(() => setState(() {}));
+    _yearController = TextEditingController(text: card?.expiryYear ?? '28')
+      ..addListener(() => setState(() {}));
     _selectedDeactivationDays = card?.deactivationPeriodDays ?? 365;
 
     if (card != null) {
@@ -136,10 +143,14 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     }
   }
 
-  void _onSave() {
+  void _onSave() async {
     if (!_formKey.currentState!.validate()) return;
 
-    _isSaving = true;
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _isSaving = true;
+    });
 
     final name = _nameController.text.trim();
     final digits = _digitsController.text.trim();
@@ -158,35 +169,33 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
         expiryYear: year.isNotEmpty ? year : '28',
         deactivationPeriodDays: _selectedDeactivationDays,
       );
-      ref.read(cardNotifierProvider.notifier).updateCard(updated);
+      await ref.read(cardNotifierProvider.notifier).updateCard(updated);
     } else {
-      ref.read(cardNotifierProvider.notifier).addCard(
+      await ref.read(cardNotifierProvider.notifier).addCard(
+            id: _cardId,
             cardName: name,
             lastFourDigits: digits.isNotEmpty ? digits : '0001',
             lastTransactionDate: _selectedDate,
             colorIndex: _selectedColorIndex,
+            network: _selectedNetwork,
             cardType: _cardType,
+            expiryMonth: month.isNotEmpty ? month : '12',
+            expiryYear: year.isNotEmpty ? year : '28',
             deactivationPeriodDays: _selectedDeactivationDays,
           );
-      final list = ref.read(cardNotifierProvider).cards;
-      if (list.isNotEmpty) {
-        final created = list.firstWhere(
-          (c) => c.cardName == name,
-          orElse: () => list.last,
-        );
-        ref.read(cardNotifierProvider.notifier).updateCard(
-              created.copyWith(
-                network: _selectedNetwork,
-                cardType: _cardType,
-                expiryMonth: month.isNotEmpty ? month : '12',
-                expiryYear: year.isNotEmpty ? year : '28',
-                deactivationPeriodDays: _selectedDeactivationDays,
-              ),
-            );
-      }
     }
 
-    Navigator.pop(context);
+    // Give the form exit fade time to settle cleanly
+    await Future.delayed(const Duration(milliseconds: 160));
+
+    if (!mounted) return;
+
+    // Ensure downstream frames render the newly added card before popping
+    await WidgetsBinding.instance.endOfFrame;
+
+    if (mounted) {
+      Navigator.pop(context, _cardId);
+    }
   }
 
   Future<bool> _showUnsavedChangesDialog(BuildContext context) async {
@@ -478,7 +487,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
     final dateFormat = DateFormat('dd-MM-yyyy');
 
     final previewCard = CreditCard(
-      id: widget.cardToEdit?.id ?? 'preview',
+      id: _cardId,
       cardName: _nameController.text.isNotEmpty
           ? _nameController.text
           : 'Card Nickname',
@@ -538,9 +547,13 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
               // CARD CAROUSEL SLIDER (Swipe to select card color)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.0),
-                child: _FieldLabel(text: 'SELECT CARD COLOR'),
+              AnimatedOpacity(
+                opacity: _isSaving ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 160),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  child: _FieldLabel(text: 'SELECT CARD COLOR'),
+                ),
               ),
               const SizedBox(height: 10),
 
@@ -548,6 +561,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                 height: 195,
                 child: PageView.builder(
                   controller: _pageController,
+                  clipBehavior: Clip.none,
                   itemCount: AppTheme.cardThemes.length + 1,
                   onPageChanged: (index) {
                     setState(() {
@@ -573,6 +587,9 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                           CreditCardView(
                             card: cardForPage,
                             isInteractive: false,
+                            heroTag: index == _currentPage
+                                ? 'card-hero-$_cardId'
+                                : null,
                             onCardTypeTap: () {
                               setState(() {
                                 _cardType = _cardType == 'Credit Card'
@@ -592,9 +609,15 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                 ),
               ),
 
-              const SizedBox(height: 12),
+              AnimatedOpacity(
+                opacity: _isSaving ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 160),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 12),
 
-              // Page Indicator Dots (. . . . . . 🎨)
+                    // Page Indicator Dots (. . . . . . 🎨)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(AppTheme.cardThemes.length + 1, (index) {
@@ -1067,39 +1090,45 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   ],
                 ),
               ),
-
-            ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-    // Sticky Bottom Save Button
-    SafeArea(
-      top: false,
-      child: Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-        child: SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: _onSave,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isDark
-                  ? AppTheme.primaryAccentDark
-                  : AppTheme.primaryNavy,
-              foregroundColor: isDark ? Colors.black : Colors.white,
+      // Sticky Bottom Save Button
+      SafeArea(
+        top: false,
+        child: AnimatedOpacity(
+          opacity: _isSaving ? 0.0 : 1.0,
+          duration: const Duration(milliseconds: 160),
+          child: Container(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _onSave,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark
+                      ? AppTheme.primaryAccentDark
+                      : AppTheme.primaryNavy,
+                  foregroundColor: isDark ? Colors.black : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
               elevation: 2,
             ),
-            child: Text(
-              isEditing ? 'Save Changes' : 'Add Card',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.black : Colors.white,
+              child: Text(
+                isEditing ? 'Save Changes' : 'Add Card',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.black : Colors.white,
+                ),
               ),
             ),
           ),

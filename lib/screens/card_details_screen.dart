@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../models/credit_card.dart';
@@ -9,13 +10,21 @@ import '../widgets/credit_card_view.dart';
 import '../widgets/delete_confirmation_dialog.dart';
 import 'add_edit_card_screen.dart';
 
-class CardDetailsScreen extends ConsumerWidget {
+class CardDetailsScreen extends ConsumerStatefulWidget {
   final CreditCard card;
 
   const CardDetailsScreen({super.key, required this.card});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CardDetailsScreen> createState() => _CardDetailsScreenState();
+}
+
+class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
+  bool _isResetting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final card = widget.card;
     // Dynamically watch card state to reflect instant edits
     final cards = ref.watch(cardNotifierProvider).cards;
     final currentCard = cards.firstWhere(
@@ -62,6 +71,7 @@ class CardDetailsScreen extends ConsumerWidget {
                   // Featured Card Graphic (Tap to Edit)
                   CreditCardView(
                     card: currentCard,
+                    heroTag: 'card-hero-${currentCard.id}',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -95,30 +105,58 @@ class CardDetailsScreen extends ConsumerWidget {
                             SizedBox(
                               width: 80,
                               height: 80,
-                              child: CircularProgressIndicator(
-                                value: 1.0 - progress,
-                                strokeWidth: 8,
-                                backgroundColor: isDark
-                                    ? const Color(0xFF334155)
-                                    : const Color(0xFFE2E8F0),
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  isDark
-                                      ? (urgency == UrgencyStatus.safe
-                                          ? const Color(0xFF34D399)
-                                          : urgency.badgeTextColor(isDark))
-                                      : urgency.color,
-                                ),
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween<double>(
+                                    begin: 0.0,
+                                    end: (1.0 - progress).clamp(0.0, 1.0)),
+                                duration: const Duration(milliseconds: 650),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, animatedValue, _) {
+                                  return CircularProgressIndicator(
+                                    value: animatedValue,
+                                    strokeWidth: 8,
+                                    backgroundColor: isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFE2E8F0),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      isDark
+                                          ? (urgency == UrgencyStatus.safe
+                                              ? const Color(0xFF34D399)
+                                              : urgency.badgeTextColor(isDark))
+                                          : urgency.color,
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                             Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  '${currentCard.daysRemaining}',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w900,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 350),
+                                  transitionBuilder: (child, animation) {
+                                    return ScaleTransition(
+                                      scale: CurvedAnimation(
+                                        parent: animation,
+                                        curve: Curves.easeOutBack,
+                                      ),
+                                      child: FadeTransition(
+                                        opacity: animation,
+                                        child: child,
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    '${currentCard.daysRemaining}',
+                                    key: ValueKey(
+                                        'days-${currentCard.daysRemaining}'),
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w900,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                    ),
                                   ),
                                 ),
                                 const Text(
@@ -256,36 +294,69 @@ class CardDetailsScreen extends ConsumerWidget {
                     width: double.infinity,
                     height: 54,
                     child: ElevatedButton(
-                      onPressed: () {
-                        ref
-                            .read(cardNotifierProvider.notifier)
-                            .markUsedToday(currentCard.id);
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                '${currentCard.cardName} reset for ${currentCard.deactivationPeriodDays} days!'),
-                            backgroundColor: AppTheme.accentEmerald,
-                          ),
-                        );
-                      },
+                      onPressed: _isResetting
+                          ? null
+                          : () async {
+                              setState(() => _isResetting = true);
+                              HapticFeedback.mediumImpact();
+                              await ref
+                                  .read(cardNotifierProvider.notifier)
+                                  .markUsedToday(currentCard.id);
+                              HapticFeedback.lightImpact();
+
+                              await Future.delayed(
+                                  const Duration(milliseconds: 700));
+                              if (!context.mounted) return;
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      '${currentCard.cardName} reset for ${currentCard.deactivationPeriodDays} days!'),
+                                  backgroundColor: AppTheme.accentEmerald,
+                                ),
+                              );
+                            },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? AppTheme.primaryAccentDark
-                            : AppTheme.primaryNavy,
+                        backgroundColor: _isResetting
+                            ? AppTheme.accentEmerald
+                            : (isDark
+                                ? AppTheme.primaryAccentDark
+                                : AppTheme.primaryNavy),
                         foregroundColor: isDark ? Colors.black : Colors.white,
                         elevation: 2,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text(
-                        'Mark Transaction Today',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.black : Colors.white,
-                        ),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        child: _isResetting
+                            ? const Row(
+                                key: ValueKey('resetting'),
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.check_circle_rounded,
+                                      color: Colors.white, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Reset Complete!',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Text(
+                                'Mark Transaction Today',
+                                key: const ValueKey('idle'),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.black : Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   ),
