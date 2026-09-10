@@ -19,6 +19,69 @@ import '../widgets/backup_dialogs.dart';
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
+  static Future<bool> handleRestoreBackup(
+      BuildContext context, WidgetRef ref, AppSettings settings) async {
+    final effectiveDir =
+        await BackupService.getEffectiveBackupDirectory(settings);
+    final file =
+        await BackupService.pickBackupFile(initialDirectory: effectiveDir);
+    if (file == null) return false;
+
+    if (!context.mounted) return false;
+
+    // 1. Verify file validity BEFORE showing PIN dialog
+    final isValid = await BackupService.isValidBackupFile(file);
+    if (!context.mounted) return false;
+    if (!isValid) {
+      showAppErrorSnackBar(
+        context,
+        title: 'Not a Backup File',
+        message: 'The selected file is not a valid CardMinder backup.',
+      );
+      return false;
+    }
+
+    // 2. Show PIN unlock dialog with inline verification & retry
+    final backupData = await showDialog<BackupData>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => UnlockBackupPinDialog(file: file),
+    );
+
+    if (backupData == null) return false;
+
+    if (!context.mounted) return false;
+
+    // 3. Show confirmation dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => RestoreConfirmDialog(backupData: backupData),
+    );
+
+    if (confirm == true) {
+      final storage = ref.read(storageServiceProvider);
+      await storage.saveAllCards(backupData.cards);
+
+      ref.read(cardNotifierProvider.notifier).reloadCards();
+      ref.read(settingsNotifierProvider.notifier).updateSettings(
+            backupData.settings,
+            backupData.cards,
+          );
+
+      if (context.mounted) {
+        showAppSuccessSnackBar(
+          context,
+          title: 'Backup Restored Successfully',
+          message:
+              'Restored ${backupData.cards.length} card(s) and preferences.',
+        );
+      }
+      return true;
+    }
+    return false;
+  }
+
   @override
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
@@ -204,65 +267,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _handleRestoreBackup(
-      BuildContext context, WidgetRef ref, AppSettings settings) async {
-    final effectiveDir =
-        await BackupService.getEffectiveBackupDirectory(settings);
-    final file =
-        await BackupService.pickBackupFile(initialDirectory: effectiveDir);
-    if (file == null) return;
 
-    if (!context.mounted) return;
-
-    // 1. Verify file validity BEFORE showing PIN dialog
-    final isValid = await BackupService.isValidBackupFile(file);
-    if (!context.mounted) return;
-    if (!isValid) {
-      showAppErrorSnackBar(
-        context,
-        title: 'Not a Backup File',
-        message: 'The selected file is not a valid CardMinder backup.',
-      );
-      return;
-    }
-
-    // 2. Show PIN unlock dialog with inline verification & retry
-    final backupData = await showDialog<BackupData>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogCtx) => UnlockBackupPinDialog(file: file),
-    );
-
-    if (backupData == null) return;
-
-    if (!context.mounted) return;
-
-    // 2. Show confirmation dialog
-    final confirm = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogCtx) => RestoreConfirmDialog(backupData: backupData),
-    );
-
-    if (confirm == true) {
-      final storage = ref.read(storageServiceProvider);
-      await storage.saveAllCards(backupData.cards);
-
-      ref.read(cardNotifierProvider.notifier).reloadCards();
-      ref.read(settingsNotifierProvider.notifier).updateSettings(
-            backupData.settings,
-            backupData.cards,
-          );
-
-      if (context.mounted) {
-        showAppSuccessSnackBar(
-          context,
-          title: 'Backup Restored Successfully',
-          message: 'Restored ${backupData.cards.length} card(s) and preferences.',
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -877,7 +882,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       Expanded(
                         child: GestureDetector(
                           onTap: () =>
-                              _handleRestoreBackup(context, ref, settings),
+                              SettingsScreen.handleRestoreBackup(context, ref, settings),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(

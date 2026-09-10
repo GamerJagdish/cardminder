@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/app_settings.dart';
 import '../providers/card_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/notification_log_service.dart';
@@ -424,7 +425,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                   Expanded(
                     child: cards.isEmpty
-                        ? _buildEmptyState()
+                        ? _buildEmptyState(settings)
                         : SingleChildScrollView(
                             controller: _homeScrollController,
                             child: Column(
@@ -866,7 +867,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppSettings settings) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Center(
@@ -927,8 +928,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? AppTheme.primaryAccentDark
                     : AppTheme.primaryNavy,
                 foregroundColor: isDark ? Colors.black : Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                elevation: 0,
+                minimumSize: const Size(200, 48),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -937,7 +938,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 'Add First Card',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
+                  fontSize: 14,
                   color: isDark ? Colors.black : Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.selectionClick();
+                final restored = await SettingsScreen.handleRestoreBackup(
+                  context,
+                  ref,
+                  settings,
+                );
+                if (restored && mounted) {
+                  HapticFeedback.mediumImpact();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFFF1F5F9),
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                elevation: 0,
+                minimumSize: const Size(200, 48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFE2E8F0),
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: Text(
+                'Restore from Backup',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
