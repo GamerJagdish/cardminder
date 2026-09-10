@@ -281,40 +281,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: IndexedStack(
-          index: _selectedTab,
-          children: [
-            Stack(
-              children: [
-                // Dynamic Ambient Backdrop Tint (Revolut Style)
-                if (cards.isNotEmpty)
-                  Positioned(
-                    top: -60,
-                    left: -40,
-                    right: -40,
-                    height: 380,
-                    child: IgnorePointer(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 450),
-                        curve: Curves.easeOutCubic,
-                        decoration: BoxDecoration(
-                          gradient: RadialGradient(
-                            center: const Alignment(0, -0.2),
-                            radius: 0.95,
-                            colors: [
-                              activeCardColor.withValues(
-                                  alpha: isDark ? 0.16 : 0.08),
-                              activeCardColor.withValues(
-                                  alpha: isDark ? 0.05 : 0.02),
-                              Colors.transparent,
-                            ],
-                            stops: const [0.0, 0.55, 1.0],
-                          ),
-                        ),
-                      ),
+      body: Stack(
+        children: [
+          // Full-bleed Dynamic Ambient Backdrop Tint (Seamless edge-to-edge from status bar through header & cards)
+          if (cards.isNotEmpty && _selectedTab == 0)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 480,
+              child: IgnorePointer(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 450),
+                  curve: Curves.easeOutCubic,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        activeCardColor.withValues(
+                            alpha: isDark ? 0.20 : 0.10),
+                        activeCardColor.withValues(
+                            alpha: isDark ? 0.24 : 0.12),
+                        activeCardColor.withValues(
+                            alpha: isDark ? 0.08 : 0.04),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.40, 0.75, 1.0],
                     ),
                   ),
+                ),
+              ),
+            ),
+
+          // Main Screen Content inside SafeArea
+          SafeArea(
+            bottom: false,
+            child: IndexedStack(
+              index: _selectedTab,
+              children: [
                 Column(
                   children: [
                   // Top App Bar Header (Welcome back, <userName> & Notification Bell)
@@ -669,11 +674,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ],
                 ),
+                const SettingsScreen(),
               ],
             ),
-            const SettingsScreen(),
-          ],
-        ),
+          ),
+        ],
       ),
 
       // Custom Floating Bottom Navigation Bar (Mathematically Centered 3-Column Grid)
