@@ -431,37 +431,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 20),
-                  Divider(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
-                  const SizedBox(height: 16),
-
-                  // 3. Widget Sort Order Pill Shape Selector
-                  Text(
-                    'Widget Sort Order',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _PillOption(
-                        label: 'By Urgency',
-                        isSelected: settings.widgetSortBy == 'urgency',
-                        onTap: () =>
-                            update(settings.copyWith(widgetSortBy: 'urgency')),
-                      ),
-                      _PillOption(
-                        label: 'By Name',
-                        isSelected: settings.widgetSortBy == 'name',
-                        onTap: () =>
-                            update(settings.copyWith(widgetSortBy: 'name')),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
