@@ -31,9 +31,11 @@ class CreditCardView extends StatefulWidget {
 }
 
 class _CreditCardViewState extends State<CreditCardView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _springController;
   late Animation<Offset> _springAnimation;
+  late AnimationController _breathingController;
+  late Animation<double> _breathingAnimation;
   Offset _currentOffset = Offset.zero;
   bool _isInteracting = false;
 
@@ -55,6 +57,40 @@ class _CreditCardViewState extends State<CreditCardView>
         _currentOffset = _springAnimation.value;
       });
     });
+
+    _breathingController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2600),
+    );
+    _breathingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _breathingController,
+        curve: Curves.easeInOutSine,
+      ),
+    );
+
+    if (_isUrgent(widget.card)) {
+      _breathingController.repeat(reverse: true);
+    }
+  }
+
+  bool _isUrgent(CreditCard card) =>
+      card.status == UrgencyStatus.critical ||
+      card.status == UrgencyStatus.expired;
+
+  @override
+  void didUpdateWidget(CreditCardView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_isUrgent(widget.card)) {
+      if (!_breathingController.isAnimating) {
+        _breathingController.repeat(reverse: true);
+      }
+    } else {
+      if (_breathingController.isAnimating) {
+        _breathingController.stop();
+        _breathingController.reset();
+      }
+    }
   }
 
   @override
@@ -66,6 +102,7 @@ class _CreditCardViewState extends State<CreditCardView>
   @override
   void dispose() {
     _springController.dispose();
+    _breathingController.dispose();
     super.dispose();
   }
 
@@ -136,21 +173,7 @@ class _CreditCardViewState extends State<CreditCardView>
         : Colors.white.withValues(alpha: 0.08);
 
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final cardShadows = [
-      // Primary rich colored glow matching card's unique theme hue (projecting downwards)
-      BoxShadow(
-        color: colors.first.withValues(alpha: isDarkTheme ? 0.38 : 0.28),
-        blurRadius: 22,
-        offset: const Offset(0, 9),
-      ),
-      // Ambient atmospheric colored aura surrounding the card (gentle upward falloff)
-      BoxShadow(
-        color: colors.first.withValues(alpha: isDarkTheme ? 0.20 : 0.12),
-        blurRadius: 14,
-        spreadRadius: -2,
-        offset: const Offset(0, 3),
-      ),
-    ];
+    final isUrgent = _isUrgent(card);
 
     final cardWidget = GestureDetector(
       onTap: isInteractive && onTap != null
@@ -159,18 +182,44 @@ class _CreditCardViewState extends State<CreditCardView>
               onTap();
             }
           : null,
-      child: Container(
-        height: 195,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: colors,
-          ),
-          boxShadow: cardShadows,
-        ),
+      child: AnimatedBuilder(
+        animation: _breathingAnimation,
+        builder: (context, child) {
+          final breath = isUrgent ? _breathingAnimation.value : 0.0;
+          final primaryAlpha = (isDarkTheme ? 0.38 : 0.28) +
+              (isDarkTheme ? 0.16 : 0.12) * breath;
+          final ambientAlpha = (isDarkTheme ? 0.20 : 0.12) +
+              (isDarkTheme ? 0.10 : 0.08) * breath;
+          final primaryBlur = 22.0 + (2.0 * breath);
+          final ambientBlur = 14.0 + (2.0 * breath);
+
+          return Container(
+            height: 195,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: colors,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.first.withValues(alpha: primaryAlpha),
+                  blurRadius: primaryBlur,
+                  offset: const Offset(0, 9),
+                ),
+                BoxShadow(
+                  color: colors.first.withValues(alpha: ambientAlpha),
+                  blurRadius: ambientBlur,
+                  spreadRadius: -2,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: child,
+          );
+        },
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
           child: Stack(
