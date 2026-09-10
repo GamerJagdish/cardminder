@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/card_provider.dart';
 import '../providers/settings_provider.dart';
@@ -25,10 +26,16 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentPage = 0;
   int _selectedTab = 0;
+  late PageController _pageController;
+  late ScrollController _homeScrollController;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(
+      initialPage: _currentPage,
+    );
+    _homeScrollController = ScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final cards = ref.read(cardNotifierProvider).cards;
       ref
@@ -41,6 +48,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         await UpdateService.cleanupOldApks();
       } catch (_) {}
     });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _homeScrollController.dispose();
+    super.dispose();
   }
 
   void _showEditNameDialog(
@@ -213,6 +227,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Prime the carousel and scroll position to the newly added card so the Hero animation docks into place
+    ref.listen<CardState>(cardNotifierProvider, (previous, next) {
+      if (previous != null && next.cards.length > previous.cards.length) {
+        if (_homeScrollController.hasClients &&
+            _homeScrollController.offset > 0) {
+          _homeScrollController.jumpTo(0.0);
+        }
+        final previousIds = previous.cards.map((c) => c.id).toSet();
+        final addedCards = next.cards.where((c) => !previousIds.contains(c.id));
+        if (addedCards.isNotEmpty) {
+          final addedCard = addedCards.first;
+          final targetIndex =
+              next.filteredCards.indexWhere((c) => c.id == addedCard.id);
+          if (targetIndex != -1) {
+            setState(() {
+              _currentPage = targetIndex;
+            });
+            if (_pageController.hasClients) {
+              _pageController.jumpToPage(targetIndex);
+            }
+          }
+        }
+      }
+    });
+
     final state = ref.watch(cardNotifierProvider);
     final cards = state.filteredCards;
     final settings = ref.watch(settingsNotifierProvider);
@@ -224,9 +263,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: _selectedTab == 1
-            ? const SettingsScreen()
-            : Column(
+        child: IndexedStack(
+          index: _selectedTab,
+          children: [
+            Column(
                 children: [
                   // Top App Bar Header (Welcome back, <userName> & Notification Bell)
                   Padding(
@@ -332,30 +372,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: cards.isEmpty
                         ? _buildEmptyState()
                         : SingleChildScrollView(
+                            controller: _homeScrollController,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 16),
 
                                 // Top Credit Card Carousel
                                 SizedBox(
-                                  height: 200,
+                                  height: 195,
                                   child: PageView.builder(
+                                    controller: _pageController,
+                                    clipBehavior: Clip.none,
                                     itemCount: cards.length,
                                     onPageChanged: (index) {
                                       setState(() => _currentPage = index);
+                                      HapticFeedback.selectionClick();
                                     },
                                     itemBuilder: (context, index) {
                                       final card = cards[index];
+
                                       return Padding(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 20.0),
                                         child: CreditCardView(
                                           card: card,
+                                          heroTag: 'card-hero-${card.id}',
                                           onTap: () {
                                             Navigator.push(
                                               context,
-                                              zoomFromCenterRoute(
+                                              slideUpRoute(
                                                 CardDetailsScreen(card: card),
                                               ),
                                             );
@@ -565,6 +611,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ],
               ),
+            const SettingsScreen(),
+          ],
+        ),
       ),
 
       // Custom Floating Bottom Navigation Bar (Mathematically Centered 3-Column Grid)
@@ -593,7 +642,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // Left Tab: Home (33.3% width slot)
                   Expanded(
                     child: InkWell(
-                      onTap: () => setState(() => _selectedTab = 0),
+                      onTap: () {
+                        if (_selectedTab == 0) {
+                          if (_homeScrollController.hasClients &&
+                              _homeScrollController.offset > 0) {
+                            _homeScrollController.animateTo(
+                              0.0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOutCubic,
+                            );
+                          }
+                        } else {
+                          setState(() => _selectedTab = 0);
+                        }
+                      },
                       splashColor: Colors.transparent,
                       highlightColor: Colors.transparent,
                       child: Column(
@@ -605,7 +667,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 horizontal: 16, vertical: 4),
                             decoration: BoxDecoration(
                               color: _selectedTab == 0
-                                  ? activeColor.withValues(alpha: isDark ? 0.2 : 0.1)
+                                   ? activeColor.withValues(alpha: isDark ? 0.2 : 0.1)
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -636,11 +698,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // Center Tab: Add Card Button (Rounded Square Navy Tile with Text)
                   Expanded(
                     child: InkWell(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        final addedCardId = await Navigator.push<String?>(
                           context,
                           slideUpRoute(const AddEditCardScreen()),
                         );
+                        if (addedCardId != null && mounted) {
+                          if (_homeScrollController.hasClients &&
+                              _homeScrollController.offset > 0) {
+                            _homeScrollController.jumpTo(0.0);
+                          }
+                          HapticFeedback.mediumImpact();
+                        }
                       },
                       splashColor: Colors.transparent,
                       highlightColor: Colors.transparent,
@@ -775,11 +844,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final addedCardId = await Navigator.push<String?>(
                   context,
                   slideUpRoute(const AddEditCardScreen()),
                 );
+                if (addedCardId != null && mounted) {
+                  if (_homeScrollController.hasClients &&
+                      _homeScrollController.offset > 0) {
+                    _homeScrollController.jumpTo(0.0);
+                  }
+                  HapticFeedback.mediumImpact();
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: isDark
