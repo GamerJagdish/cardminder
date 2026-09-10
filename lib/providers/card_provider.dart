@@ -90,23 +90,30 @@ class CardNotifier extends Notifier<CardState> {
     _syncExternalServices(loaded);
   }
 
-  Future<void> addCard({
+  Future<CreditCard> addCard({
+    String? id,
     required String cardName,
     String? lastFourDigits,
     required DateTime lastTransactionDate,
     int colorIndex = 0,
     String? bankName,
     String? cardType,
+    String network = 'Visa',
+    String expiryMonth = '12',
+    String expiryYear = '28',
     int deactivationPeriodDays = 365,
   }) async {
     final newCard = CreditCard(
-      id: _uuid.v4(),
+      id: id ?? _uuid.v4(),
       cardName: cardName,
       lastFourDigits: lastFourDigits,
       lastTransactionDate: lastTransactionDate,
       colorIndex: colorIndex,
       bankName: bankName,
-      cardType: cardType ?? 'Debit Card',
+      cardType: cardType ?? 'Credit Card',
+      network: network,
+      expiryMonth: expiryMonth,
+      expiryYear: expiryYear,
       deactivationPeriodDays: deactivationPeriodDays,
     );
 
@@ -114,6 +121,7 @@ class CardNotifier extends Notifier<CardState> {
     final updatedList = _storageService.loadCards();
     state = state.copyWith(cards: updatedList);
     _syncExternalServices(updatedList);
+    return newCard;
   }
 
   Future<void> updateCard(CreditCard card) async {
