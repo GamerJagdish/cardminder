@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../models/credit_card.dart';
 import '../theme/app_theme.dart';
@@ -52,6 +53,11 @@ class SwipeableCardTile extends StatelessWidget {
               label: 'Delete',
               iconAfterLabel: true,
             ),
+            onUpdate: (details) {
+              if (details.reached && !details.previousReached) {
+                HapticFeedback.mediumImpact();
+              }
+            },
             confirmDismiss: (direction) async {
               if (direction == DismissDirection.startToEnd) {
                 onEdit();

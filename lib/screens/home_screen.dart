@@ -259,6 +259,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.watch(notificationLogNotifierProvider.notifier).unreadCount;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeCardColor = cards.isNotEmpty
+        ? AppTheme.getCardColors(
+            cards[_currentPage.clamp(0, cards.length - 1)].colorIndex).first
+        : (isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -266,8 +270,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: IndexedStack(
           index: _selectedTab,
           children: [
-            Column(
-                children: [
+            Stack(
+              children: [
+                // Dynamic Ambient Backdrop Tint (Revolut Style)
+                if (cards.isNotEmpty)
+                  Positioned(
+                    top: -60,
+                    left: -40,
+                    right: -40,
+                    height: 380,
+                    child: IgnorePointer(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 450),
+                        curve: Curves.easeOutCubic,
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: const Alignment(0, -0.2),
+                            radius: 0.95,
+                            colors: [
+                              activeCardColor.withValues(
+                                  alpha: isDark ? 0.16 : 0.08),
+                              activeCardColor.withValues(
+                                  alpha: isDark ? 0.05 : 0.02),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.55, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                Column(
+                  children: [
                   // Top App Bar Header (Welcome back, <userName> & Notification Bell)
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -493,6 +527,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       ),
                                       GestureDetector(
                                         onTap: () {
+                                          HapticFeedback.selectionClick();
                                           ref
                                               .read(cardNotifierProvider
                                                   .notifier)
@@ -560,7 +595,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemCount: cards.length,
                                   padding: const EdgeInsets.only(bottom: 20),
+                                  onReorderStart: (_) {
+                                    HapticFeedback.mediumImpact();
+                                  },
                                   onReorderItem: (oldIndex, newIndex) {
+                                    HapticFeedback.lightImpact();
                                     ref
                                         .read(cardNotifierProvider.notifier)
                                         .reorderCards(oldIndex, newIndex);
@@ -608,9 +647,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ],
                             ),
                           ),
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
             const SettingsScreen(),
           ],
         ),

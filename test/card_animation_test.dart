@@ -154,24 +154,25 @@ void main() {
 
     test('card shadow upward reach does not exceed clearance', () {
       final colors = AppTheme.getCardColors(0);
-      const isDarkTheme = true;
-      final shadows = [
-        BoxShadow(
-          color: colors.first.withValues(alpha: isDarkTheme ? 0.38 : 0.28),
-          blurRadius: 22,
-          offset: const Offset(0, 9),
-        ),
-        BoxShadow(
-          color: colors.first.withValues(alpha: isDarkTheme ? 0.20 : 0.12),
-          blurRadius: 14,
-          spreadRadius: -2,
-          offset: const Offset(0, 3),
-        ),
-      ];
+      for (final isDarkTheme in [true, false]) {
+        final shadows = [
+          BoxShadow(
+            color: colors.first.withValues(alpha: isDarkTheme ? 0.38 : 0.28),
+            blurRadius: 22,
+            offset: const Offset(0, 9),
+          ),
+          BoxShadow(
+            color: colors.first.withValues(alpha: isDarkTheme ? 0.20 : 0.12),
+            blurRadius: 14,
+            spreadRadius: -2,
+            offset: const Offset(0, 3),
+          ),
+        ];
 
-      for (final s in shadows) {
-        final upwardReach = s.blurRadius + s.spreadRadius - s.offset.dy;
-        expect(upwardReach, lessThanOrEqualTo(13.0));
+        for (final s in shadows) {
+          final upwardReach = s.blurRadius + s.spreadRadius - s.offset.dy;
+          expect(upwardReach, lessThanOrEqualTo(13.0));
+        }
       }
     });
   });
