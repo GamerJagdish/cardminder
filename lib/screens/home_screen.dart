@@ -57,6 +57,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
+  void _syncSelectedCard(String? closedCardId) {
+    if (closedCardId == null || !mounted) return;
+    final currentCards = ref.read(cardNotifierProvider).filteredCards;
+    final targetIdx = currentCards.indexWhere((c) => c.id == closedCardId);
+    if (targetIdx != -1) {
+      if (_homeScrollController.hasClients && _homeScrollController.offset > 0) {
+        _homeScrollController.jumpTo(0.0);
+      }
+      setState(() => _currentPage = targetIdx);
+      if (_pageController.hasClients) {
+        _pageController.jumpToPage(targetIdx);
+      }
+    }
+  }
+
   void _showEditNameDialog(
       BuildContext context, String currentName, List cards) {
     final controller = TextEditingController(text: currentName);
@@ -432,13 +447,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         child: CreditCardView(
                                           card: card,
                                           heroTag: 'card-hero-${card.id}',
-                                          onTap: () {
-                                            Navigator.push(
+                                          onTap: () async {
+                                            final closedCardId =
+                                                await Navigator.push<String?>(
                                               context,
                                               slideUpRoute(
                                                 CardDetailsScreen(card: card),
                                               ),
                                             );
+                                            _syncSelectedCard(closedCardId);
                                           },
                                         ),
                                       );
@@ -609,13 +626,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     return SwipeableCardTile(
                                       key: ValueKey(card.id),
                                       card: card,
-                                      onTap: () {
-                                        Navigator.push(
+                                      onTap: () async {
+                                        final closedCardId =
+                                            await Navigator.push<String?>(
                                           context,
                                           zoomFromCenterRoute(
                                             CardDetailsScreen(card: card),
                                           ),
                                         );
+                                        _syncSelectedCard(closedCardId);
                                       },
                                       onEdit: () {
                                         Navigator.push(

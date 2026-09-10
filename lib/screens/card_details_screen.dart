@@ -20,9 +20,33 @@ class CardDetailsScreen extends ConsumerStatefulWidget {
   ConsumerState<CardDetailsScreen> createState() => _CardDetailsScreenState();
 }
 
-class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
+class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
+    with SingleTickerProviderStateMixin {
   bool _isResetting = false;
   bool _showCelebration = false;
+  double _pullDownOffset = 0.0;
+  late AnimationController _springBackController;
+  late Animation<double> _springBackAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _springBackController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    )..addListener(() {
+        setState(() {
+          _pullDownOffset = _springBackAnimation.value;
+        });
+      });
+    _springBackAnimation = const AlwaysStoppedAnimation<double>(0.0);
+  }
+
+  @override
+  void dispose() {
+    _springBackController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +64,21 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          Navigator.pop(context, currentCard.id);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context, currentCard.id),
+              child: Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(12),
@@ -68,21 +99,35 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
-              child: Column(
+              child: Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  // Featured Card Graphic (Tap to Edit)
-                  CreditCardView(
-                    card: currentCard,
-                    heroTag: 'card-hero-${currentCard.id}',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        slideUpRoute(AddEditCardScreen(cardToEdit: currentCard)),
-                      );
-                    },
-                  ),
+                  // Layer 0 (Underneath): Content with invisible placeholder to reserve card space
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Placeholder space matching pull-down indicator
+                      Center(
+                        child: Container(
+                          width: 38,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 12),
+                        ),
+                      ),
 
-                  const SizedBox(height: 20),
+                      // Invisible card placeholder to naturally size layout
+                      Opacity(
+                        opacity: 0.0,
+                        child: IgnorePointer(
+                          child: CreditCardView(
+                            card: currentCard,
+                            isInteractive: false,
+                            enableTilt: false,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
 
                   // Countdown Progress Banner Card with Celebration Ripple
                   AnimatedContainer(
@@ -309,6 +354,83 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
                   ),
                 ],
               ),
+
+              // Layer 1 (On Top): Interactive Pull-Down Indicator & Card
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Subtle Apple Wallet Pull-Down Indicator
+                        Center(
+                          child: Container(
+                            width: 38,
+                            height: 4,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: (isDark ? Colors.white : Colors.black)
+                                  .withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+
+                        // Featured Card Graphic (Interactive Pull Down to Dismiss & Tap to Edit)
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onVerticalDragUpdate: (details) {
+                            if (details.primaryDelta != null &&
+                                (details.primaryDelta! > 0 || _pullDownOffset > 0)) {
+                              setState(() {
+                                _pullDownOffset =
+                                    (_pullDownOffset + details.primaryDelta! * 0.85)
+                                        .clamp(0.0, 240.0);
+                              });
+                            }
+                          },
+                          onVerticalDragEnd: (details) {
+                            final velocity = details.primaryVelocity ?? 0.0;
+                            if (_pullDownOffset > 85.0 || velocity > 650.0) {
+                              HapticFeedback.lightImpact();
+                              Navigator.pop(context, currentCard.id);
+                            } else if (_pullDownOffset > 0.0) {
+                              _springBackAnimation = Tween<double>(
+                                begin: _pullDownOffset,
+                                end: 0.0,
+                              ).animate(CurvedAnimation(
+                                parent: _springBackController,
+                                curve: Curves.easeOutBack,
+                              ));
+                              _springBackController.forward(from: 0.0);
+                            }
+                          },
+                          child: Transform.translate(
+                            offset: Offset(0.0, _pullDownOffset),
+                            child: Transform.scale(
+                              scale: (1.0 - (_pullDownOffset / 1000))
+                                  .clamp(0.88, 1.0),
+                              child: CreditCardView(
+                                card: currentCard,
+                                heroTag: 'card-hero-${currentCard.id}',
+                                onTap: () {
+                                  if (_pullDownOffset > 10) return;
+                                  Navigator.push(
+                                    context,
+                                    slideUpRoute(
+                                        AddEditCardScreen(cardToEdit: currentCard)),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -345,7 +467,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
                               await Future.delayed(
                                   const Duration(milliseconds: 950));
                               if (!context.mounted) return;
-                              Navigator.pop(context);
+                              Navigator.pop(context, currentCard.id);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
@@ -470,6 +592,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
