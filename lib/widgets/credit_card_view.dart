@@ -3,13 +3,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../models/credit_card.dart';
 import '../theme/app_theme.dart';
 
-class CreditCardView extends StatelessWidget {
+class CreditCardView extends StatefulWidget {
   final CreditCard card;
   final VoidCallback? onTap;
   final VoidCallback? onCardTypeTap;
   final VoidCallback? onDigitsTap;
   final ValueChanged<String>? onNetworkSelected;
   final bool isInteractive;
+  final String? heroTag;
+  final bool enableTilt;
 
   const CreditCardView({
     super.key,
@@ -19,10 +21,99 @@ class CreditCardView extends StatelessWidget {
     this.onDigitsTap,
     this.onNetworkSelected,
     this.isInteractive = true,
+    this.heroTag,
+    this.enableTilt = true,
   });
 
   @override
+  State<CreditCardView> createState() => _CreditCardViewState();
+}
+
+class _CreditCardViewState extends State<CreditCardView>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _springController;
+  late Animation<Offset> _springAnimation;
+  Offset _currentOffset = Offset.zero;
+  bool _isInteracting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _springController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _springAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _springController,
+      curve: Curves.elasticOut,
+    ))..addListener(() {
+      setState(() {
+        _currentOffset = _springAnimation.value;
+      });
+    });
+  }
+
+  @override
+  void deactivate() {
+    _resetTiltImmediately();
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    _springController.dispose();
+    super.dispose();
+  }
+
+  void _resetTiltImmediately() {
+    if (_currentOffset != Offset.zero || _isInteracting) {
+      _springController.stop();
+      _currentOffset = Offset.zero;
+      _isInteracting = false;
+    }
+  }
+
+  void _updateTilt(Offset globalPosition) {
+    final box = context.findRenderObject() as RenderBox?;
+    if (box != null && box.hasSize) {
+      final local = box.globalToLocal(globalPosition);
+      final normX =
+          ((local.dx - box.size.width / 2) / (box.size.width / 2)).clamp(-1.0, 1.0);
+      final normY = ((local.dy - box.size.height / 2) / (box.size.height / 2))
+          .clamp(-1.0, 1.0);
+      setState(() {
+        _currentOffset = Offset(normX, normY);
+        _isInteracting = true;
+      });
+    }
+  }
+
+  void _releaseTilt() {
+    if (!widget.enableTilt) return;
+    if (_currentOffset == Offset.zero && !_isInteracting) return;
+    _isInteracting = false;
+    _springAnimation = Tween<Offset>(
+      begin: _currentOffset,
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _springController,
+      curve: Curves.easeOutCubic,
+    ));
+    _springController.forward(from: 0.0);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final card = widget.card;
+    final onTap = widget.onTap;
+    final onCardTypeTap = widget.onCardTypeTap;
+    final onDigitsTap = widget.onDigitsTap;
+    final onNetworkSelected = widget.onNetworkSelected;
+    final isInteractive = widget.isInteractive;
+    final heroTag = widget.heroTag;
     final colors = AppTheme.getCardColors(card.colorIndex);
     final displayName = card.cardName.isEmpty ? 'Card Nickname' : card.cardName;
     final digits = (card.lastFourDigits == null || card.lastFourDigits!.isEmpty)
@@ -43,8 +134,30 @@ class CreditCardView extends StatelessWidget {
         ? Colors.black.withValues(alpha: 0.04)
         : Colors.white.withValues(alpha: 0.08);
 
-    return GestureDetector(
-      onTap: isInteractive ? onTap : null,
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final cardShadows = [
+      // Primary rich colored glow matching card's unique theme hue (projecting downwards)
+      BoxShadow(
+        color: colors.first.withValues(alpha: isDarkTheme ? 0.38 : 0.28),
+        blurRadius: 22,
+        offset: const Offset(0, 9),
+      ),
+      // Ambient atmospheric colored aura surrounding the card (gentle upward falloff)
+      BoxShadow(
+        color: colors.first.withValues(alpha: isDarkTheme ? 0.20 : 0.12),
+        blurRadius: 14,
+        spreadRadius: -2,
+        offset: const Offset(0, 3),
+      ),
+    ];
+
+    final cardWidget = GestureDetector(
+      onTap: isInteractive && onTap != null
+          ? () {
+              _resetTiltImmediately();
+              onTap();
+            }
+          : null,
       child: Container(
         height: 195,
         width: double.infinity,
@@ -55,13 +168,7 @@ class CreditCardView extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: colors,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: colors.first.withValues(alpha: 0.35),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          boxShadow: cardShadows,
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
@@ -107,15 +214,22 @@ class CreditCardView extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            displayName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.2,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                displayName,
+                                key: ValueKey('name-$displayName'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -189,7 +303,25 @@ class CreditCardView extends StatelessWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  _buildNetworkLogo(card.network),
+                                  AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 250),
+                                    transitionBuilder: (child, animation) {
+                                      return ScaleTransition(
+                                        scale: CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeOutBack,
+                                        ),
+                                        child: FadeTransition(
+                                          opacity: animation,
+                                          child: child,
+                                        ),
+                                      );
+                                    },
+                                    child: KeyedSubtree(
+                                      key: ValueKey('net-${card.network}'),
+                                      child: _buildNetworkLogo(card.network),
+                                    ),
+                                  ),
                                   const SizedBox(width: 4),
                                   Icon(Icons.arrow_drop_down_rounded,
                                       color: iconColor, size: 18),
@@ -198,7 +330,25 @@ class CreditCardView extends StatelessWidget {
                             ),
                           )
                         else
-                          _buildNetworkLogo(card.network),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 250),
+                            transitionBuilder: (child, animation) {
+                              return ScaleTransition(
+                                scale: CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeOutBack,
+                                ),
+                                child: FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: KeyedSubtree(
+                              key: ValueKey('net-${card.network}'),
+                              child: _buildNetworkLogo(card.network),
+                            ),
+                          ),
                       ],
                     ),
 
@@ -247,13 +397,32 @@ class CreditCardView extends StatelessWidget {
                                   letterSpacing: 1.5,
                                 ),
                               ),
-                              Text(
-                                digits,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 250),
+                                transitionBuilder: (child, animation) {
+                                  return SlideTransition(
+                                    position: Tween<Offset>(
+                                      begin: const Offset(0.0, 0.4),
+                                      end: Offset.zero,
+                                    ).animate(CurvedAnimation(
+                                      parent: animation,
+                                      curve: Curves.easeOutCubic,
+                                    )),
+                                    child: FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  digits,
+                                  key: ValueKey('digits-$digits'),
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
                                 ),
                               ),
                               if (onDigitsTap != null) ...[
@@ -285,12 +454,16 @@ class CreditCardView extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 2),
-                            Text(
-                              card.expiryDateString,
-                              style: TextStyle(
-                                color: textColor,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              child: Text(
+                                card.expiryDateString,
+                                key: ValueKey('exp-${card.expiryDateString}'),
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
@@ -314,13 +487,17 @@ class CreditCardView extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  card.cardType.toUpperCase(),
-                                  style: TextStyle(
-                                    color: textColor,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 200),
+                                  child: Text(
+                                    card.cardType.toUpperCase(),
+                                    key: ValueKey('type-${card.cardType}'),
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
                                 ),
                                 if (onCardTypeTap != null) ...[
@@ -337,11 +514,79 @@ class CreditCardView extends StatelessWidget {
                   ],
                 ),
               ),
+              // Dynamic Holographic Light Sheen Overlay
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      gradient: LinearGradient(
+                        begin: Alignment(-_currentOffset.dx * 2.5 - 0.4,
+                            -_currentOffset.dy * 2.5 - 0.4),
+                        end: Alignment(-_currentOffset.dx * 2.5 + 0.4,
+                            -_currentOffset.dy * 2.5 + 0.4),
+                        colors: [
+                          Colors.white.withValues(alpha: 0.0),
+                          Colors.white.withValues(
+                              alpha: _isInteracting ? 0.24 : 0.07),
+                          Colors.white.withValues(alpha: 0.0),
+                        ],
+                        stops: const [0.25, 0.5, 0.75],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
+
+    final tiltAngleX = -_currentOffset.dy * 0.16;
+    final tiltAngleY = _currentOffset.dx * 0.16;
+    final tiltMatrix = Matrix4.identity()
+      ..setEntry(3, 2, 0.0012)
+      ..rotateX(tiltAngleX)
+      ..rotateY(tiltAngleY);
+
+    final interactiveCard = Listener(
+      onPointerDown: (event) {
+        if (!widget.enableTilt) return;
+        _springController.stop();
+        _updateTilt(event.position);
+      },
+      onPointerMove: (event) {
+        if (!widget.enableTilt) return;
+        _updateTilt(event.position);
+      },
+      onPointerUp: (_) => _releaseTilt(),
+      onPointerCancel: (_) => _releaseTilt(),
+      child: Transform(
+        transform: tiltMatrix,
+        alignment: Alignment.center,
+        child: cardWidget,
+      ),
+    );
+
+    if (heroTag != null) {
+      return Hero(
+        tag: heroTag,
+        flightShuttleBuilder: (flightContext, animation, flightDirection,
+            fromHeroContext, toHeroContext) {
+          return Material(
+            type: MaterialType.transparency,
+            child: toHeroContext.widget,
+          );
+        },
+        child: Material(
+          type: MaterialType.transparency,
+          child: interactiveCard,
+        ),
+      );
+    }
+
+    return interactiveCard;
   }
 
   Widget _buildNetworkLogo(String network) {
