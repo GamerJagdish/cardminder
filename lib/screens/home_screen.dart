@@ -29,6 +29,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedTab = 0;
   late PageController _pageController;
   late ScrollController _homeScrollController;
+  final GlobalKey _addCardPillKey = GlobalKey();
 
   @override
   void initState() {
@@ -763,56 +764,77 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                   // Center Tab: Add Card Button (Rounded Square Navy Tile with Text)
                   Expanded(
-                    child: InkWell(
-                      onTap: () async {
-                        final addedCardId = await Navigator.push<String?>(
-                          context,
-                          slideUpRoute(const AddEditCardScreen()),
-                        );
-                        if (addedCardId != null && mounted) {
-                          if (_homeScrollController.hasClients &&
-                              _homeScrollController.offset > 0) {
-                            _homeScrollController.jumpTo(0.0);
-                          }
-                          HapticFeedback.mediumImpact();
-                        }
-                      },
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: activeColor,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: activeColor.withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
+                    child: Builder(
+                      builder: (btnContext) {
+                        Offset? tapPosition;
+                        return InkWell(
+                          onTapDown: (details) {
+                            tapPosition = details.globalPosition;
+                          },
+                          onTap: () async {
+                            final pillBox = _addCardPillKey.currentContext
+                                ?.findRenderObject() as RenderBox?;
+                            final originRect = pillBox != null && pillBox.hasSize
+                                ? pillBox.localToGlobal(Offset.zero) & pillBox.size
+                                : null;
+                            final center = originRect?.center ?? tapPosition;
+                            tapPosition = null;
+
+                            final addedCardId = await Navigator.push<String?>(
+                              context,
+                              pillRevealRoute(
+                                const AddEditCardScreen(),
+                                originRect: originRect,
+                                center: center,
+                              ),
+                            );
+                            if (addedCardId != null && mounted) {
+                              if (_homeScrollController.hasClients &&
+                                  _homeScrollController.offset > 0) {
+                                _homeScrollController.jumpTo(0.0);
+                              }
+                              HapticFeedback.mediumImpact();
+                            }
+                          },
+                          splashColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                key: _addCardPillKey,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: activeColor,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: activeColor.withValues(alpha: 0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.add_card_rounded,
-                              color: isDark ? Colors.black : Colors.white,
-                              size: 20,
-                            ),
+                                child: Icon(
+                                  Icons.add_card_rounded,
+                                  color: isDark ? Colors.black : Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Add Card',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: activeColor,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Add Card',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: activeColor,
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ),
 
