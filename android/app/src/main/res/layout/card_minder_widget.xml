@@ -76,447 +76,59 @@
         android:layout_marginBottom="6dp"
         android:background="@color/widget_divider" />
 
-    <!-- Empty State View -->
-    <LinearLayout
-        android:id="@+id/widget_empty_container"
+    <!-- Content Area: ListView with Empty State fallback -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="8dp"
-        android:visibility="gone">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-        <ImageView
-            android:id="@+id/widget_empty_icon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_notification"
-            android:tint="@color/widget_icon_tint" />
-
-        <TextView
-            android:id="@+id/widget_empty_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="All cards are active"
-            android:textColor="@color/widget_text_primary"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/widget_empty_subtitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="Tap to manage your cards"
-            android:textColor="@color/widget_empty_text"
-            android:textSize="10sp" />
-    </LinearLayout>
-
-    <!-- Multi-Card List Container (up to 5 rows in 4x2 space) -->
-    <LinearLayout
-        android:id="@+id/widget_cards_list_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <!-- Card Row 1 -->
+        <!-- Empty State View -->
         <LinearLayout
-            android:id="@+id/widget_row_1"
+            android:id="@+id/widget_empty_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/widget_card_item_bg"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <ImageView
-                android:id="@+id/widget_card_image_1"
-                android:layout_width="42dp"
-                android:layout_height="26dp"
-                android:scaleType="fitCenter" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:paddingLeft="8dp"
-                android:paddingRight="6dp">
-
-                <TextView
-                    android:id="@+id/widget_name_1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text="Card Name"
-                    android:textColor="@color/widget_text_primary"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/widget_subtitle_1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text="Visa"
-                    android:textColor="@color/widget_text_secondary"
-                    android:textSize="9sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical|right"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/widget_days_1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="6dp"
-                    android:text="30d"
-                    android:textColor="@color/widget_status_safe_text"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/widget_status_1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/widget_badge_safe"
-                    android:paddingLeft="5dp"
-                    android:paddingTop="2dp"
-                    android:paddingRight="5dp"
-                    android:paddingBottom="2dp"
-                    android:text="SAFE"
-                    android:textColor="@color/widget_status_safe_text"
-                    android:textSize="8sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Card Row 2 -->
-        <LinearLayout
-            android:id="@+id/widget_row_2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/widget_card_item_bg"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="5dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp"
             android:visibility="gone">
 
             <ImageView
-                android:id="@+id/widget_card_image_2"
-                android:layout_width="42dp"
-                android:layout_height="26dp"
-                android:scaleType="fitCenter" />
+                android:id="@+id/widget_empty_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_notification"
+                android:tint="@color/widget_icon_tint" />
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:paddingLeft="8dp"
-                android:paddingRight="6dp">
-
-                <TextView
-                    android:id="@+id/widget_name_2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text=""
-                    android:textColor="@color/widget_text_primary"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/widget_subtitle_2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text=""
-                    android:textColor="@color/widget_text_secondary"
-                    android:textSize="9sp" />
-            </LinearLayout>
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/widget_empty_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical|right"
-                android:orientation="horizontal">
+                android:layout_marginTop="6dp"
+                android:text="All cards are active"
+                android:textColor="@color/widget_text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/widget_days_2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="6dp"
-                    android:text=""
-                    android:textColor="@color/widget_status_safe_text"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/widget_status_2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/widget_badge_safe"
-                    android:paddingLeft="5dp"
-                    android:paddingTop="2dp"
-                    android:paddingRight="5dp"
-                    android:paddingBottom="2dp"
-                    android:text="SAFE"
-                    android:textColor="@color/widget_status_safe_text"
-                    android:textSize="8sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+            <TextView
+                android:id="@+id/widget_empty_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Tap to manage your cards"
+                android:textColor="@color/widget_empty_text"
+                android:textSize="10sp" />
         </LinearLayout>
 
-        <!-- Card Row 3 -->
-        <LinearLayout
-            android:id="@+id/widget_row_3"
+        <!-- Scrollable Cards List -->
+        <ListView
+            android:id="@+id/widget_cards_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/widget_card_item_bg"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="5dp"
-            android:visibility="gone">
-
-            <ImageView
-                android:id="@+id/widget_card_image_3"
-                android:layout_width="42dp"
-                android:layout_height="26dp"
-                android:scaleType="fitCenter" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:paddingLeft="8dp"
-                android:paddingRight="6dp">
-
-                <TextView
-                    android:id="@+id/widget_name_3"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text=""
-                    android:textColor="@color/widget_text_primary"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/widget_subtitle_3"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text=""
-                    android:textColor="@color/widget_text_secondary"
-                    android:textSize="9sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical|right"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/widget_days_3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="6dp"
-                    android:text=""
-                    android:textColor="@color/widget_status_safe_text"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/widget_status_3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/widget_badge_safe"
-                    android:paddingLeft="5dp"
-                    android:paddingTop="2dp"
-                    android:paddingRight="5dp"
-                    android:paddingBottom="2dp"
-                    android:text="SAFE"
-                    android:textColor="@color/widget_status_safe_text"
-                    android:textSize="8sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Card Row 4 -->
-        <LinearLayout
-            android:id="@+id/widget_row_4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/widget_card_item_bg"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="5dp"
-            android:visibility="gone">
-
-            <ImageView
-                android:id="@+id/widget_card_image_4"
-                android:layout_width="42dp"
-                android:layout_height="26dp"
-                android:scaleType="fitCenter" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:paddingLeft="8dp"
-                android:paddingRight="6dp">
-
-                <TextView
-                    android:id="@+id/widget_name_4"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text=""
-                    android:textColor="@color/widget_text_primary"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/widget_subtitle_4"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text=""
-                    android:textColor="@color/widget_text_secondary"
-                    android:textSize="9sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical|right"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/widget_days_4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="6dp"
-                    android:text=""
-                    android:textColor="@color/widget_status_safe_text"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/widget_status_4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/widget_badge_safe"
-                    android:paddingLeft="5dp"
-                    android:paddingTop="2dp"
-                    android:paddingRight="5dp"
-                    android:paddingBottom="2dp"
-                    android:text="SAFE"
-                    android:textColor="@color/widget_status_safe_text"
-                    android:textSize="8sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Card Row 5 -->
-        <LinearLayout
-            android:id="@+id/widget_row_5"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/widget_card_item_bg"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="5dp"
-            android:visibility="gone">
-
-            <ImageView
-                android:id="@+id/widget_card_image_5"
-                android:layout_width="42dp"
-                android:layout_height="26dp"
-                android:scaleType="fitCenter" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:paddingLeft="8dp"
-                android:paddingRight="6dp">
-
-                <TextView
-                    android:id="@+id/widget_name_5"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text=""
-                    android:textColor="@color/widget_text_primary"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/widget_subtitle_5"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text=""
-                    android:textColor="@color/widget_text_secondary"
-                    android:textSize="9sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical|right"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/widget_days_5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="6dp"
-                    android:text=""
-                    android:textColor="@color/widget_status_safe_text"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/widget_status_5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/widget_badge_safe"
-                    android:paddingLeft="5dp"
-                    android:paddingTop="2dp"
-                    android:paddingRight="5dp"
-                    android:paddingBottom="2dp"
-                    android:text="SAFE"
-                    android:textColor="@color/widget_status_safe_text"
-                    android:textSize="8sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
+            android:layout_height="match_parent"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="4dp"
+            android:cacheColorHint="@android:color/transparent"
+            android:fadingEdge="none"
+            android:scrollbars="none"
+            android:overScrollMode="never" />
+    </FrameLayout>
 </LinearLayout>

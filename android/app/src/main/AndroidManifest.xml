@@ -53,6 +53,12 @@
                 android:resource="@xml/card_minder_widget_info" />
         </receiver>
 
+        <!-- Widget RemoteViews Service for Scrollable ListView -->
+        <service
+            android:name=".CardMinderWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="false" />
+
         <!-- Scheduled Notifications Receivers -->
         <receiver
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
