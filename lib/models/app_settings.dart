@@ -14,7 +14,7 @@ class AppSettings {
   AppSettings({
     this.userName = 'CardMinder',
     this.themeMode = 'system',
-    this.widgetMaxCards = 5,
+    this.widgetMaxCards = 100,
     this.widgetFilter = 'all',
     this.widgetSortBy = 'urgency',
     this.notificationsEnabled = true,
@@ -45,7 +45,7 @@ class AppSettings {
     return AppSettings(
       userName: (json['userName'] as String?) ?? 'CardMinder',
       themeMode: (json['themeMode'] as String?) ?? 'system',
-      widgetMaxCards: (json['widgetMaxCards'] as int?) ?? 5,
+      widgetMaxCards: (json['widgetMaxCards'] as int?) ?? 100,
       widgetFilter: (json['widgetFilter'] as String?) ?? 'all',
       widgetSortBy: (json['widgetSortBy'] as String?) ?? 'urgency',
       notificationsEnabled: (json['notificationsEnabled'] as bool?) ?? true,

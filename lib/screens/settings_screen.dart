@@ -382,7 +382,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 10),
                   Row(
-                    children: [3, 5, 10, 100].map((count) {
+                    children: [100, 3, 5, 10].map((count) {
                       final label = count == 100 ? 'All' : '$count';
                       final isSelected = settings.widgetMaxCards == count;
                       return _PillOption(
