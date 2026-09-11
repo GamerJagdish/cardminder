@@ -42,13 +42,12 @@ class WidgetService {
         }
       }).toList();
 
-      // Sort cards
-      if (config.widgetSortBy == 'name') {
-        filtered.sort((a, b) => a.cardName.compareTo(b.cardName));
-      } else {
-        // Sort by urgency (fewest days left first)
-        filtered.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
-      }
+      // Sort cards by urgency (fewest days left first), then tie-break by name
+      filtered.sort((a, b) {
+        final cmp = a.daysRemaining.compareTo(b.daysRemaining);
+        if (cmp != 0) return cmp;
+        return a.cardName.toLowerCase().compareTo(b.cardName.toLowerCase());
+      });
 
       // Limit max cards
       if (filtered.length > config.widgetMaxCards) {
