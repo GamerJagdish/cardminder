@@ -530,6 +530,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             );
                                             _syncSelectedCard(closedCardId);
                                           },
+                                          onLongPress: () {
+                                            Navigator.push(
+                                              context,
+                                              slideUpRoute(
+                                                AddEditCardScreen(
+                                                    cardToEdit: card),
+                                              ),
+                                            );
+                                          },
                                         ),
                                       );
                                     },

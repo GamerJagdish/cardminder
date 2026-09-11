@@ -72,6 +72,7 @@ class SwipeableCardTile extends StatelessWidget {
               color: Theme.of(context).cardTheme.color,
               child: InkWell(
                 onTap: onTap,
+                onLongPress: onEdit,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: _CardTileBody(card: card),

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../models/credit_card.dart';
 import '../theme/app_theme.dart';
@@ -7,6 +9,7 @@ import '../theme/app_theme.dart';
 class CreditCardView extends StatefulWidget {
   final CreditCard card;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final VoidCallback? onCardTypeTap;
   final VoidCallback? onDigitsTap;
   final ValueChanged<String>? onNetworkSelected;
@@ -18,6 +21,7 @@ class CreditCardView extends StatefulWidget {
     super.key,
     required this.card,
     this.onTap,
+    this.onLongPress,
     this.onCardTypeTap,
     this.onDigitsTap,
     this.onNetworkSelected,
@@ -38,6 +42,9 @@ class _CreditCardViewState extends State<CreditCardView>
   late Animation<double> _breathingAnimation;
   Offset _currentOffset = Offset.zero;
   bool _isInteracting = false;
+  Timer? _longPressTimer;
+  Offset? _pointerDownPosition;
+  bool _longPressTriggered = false;
 
   @override
   void initState() {
@@ -105,6 +112,7 @@ class _CreditCardViewState extends State<CreditCardView>
 
   @override
   void dispose() {
+    _longPressTimer?.cancel();
     _springController.dispose();
     _breathingController.dispose();
     super.dispose();
@@ -185,6 +193,10 @@ class _CreditCardViewState extends State<CreditCardView>
     final cardWidget = GestureDetector(
       onTap: isInteractive && onTap != null
           ? () {
+              if (_longPressTriggered) {
+                _longPressTriggered = false;
+                return;
+              }
               _resetTiltImmediately();
               onTap();
             }
@@ -604,16 +616,47 @@ class _CreditCardViewState extends State<CreditCardView>
 
     final interactiveCard = Listener(
       onPointerDown: (event) {
+        if (widget.onLongPress != null && widget.isInteractive) {
+          _longPressTimer?.cancel();
+          _pointerDownPosition = event.position;
+          _longPressTriggered = false;
+          _longPressTimer = Timer(const Duration(milliseconds: 500), () {
+            if (mounted && _pointerDownPosition != null && !_longPressTriggered) {
+              _longPressTriggered = true;
+              HapticFeedback.mediumImpact();
+              _resetTiltImmediately();
+              widget.onLongPress!();
+            }
+          });
+        }
         if (!widget.enableTilt) return;
         _springController.stop();
         _updateTilt(event.position);
       },
       onPointerMove: (event) {
+        if (_pointerDownPosition != null && !_longPressTriggered) {
+          final distance = (event.position - _pointerDownPosition!).distance;
+          if (distance > 10.0) {
+            _longPressTimer?.cancel();
+            _longPressTimer = null;
+            _pointerDownPosition = null;
+          }
+        }
         if (!widget.enableTilt) return;
         _updateTilt(event.position);
       },
-      onPointerUp: (_) => _releaseTilt(),
-      onPointerCancel: (_) => _releaseTilt(),
+      onPointerUp: (_) {
+        _longPressTimer?.cancel();
+        _longPressTimer = null;
+        _pointerDownPosition = null;
+        _releaseTilt();
+      },
+      onPointerCancel: (_) {
+        _longPressTimer?.cancel();
+        _longPressTimer = null;
+        _pointerDownPosition = null;
+        _releaseTilt();
+      },
       child: Transform(
         transform: tiltMatrix,
         alignment: Alignment.center,
