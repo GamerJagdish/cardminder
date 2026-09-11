@@ -1,12 +1,16 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import '../models/app_settings.dart';
+import '../models/credit_card.dart';
 import '../providers/card_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/notification_log_service.dart';
 import '../services/notification_service.dart';
 import '../services/update_service.dart';
+import '../services/widget_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/page_transitions.dart';
 import '../widgets/card_tile.dart';
@@ -30,6 +34,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   late PageController _pageController;
   late ScrollController _homeScrollController;
   final GlobalKey _addCardPillKey = GlobalKey();
+  StreamSubscription<Uri?>? _widgetClickSubscription;
 
   @override
   void initState() {
@@ -38,6 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       initialPage: _currentPage,
     );
     _homeScrollController = ScrollController();
+    _initWidgetLaunchHandling();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final cards = ref.read(cardNotifierProvider).cards;
       ref
@@ -45,6 +51,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           .updateLogsForCards(cards);
 
       try {
+        await WidgetService.updateHomeWidget(cards);
         await NotificationService.requestPermissions();
         await NotificationService.syncCardNotifications(cards);
         await UpdateService.cleanupOldApks();
@@ -52,8 +59,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
   }
 
+  void _initWidgetLaunchHandling() {
+    HomeWidget.initiallyLaunchedFromHomeWidget().then((uri) {
+      if (uri != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _handleWidgetLaunchUri(uri);
+        });
+      }
+    });
+
+    _widgetClickSubscription = HomeWidget.widgetClicked.listen((uri) {
+      _handleWidgetLaunchUri(uri);
+    });
+  }
+
+  void _handleWidgetLaunchUri(Uri? uri) {
+    if (uri == null || !mounted) return;
+    final cardId = uri.queryParameters['id'] ??
+        (uri.host == 'card' && uri.pathSegments.isNotEmpty
+            ? uri.pathSegments.first
+            : null);
+    final cardName = uri.queryParameters['name'];
+    final cardDigits = uri.queryParameters['digits'];
+
+    final cards = ref.read(cardNotifierProvider).cards;
+    CreditCard? targetCard;
+    if (cardId != null && cardId.isNotEmpty) {
+      targetCard = cards.where((c) => c.id == cardId).firstOrNull;
+    }
+    if (targetCard == null && (cardDigits != null || cardName != null)) {
+      targetCard = cards.where((c) {
+        if (cardDigits != null &&
+            cardDigits.isNotEmpty &&
+            c.lastFourDigits == cardDigits) {
+          return true;
+        }
+        if (cardName != null &&
+            cardName.isNotEmpty &&
+            c.cardName.toLowerCase() == cardName.toLowerCase()) {
+          return true;
+        }
+        return false;
+      }).firstOrNull;
+    }
+
+    if (targetCard != null) {
+      _syncSelectedCard(targetCard.id);
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.push<String?>(
+        context,
+        slideUpRoute(
+          CardDetailsScreen(card: targetCard),
+        ),
+      ).then((closedCardId) {
+        _syncSelectedCard(closedCardId);
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _widgetClickSubscription?.cancel();
     _pageController.dispose();
     _homeScrollController.dispose();
     super.dispose();

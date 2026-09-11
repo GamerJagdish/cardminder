@@ -12,6 +12,11 @@ import java.io.File
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.gamerjagdish.cardminder/file_utils"
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->

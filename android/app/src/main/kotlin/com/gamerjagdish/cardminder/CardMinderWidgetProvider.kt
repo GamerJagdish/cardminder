@@ -54,24 +54,44 @@ class CardMinderWidgetProvider : AppWidgetProvider() {
                 views.setRemoteAdapter(R.id.widget_cards_list, serviceIntent)
                 views.setEmptyView(R.id.widget_cards_list, R.id.widget_empty_container)
 
-                // 5. Pending Intent to launch CardMinder MainActivity
-                val clickIntent = Intent(context, MainActivity::class.java).apply {
+                // 5. Pending Intents to launch CardMinder MainActivity
+                // 5a. PendingIntentTemplate for individual card clicks (fillInIntent supplies card deep-link)
+                val listClickIntent = Intent(context, MainActivity::class.java).apply {
+                    action = "es.antonborri.home_widget.action.LAUNCH"
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
-                val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val listFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
                 } else {
                     PendingIntent.FLAG_UPDATE_CURRENT
                 }
-                val pendingIntent = PendingIntent.getActivity(
+                val listPendingIntent = PendingIntent.getActivity(
                     context,
                     0,
-                    clickIntent,
-                    flags
+                    listClickIntent,
+                    listFlags
                 )
-                views.setPendingIntentTemplate(R.id.widget_cards_list, pendingIntent)
-                views.setOnClickPendingIntent(R.id.widget_header, pendingIntent)
-                views.setOnClickPendingIntent(R.id.widget_empty_container, pendingIntent)
+                views.setPendingIntentTemplate(R.id.widget_cards_list, listPendingIntent)
+
+                // 5b. General PendingIntent for clicking header / empty container to open home
+                val generalClickIntent = Intent(context, MainActivity::class.java).apply {
+                    action = "es.antonborri.home_widget.action.LAUNCH"
+                    data = Uri.parse("cardminder://home")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                val generalFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                }
+                val generalPendingIntent = PendingIntent.getActivity(
+                    context,
+                    1,
+                    generalClickIntent,
+                    generalFlags
+                )
+                views.setOnClickPendingIntent(R.id.widget_header, generalPendingIntent)
+                views.setOnClickPendingIntent(R.id.widget_empty_container, generalPendingIntent)
 
                 // 6. Update widget and notify data change to refresh ListView
                 appWidgetManager.updateAppWidget(appWidgetId, views)

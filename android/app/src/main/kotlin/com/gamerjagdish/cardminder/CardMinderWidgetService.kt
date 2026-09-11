@@ -10,6 +10,7 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
+import android.net.Uri
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import org.json.JSONArray
@@ -76,6 +77,7 @@ class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsSe
         val views = RemoteViews(context.packageName, R.layout.card_minder_widget_item)
         try {
             val item = cardsList[position]
+            val id = item.optString("id", "")
             val name = item.optString("name", "Card")
             val digits = item.optString("digits", "0000")
             val colorHex = item.optString("color", "#273B66")
@@ -113,9 +115,27 @@ class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsSe
             views.setTextColor(R.id.widget_status, pillTextColor)
             views.setTextColor(R.id.widget_days, pillTextColor)
 
-            // Fill-in Intent to trigger the widget's PendingIntentTemplate
-            val fillInIntent = Intent()
+            // Fill-in Intent to trigger the widget's PendingIntentTemplate with card deep-link
+            val fillInIntent = Intent().apply {
+                action = "es.antonborri.home_widget.action.LAUNCH"
+                val uri = if (id.isNotEmpty()) {
+                    Uri.parse("cardminder://card?id=$id")
+                } else {
+                    Uri.parse("cardminder://card?name=${Uri.encode(name)}&digits=$digits")
+                }
+                data = uri
+                putExtra("card_id", id)
+                putExtra("card_name", name)
+                putExtra("card_digits", digits)
+            }
             views.setOnClickFillInIntent(R.id.widget_item_container, fillInIntent)
+            views.setOnClickFillInIntent(R.id.widget_card_image, fillInIntent)
+            views.setOnClickFillInIntent(R.id.widget_text_container, fillInIntent)
+            views.setOnClickFillInIntent(R.id.widget_name, fillInIntent)
+            views.setOnClickFillInIntent(R.id.widget_subtitle, fillInIntent)
+            views.setOnClickFillInIntent(R.id.widget_status_container, fillInIntent)
+            views.setOnClickFillInIntent(R.id.widget_days, fillInIntent)
+            views.setOnClickFillInIntent(R.id.widget_status, fillInIntent)
         } catch (e: Exception) {
             e.printStackTrace()
         }
