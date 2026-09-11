@@ -51,13 +51,11 @@ class CardMinderWidgetProvider : AppWidgetProvider() {
                 if (themePref == "dark") {
                     views.setInt(R.id.widget_container, "setBackgroundColor", Color.parseColor("#1E293B"))
                     views.setTextColor(R.id.widget_title, Color.parseColor("#F8FAFC"))
-                    views.setTextColor(R.id.widget_tracker_tag, Color.parseColor("#94A3B8"))
                     views.setTextColor(R.id.widget_cards_count_label, Color.parseColor("#F8FAFC"))
                     views.setInt(R.id.widget_divider, "setBackgroundColor", Color.parseColor("#334155"))
                 } else if (themePref == "light") {
                     views.setInt(R.id.widget_container, "setBackgroundColor", Color.parseColor("#FFFFFF"))
                     views.setTextColor(R.id.widget_title, Color.parseColor("#0F172A"))
-                    views.setTextColor(R.id.widget_tracker_tag, Color.parseColor("#334155"))
                     views.setTextColor(R.id.widget_cards_count_label, Color.parseColor("#0F172A"))
                     views.setInt(R.id.widget_divider, "setBackgroundColor", Color.parseColor("#E2E8F0"))
                 }
