@@ -570,7 +570,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                           onChanged: (_) => setState(() {}),
                                           decoration: const InputDecoration(
                                             hintText: 'MM',
-                                            counterText: '',
+                                            counter: SizedBox.shrink(),
                                           ),
                                         ),
                                       ],
@@ -592,7 +592,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                           onChanged: (_) => setState(() {}),
                                           decoration: const InputDecoration(
                                             hintText: 'YY',
-                                            counterText: '',
+                                            counter: SizedBox.shrink(),
                                           ),
                                         ),
                                       ],
@@ -601,6 +601,8 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                 ],
                               ),
                             ),
+
+                            const SizedBox(height: 20),
 
                             // DEACTIVATION TIMELINE & LAST TRANSACTION DATE (Row)
                             Padding(
@@ -767,6 +769,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                 ],
                               ),
                             ),
+                            const SizedBox(height: 20),
                           ],
                         ),
                       ),
