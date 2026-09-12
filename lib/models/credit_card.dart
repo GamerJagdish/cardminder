@@ -166,14 +166,14 @@ class CreditCard {
     return CreditCard(
       id: json['id'] as String,
       cardName: json['cardName'] as String,
-      lastFourDigits: json['lastFourDigits'] as String?,
+      lastFourDigits: json['lastFourDigits']?.toString(),
       lastTransactionDate: DateTime.parse(json['lastTransactionDate'] as String),
       colorIndex: (json['colorIndex'] as int?) ?? 0,
       bankName: json['bankName'] as String?,
       cardType: (json['cardType'] as String?) ?? 'Debit Card',
       network: (json['network'] as String?) ?? 'Visa',
-      expiryMonth: (json['expiryMonth'] as String?) ?? '12',
-      expiryYear: (json['expiryYear'] as String?) ?? '28',
+      expiryMonth: json['expiryMonth']?.toString() ?? '12',
+      expiryYear: json['expiryYear']?.toString() ?? '28',
       deactivationPeriodDays: (json['deactivationPeriodDays'] as int?) ?? 365,
     );
   }
