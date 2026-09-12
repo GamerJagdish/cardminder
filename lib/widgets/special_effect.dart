@@ -1,76 +1,12 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import '../services/sound_effect_service.dart';
 
-/// Sound effect service using [audioplayers] configured for low-latency
-/// media audio playback that routes to Bluetooth headphones, wired headsets,
-/// or device speakers, respecting system media volume and mute.
-class SoundEffectService {
-  static final List<AudioPlayer> _players = [];
-  static int _playerIndex = 0;
-  static bool _initialized = false;
-
-  static Future<void> init() async {
-    if (_initialized) return;
-    _initialized = true;
-
-    try {
-      await AudioPlayer.global.setAudioContext(
-        AudioContext(
-          android: const AudioContextAndroid(
-            isSpeakerphoneOn: false,
-            stayAwake: false,
-            contentType: AndroidContentType.music,
-            usageType: AndroidUsageType.media,
-            audioFocus: AndroidAudioFocus.none,
-          ),
-          iOS: AudioContextIOS(
-            category: AVAudioSessionCategory.ambient,
-            options: const {
-              AVAudioSessionOptions.mixWithOthers,
-              AVAudioSessionOptions.defaultToSpeaker,
-            },
-          ),
-        ),
-      );
-
-      for (int i = 0; i < 4; i++) {
-        final player = AudioPlayer();
-        await player.setPlayerMode(PlayerMode.lowLatency);
-        _players.add(player);
-      }
-    } catch (_) {}
-  }
-
-  static Future<void> playHonk() async {
-    if (!_initialized) {
-      await init();
-    }
-    if (_players.isEmpty) return;
-
-    try {
-      final player = _players[_playerIndex % _players.length];
-      _playerIndex++;
-      await player.stop();
-      await player.play(
-        AssetSource('clown-horn-honks.mp3'),
-        mode: PlayerMode.lowLatency,
-      );
-    } catch (_) {}
-  }
-
-  static void dispose() {
-    for (final p in _players) {
-      p.dispose();
-    }
-    _players.clear();
-    _initialized = false;
-  }
-}
+export '../services/sound_effect_service.dart';
 
 /// Theatrical fullscreen easter egg overlay featuring:
 /// - True continuous, infinite clown & confetti rain that randomly enters from top.
@@ -115,16 +51,15 @@ class _SpecialEffectOverlayState extends State<SpecialEffectOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final padding = MediaQuery.of(context).padding;
-
     return Positioned.fill(
-      child: FadeTransition(
-        opacity: _backdropFade,
-        child: Material(
-          color: Colors.black.withValues(alpha: 0.76),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
+      child: ClipRect(
+        child: FadeTransition(
+          opacity: _backdropFade,
+          child: Material(
+            color: Colors.black.withValues(alpha: 0.76),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
               // 1. Continuous, infinite random rain (completely decoupled with RepaintBoundary)
               const Positioned.fill(
                 child: RepaintBoundary(
@@ -161,7 +96,7 @@ class _SpecialEffectOverlayState extends State<SpecialEffectOverlay>
 
               // 4. Pack Up Circus Action Button
               Positioned(
-                bottom: padding.bottom + 24,
+                bottom: 24,
                 left: 0,
                 right: 0,
                 child: Center(
@@ -202,7 +137,8 @@ class _SpecialEffectOverlayState extends State<SpecialEffectOverlay>
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }
 
@@ -744,29 +680,30 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final screenSize = mediaQuery.size;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenSize = Size(constraints.maxWidth, constraints.maxHeight);
 
-    if (!_initialized) {
-      _physicsNotifier.value = _ClownPhysicsState(
-        position: Offset(
-          (screenSize.width - _clownSize) / 2,
-          (screenSize.height - _clownSize) / 2 - 30,
-        ),
-        tiltX: 0.0,
-        tiltY: 0.0,
-      );
-      _initialized = true;
-    }
+        if (!_initialized) {
+          _physicsNotifier.value = _ClownPhysicsState(
+            position: Offset(
+              (screenSize.width - _clownSize) / 2,
+              (screenSize.height - _clownSize) / 2 - 30,
+            ),
+            tiltX: 0.0,
+            tiltY: 0.0,
+          );
+          _initialized = true;
+        }
 
-    const minX = 0.0;
-    final maxX = screenSize.width - _clownSize;
-    const minY = 0.0;
-    final maxY = screenSize.height - _clownSize;
+        const minX = 0.0;
+        final maxX = screenSize.width - _clownSize;
+        const minY = 0.0;
+        final maxY = screenSize.height - _clownSize;
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
         // 1. Tap burst particles
         if (_bursts.isNotEmpty && _burstController.isAnimating)
           ..._bursts.map((burst) {
@@ -930,6 +867,8 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
         ),
       ],
     );
+  },
+);
   }
 
   Widget _buildClownEmojiBody() {
