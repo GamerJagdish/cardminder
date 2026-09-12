@@ -79,7 +79,6 @@ class WidgetService {
       await HomeWidget.saveWidgetData<String>('widget_cards_json', jsonString);
       await HomeWidget.saveWidgetData<int>('total_cards', cards.length);
       await HomeWidget.saveWidgetData<int>('widget_cards_count', filtered.length);
-      await HomeWidget.saveWidgetData<String>('theme_mode', config.themeMode);
 
       // Update most urgent card summary info as fallback
       if (filtered.isNotEmpty) {

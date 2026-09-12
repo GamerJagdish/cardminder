@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.widget.RemoteViews
@@ -23,23 +22,7 @@ class CardMinderWidgetProvider : AppWidgetProvider() {
                 val views = RemoteViews(context.packageName, R.layout.card_minder_widget)
                 val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
 
-                // 1. Resolve Theme Mode
-                val themePref = prefs.getString("theme_mode", "system") ?: "system"
-
-                // 2. Explicit theme overrides when user forced light or dark in settings
-                if (themePref == "dark") {
-                    views.setInt(R.id.widget_container, "setBackgroundColor", Color.parseColor("#1E293B"))
-                    views.setTextColor(R.id.widget_title, Color.parseColor("#F8FAFC"))
-                    views.setTextColor(R.id.widget_cards_count_label, Color.parseColor("#F8FAFC"))
-                    views.setInt(R.id.widget_divider, "setBackgroundColor", Color.parseColor("#334155"))
-                } else if (themePref == "light") {
-                    views.setInt(R.id.widget_container, "setBackgroundColor", Color.parseColor("#FFFFFF"))
-                    views.setTextColor(R.id.widget_title, Color.parseColor("#0F172A"))
-                    views.setTextColor(R.id.widget_cards_count_label, Color.parseColor("#0F172A"))
-                    views.setInt(R.id.widget_divider, "setBackgroundColor", Color.parseColor("#E2E8F0"))
-                }
-
-                // 3. Card Count Header
+                // 1. Card Count Header
                 val totalCards = prefs.getInt("total_cards", 0)
                 views.setTextViewText(
                     R.id.widget_cards_count_label,

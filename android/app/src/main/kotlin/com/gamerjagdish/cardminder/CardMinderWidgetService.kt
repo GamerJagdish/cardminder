@@ -2,7 +2,6 @@ package com.gamerjagdish.cardminder
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -11,6 +10,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
 import android.net.Uri
+import android.os.Build
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import org.json.JSONArray
@@ -24,8 +24,6 @@ class CardMinderWidgetService : RemoteViewsService() {
 
 class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsService.RemoteViewsFactory {
     private val cardsList = mutableListOf<JSONObject>()
-    private var themePref: String = "system"
-    private var isDark: Boolean = false
 
     override fun onCreate() {
         loadData()
@@ -38,13 +36,6 @@ class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsSe
     private fun loadData() {
         cardsList.clear()
         val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-        themePref = prefs.getString("theme_mode", "system") ?: "system"
-        val isSystemDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-        isDark = when (themePref) {
-            "dark" -> true
-            "light" -> false
-            else -> isSystemDark
-        }
 
         val jsonString = prefs.getString("widget_cards_json", null)
         if (!jsonString.isNullOrEmpty()) {
@@ -90,17 +81,6 @@ class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsSe
             val subText = if (bank.isNotEmpty()) "$bank • $network" else "$network • •••• $digits"
             views.setTextViewText(R.id.widget_subtitle, subText)
 
-            // Explicit colors only if user forced a specific theme
-            if (themePref == "dark") {
-                views.setInt(R.id.widget_item_container, "setBackgroundColor", Color.parseColor("#0F172A"))
-                views.setTextColor(R.id.widget_name, Color.parseColor("#F8FAFC"))
-                views.setTextColor(R.id.widget_subtitle, Color.parseColor("#94A3B8"))
-            } else if (themePref == "light") {
-                views.setInt(R.id.widget_item_container, "setBackgroundColor", Color.parseColor("#F8FAFC"))
-                views.setTextColor(R.id.widget_name, Color.parseColor("#0F172A"))
-                views.setTextColor(R.id.widget_subtitle, Color.parseColor("#334155"))
-            }
-
             // Render mini credit card bitmap
             val cardBmp = createMiniCardBitmap(context, digits, colorHex, network)
             views.setImageViewBitmap(R.id.widget_card_image, cardBmp)
@@ -108,12 +88,23 @@ class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsSe
             // Days Remaining Text
             views.setTextViewText(R.id.widget_days, "${days}d")
 
-            // Urgency Status Pill (High-contrast text colors)
-            val (pillRes, pillTextColor, statusLabel) = getUrgencyStyle(status, days, isDark)
+            // Urgency Status Pill (High-contrast text colors following device theme)
+            val (pillRes, pillTextColorRes, statusLabel) = getUrgencyStyle(status, days)
             views.setTextViewText(R.id.widget_status, statusLabel)
             views.setInt(R.id.widget_status, "setBackgroundResource", pillRes)
-            views.setTextColor(R.id.widget_status, pillTextColor)
-            views.setTextColor(R.id.widget_days, pillTextColor)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                views.setColor(R.id.widget_status, "setTextColor", pillTextColorRes)
+                views.setColor(R.id.widget_days, "setTextColor", pillTextColorRes)
+            } else {
+                val color = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    context.getColor(pillTextColorRes)
+                } else {
+                    @Suppress("DEPRECATION")
+                    context.resources.getColor(pillTextColorRes)
+                }
+                views.setTextColor(R.id.widget_status, color)
+                views.setTextColor(R.id.widget_days, color)
+            }
 
             // Fill-in Intent to trigger the widget's PendingIntentTemplate with card deep-link
             val fillInIntent = Intent().apply {
@@ -151,23 +142,19 @@ class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsSe
 
     override fun hasStableIds(): Boolean = true
 
-    private fun getUrgencyStyle(status: String, days: Int, isDark: Boolean): Triple<Int, Int, String> {
+    private fun getUrgencyStyle(status: String, days: Int): Triple<Int, Int, String> {
         return when {
             status.equals("EXPIRED", ignoreCase = true) || days <= 0 -> {
-                val color = if (isDark) Color.parseColor("#94A3B8") else Color.parseColor("#334155")
-                Triple(R.drawable.widget_badge_expired, color, "EXPIRED")
+                Triple(R.drawable.widget_badge_expired, R.color.widget_status_expired_text, "EXPIRED")
             }
             status.equals("CRITICAL", ignoreCase = true) || status.equals("URGENT", ignoreCase = true) || days <= 30 -> {
-                val color = if (isDark) Color.parseColor("#FCA5A5") else Color.parseColor("#B91C1C")
-                Triple(R.drawable.widget_badge_critical, color, "URGENT")
+                Triple(R.drawable.widget_badge_critical, R.color.widget_status_critical_text, "URGENT")
             }
             status.equals("WARNING", ignoreCase = true) || days <= 90 -> {
-                val color = if (isDark) Color.parseColor("#FDE047") else Color.parseColor("#B45309")
-                Triple(R.drawable.widget_badge_warning, color, "WARNING")
+                Triple(R.drawable.widget_badge_warning, R.color.widget_status_warning_text, "WARNING")
             }
             else -> {
-                val color = if (isDark) Color.parseColor("#34D399") else Color.parseColor("#047857")
-                Triple(R.drawable.widget_badge_safe, color, "SAFE")
+                Triple(R.drawable.widget_badge_safe, R.color.widget_status_safe_text, "SAFE")
             }
         }
     }
