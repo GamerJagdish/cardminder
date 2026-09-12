@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -557,6 +558,15 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                           controller: _monthController,
                                           maxLength: 2,
                                           keyboardType: TextInputType.number,
+                                          inputFormatters: const [
+                                            _MonthInputFormatter(),
+                                          ],
+                                          validator: (val) {
+                                            if (val != null && val.trim() == '0') {
+                                              return 'Enter 1–12';
+                                            }
+                                            return null;
+                                          },
                                           onChanged: (_) => setState(() {}),
                                           decoration: const InputDecoration(
                                             hintText: 'MM',
@@ -827,3 +837,43 @@ class _FieldLabel extends StatelessWidget {
     );
   }
 }
+
+/// Restricts user input in the month field to digits 1-12 (allowing 01-12, 1-12, and 03).
+class _MonthInputFormatter extends TextInputFormatter {
+  const _MonthInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    if (text.isEmpty) {
+      return newValue;
+    }
+
+    // Only allow numeric digits
+    if (!RegExp(r'^\d+$').hasMatch(text)) {
+      return oldValue;
+    }
+
+    // Maximum 2 digits
+    if (text.length > 2) {
+      return oldValue;
+    }
+
+    // Single digit: '0' through '9' allowed while typing (e.g. typing '0' then '3' for '03')
+    if (text.length == 1) {
+      return newValue;
+    }
+
+    // 2 digits: must be between 1 and 12 ('01' through '12')
+    final val = int.tryParse(text);
+    if (val == null || val < 1 || val > 12) {
+      return oldValue;
+    }
+
+    return newValue;
+  }
+}
+

@@ -67,5 +67,25 @@ void main() {
       expect(restoredCard.deactivationPeriodDays, equals(365));
       expect(restoredCard.cardName, equals('Old Card'));
     });
+
+    test('Successfully imports old card data with random number/integer expiryMonth without breaking', () {
+      final oldJsonWithRandomNumberMonth = {
+        'id': 'old-card-random-month',
+        'cardName': 'Legacy Card',
+        'lastFourDigits': 5678,
+        'lastTransactionDate': DateTime.now().toIso8601String(),
+        'colorIndex': 0,
+        'cardType': 'Debit Card',
+        'network': 'Mastercard',
+        'expiryMonth': 99,
+        'expiryYear': 30,
+      };
+
+      final restoredCard = CreditCard.fromJson(oldJsonWithRandomNumberMonth);
+      expect(restoredCard.expiryMonth, equals('99'));
+      expect(restoredCard.expiryYear, equals('30'));
+      expect(restoredCard.lastFourDigits, equals('5678'));
+      expect(restoredCard.expiryDateString, equals('99/30'));
+    });
   });
 }
