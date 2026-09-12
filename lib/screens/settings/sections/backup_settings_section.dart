@@ -230,7 +230,7 @@ class BackupSettingsSection extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               const Text(
-                'Backups are encrypted with your private 4-digit PIN.',
+                'Backups are encrypted with your private PIN.',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppTheme.textMuted,
