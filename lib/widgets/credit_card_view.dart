@@ -1,10 +1,15 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../models/credit_card.dart';
 import '../theme/app_theme.dart';
+import 'credit_card/card_network_logo.dart';
+import 'credit_card/contactless_waves_widget.dart';
+import 'credit_card/emv_chip_widget.dart';
+
+export 'credit_card/card_network_logo.dart';
+export 'credit_card/contactless_waves_widget.dart';
+export 'credit_card/emv_chip_widget.dart';
 
 class CreditCardView extends StatefulWidget {
   final CreditCard card;
@@ -335,7 +340,9 @@ class _CreditCardViewState extends State<CreditCardView>
                                       SizedBox(
                                         width: 44,
                                         height: 26,
-                                        child: Center(child: _buildNetworkLogo(net)),
+                                        child: Center(
+                                            child:
+                                                CardNetworkLogo(network: net)),
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
@@ -388,7 +395,8 @@ class _CreditCardViewState extends State<CreditCardView>
                                     },
                                     child: KeyedSubtree(
                                       key: ValueKey('net-${card.network}'),
-                                      child: _buildNetworkLogo(card.network),
+                                      child: CardNetworkLogo(
+                                          network: card.network),
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -415,7 +423,8 @@ class _CreditCardViewState extends State<CreditCardView>
                             },
                             child: KeyedSubtree(
                               key: ValueKey('net-${card.network}'),
-                              child: _buildNetworkLogo(card.network),
+                              child:
+                                  CardNetworkLogo(network: card.network),
                             ),
                           ),
                       ],
@@ -424,9 +433,9 @@ class _CreditCardViewState extends State<CreditCardView>
                     // Authentic Metallic EMV Chip & Contactless Waves
                     Row(
                       children: [
-                        _buildEmvChip(),
+                        const EmvChipWidget(),
                         const SizedBox(width: 10),
-                        _ContactlessWaves(
+                        ContactlessWavesWidget(
                           color: textColor.withValues(alpha: 0.72),
                         ),
                       ],
@@ -683,213 +692,5 @@ class _CreditCardViewState extends State<CreditCardView>
 
     return interactiveCard;
   }
-
-  Widget _buildNetworkLogo(String network) {
-    final netLower = network.toLowerCase();
-    switch (netLower) {
-      case 'mastercard':
-        return Image.asset(
-          'assets/logos/mastercard.png',
-          height: 32,
-          fit: BoxFit.contain,
-        );
-      case 'rupay':
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Image.asset(
-            'assets/logos/rupay.png',
-            height: 22,
-            fit: BoxFit.contain,
-          ),
-        );
-      case 'amex':
-      case 'american express':
-        return SvgPicture.asset(
-          'assets/logos/amex.svg',
-          height: 32,
-          fit: BoxFit.contain,
-        );
-      case 'discover':
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Image.asset(
-            'assets/logos/discover.png',
-            height: 22,
-            fit: BoxFit.contain,
-          ),
-        );
-      case 'visa':
-      default:
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Image.asset(
-            'assets/logos/visa.png',
-            height: 22,
-            fit: BoxFit.contain,
-          ),
-        );
-    }
-  }
-
-  Widget _buildEmvChip() {
-    return Container(
-      width: 44,
-      height: 32,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFFE27D),
-            Color(0xFFE5B53B),
-            Color(0xFFCC9928),
-            Color(0xFFE2C470),
-          ],
-          stops: [0.0, 0.35, 0.7, 1.0],
-        ),
-        border: Border.all(
-          color: const Color(0xFF9E781C).withValues(alpha: 0.65),
-          width: 0.8,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 3,
-            offset: const Offset(0, 1.5),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(5.2),
-        child: CustomPaint(
-          painter: _ChipGridPainter(),
-        ),
-      ),
-    );
-  }
 }
 
-class _ChipGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    // Dark etched groove paint
-    final groovePaint = Paint()
-      ..color = const Color(0xFF6B4E08).withValues(alpha: 0.7)
-      ..strokeWidth = 0.9
-      ..style = PaintingStyle.stroke;
-
-    // Light metallic highlight for engraved relief
-    final highlightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.5)
-      ..strokeWidth = 0.6
-      ..style = PaintingStyle.stroke;
-
-    void drawEngravedPath(Path p) {
-      canvas.drawPath(p.shift(const Offset(0.35, 0.35)), highlightPaint);
-      canvas.drawPath(p, groovePaint);
-    }
-
-    // Center contact island
-    final centerRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(w * 0.48, h * 0.5),
-        width: w * 0.36,
-        height: h * 0.44,
-      ),
-      const Radius.circular(3),
-    );
-    canvas.drawRRect(centerRect.shift(const Offset(0.35, 0.35)), highlightPaint);
-    canvas.drawRRect(centerRect, groovePaint);
-
-    final paths = Path();
-
-    // Horizontal trace lines from center to edges
-    paths.moveTo(0, h * 0.32);
-    paths.lineTo(w * 0.30, h * 0.32);
-
-    paths.moveTo(0, h * 0.68);
-    paths.lineTo(w * 0.30, h * 0.68);
-
-    paths.moveTo(w * 0.66, h * 0.32);
-    paths.lineTo(w, h * 0.32);
-
-    paths.moveTo(w * 0.66, h * 0.68);
-    paths.lineTo(w, h * 0.68);
-
-    // Vertical top/bottom trace lines
-    paths.moveTo(w * 0.48, 0);
-    paths.lineTo(w * 0.48, h * 0.28);
-
-    paths.moveTo(w * 0.48, h * 0.72);
-    paths.lineTo(w * 0.48, h);
-
-    drawEngravedPath(paths);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _ContactlessWaves extends StatelessWidget {
-  final Color color;
-
-  const _ContactlessWaves({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(18, 18),
-      painter: _ContactlessWavesPainter(color: color),
-    );
-  }
-}
-
-class _ContactlessWavesPainter extends CustomPainter {
-  final Color color;
-
-  const _ContactlessWavesPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.6
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final center = Offset(size.width * 0.05, size.height * 0.5);
-    const sweep = math.pi * 0.45;
-    const start = -sweep / 2;
-
-    for (int i = 1; i <= 3; i++) {
-      final radius = 2.8 + (i * 3.6);
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        start,
-        sweep,
-        false,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _ContactlessWavesPainter oldDelegate) =>
-      oldDelegate.color != color;
-}
