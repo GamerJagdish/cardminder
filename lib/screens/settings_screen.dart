@@ -15,6 +15,7 @@ import '../services/notification_service.dart';
 import '../services/update_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/backup_dialogs.dart';
+import '../widgets/special_effect.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -1328,7 +1329,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     ),
     if (_showClownRain)
-      _ClownRainOverlay(
+      SpecialEffectOverlay(
         onDismiss: () => setState(() {
           _showClownRain = false;
           _developerClickCount = 0;
@@ -1769,156 +1770,4 @@ class _DebugActionButton extends StatelessWidget {
   }
 }
 
-class _ClownRainOverlay extends StatefulWidget {
-  final VoidCallback onDismiss;
-  const _ClownRainOverlay({required this.onDismiss});
 
-  @override
-  State<_ClownRainOverlay> createState() => _ClownRainOverlayState();
-}
-
-class _ClownRainOverlayState extends State<_ClownRainOverlay>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late List<_ClownParticle> _clowns;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
-    )..repeat();
-
-    _clowns = List.generate(40, (index) {
-      final randomX = ((index * 73 + 29) % 100) / 100.0;
-      final size = 22.0 + ((index * 17) % 28);
-      final speedMultiplier = 0.8 + ((index * 19) % 15) / 10.0;
-      final offsetPhase = ((index * 23) % 100) / 100.0;
-
-      return _ClownParticle(
-        relativeX: randomX,
-        size: size,
-        speedMultiplier: speedMultiplier,
-        offsetPhase: offsetPhase,
-      );
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Material(
-        color: Colors.black.withValues(alpha: 0.6),
-        child: Stack(
-            children: [
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  final screenHeight = MediaQuery.of(context).size.height;
-                  final screenWidth = MediaQuery.of(context).size.width;
-
-                  return Stack(
-                    children: _clowns.map((clown) {
-                      final progress =
-                          (_controller.value * clown.speedMultiplier + clown.offsetPhase) % 1.0;
-                      final topY = progress * (screenHeight + 100) - 50;
-                      final leftX = clown.relativeX * (screenWidth - clown.size);
-
-                      return Positioned(
-                        top: topY,
-                        left: leftX,
-                        child: Text(
-                          '🤡',
-                          style: TextStyle(fontSize: clown.size),
-                        ),
-                      );
-                    }).toList(),
-                  );
-                },
-              ),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardTheme.color,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: const Color(0xFFF59E0B),
-                        width: 2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          '🤡',
-                          style: TextStyle(fontSize: 54),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          "yes that's me a clown. laugh on me bro :)",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: widget.onDismiss,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF59E0B),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
-                          ),
-                          child: const Text(
-                            'Close 🤡',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-  }
-}
-
-class _ClownParticle {
-  final double relativeX;
-  final double size;
-  final double speedMultiplier;
-  final double offsetPhase;
-
-  _ClownParticle({
-    required this.relativeX,
-    required this.size,
-    required this.speedMultiplier,
-    required this.offsetPhase,
-  });
-}

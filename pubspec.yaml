@@ -54,6 +54,7 @@ dependencies:
   github_release_apk_updater: ^1.0.7
   package_info_plus: ^10.2.1
   flutter_timezone: ^5.1.0
+  audioplayers: ^6.1.2
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +80,7 @@ flutter:
 
   assets:
     - assets/logos/
+    - assets/clown-horn-honks.mp3
 
   # To add assets to your application, add an assets section, like this:
   # assets:
