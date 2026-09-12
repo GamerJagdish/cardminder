@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+
 import '../models/credit_card.dart';
 import '../providers/card_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/card_form/card_color_picker.dart';
+import '../widgets/card_form/card_digits_dialog.dart';
 import '../widgets/credit_card_view.dart';
 
+/// Screen for creating or editing credit and debit card profiles.
 class AddEditCardScreen extends ConsumerStatefulWidget {
   final CreditCard? cardToEdit;
 
@@ -59,31 +62,32 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
       ..addListener(() => setState(() {}));
     _yearController = TextEditingController(text: card?.expiryYear ?? '28')
       ..addListener(() => setState(() {}));
-    _selectedDeactivationDays = card?.deactivationPeriodDays ?? 365;
 
     if (card != null) {
-      if (card.colorIndex >= AppTheme.cardThemes.length) {
-        _customRgbColorValue = card.colorIndex;
-        _selectedColorIndex = card.colorIndex;
-        _currentPage = AppTheme.cardThemes.length;
+      _selectedColorIndex = card.colorIndex;
+      if (_selectedColorIndex >= 0 &&
+          _selectedColorIndex < AppTheme.cardThemes.length) {
+        _currentPage = _selectedColorIndex;
       } else {
-        _selectedColorIndex = card.colorIndex;
-        _currentPage = card.colorIndex;
+        _currentPage = AppTheme.cardThemes.length;
+        _customRgbColorValue = _selectedColorIndex;
       }
+      _selectedNetwork = card.network;
+      _cardType = card.cardType;
+      _selectedDeactivationDays = card.deactivationPeriodDays;
+      _selectedDate = card.lastTransactionDate;
     } else {
       _selectedColorIndex = 0;
       _currentPage = 0;
+      _selectedDate = DateTime.now();
     }
 
     _pageController = PageController(initialPage: _currentPage);
-    _selectedNetwork = card?.network ?? 'Visa';
-    _cardType = card?.cardType ?? 'Credit Card';
-    _selectedDate = card?.lastTransactionDate ?? DateTime.now();
 
-    _initialName = _nameController.text.trim();
-    _initialDigits = _digitsController.text.trim();
-    _initialMonth = _monthController.text.trim();
-    _initialYear = _yearController.text.trim();
+    _initialName = _nameController.text;
+    _initialDigits = _digitsController.text;
+    _initialMonth = _monthController.text;
+    _initialYear = _yearController.text;
     _initialColorIndex = _selectedColorIndex;
     _initialNetwork = _selectedNetwork;
     _initialCardType = _cardType;
@@ -92,30 +96,26 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   }
 
   bool get _hasUnsavedChanges {
-    final nameChanged = _nameController.text.trim() != _initialName;
-    final digitsChanged = _digitsController.text.trim() != _initialDigits;
-    final monthChanged = _monthController.text.trim() != _initialMonth;
-    final yearChanged = _yearController.text.trim() != _initialYear;
-    final colorChanged = _selectedColorIndex != _initialColorIndex;
-    final networkChanged = _selectedNetwork != _initialNetwork;
-    final cardTypeChanged = _cardType != _initialCardType;
-    final deactivationChanged =
-        _selectedDeactivationDays != _initialDeactivationDays;
-    final dateChanged = !_isSameDate(_selectedDate, _initialDate);
-
-    return nameChanged ||
-        digitsChanged ||
-        monthChanged ||
-        yearChanged ||
-        colorChanged ||
-        networkChanged ||
-        cardTypeChanged ||
-        deactivationChanged ||
-        dateChanged;
+    return _nameController.text != _initialName ||
+        _digitsController.text != _initialDigits ||
+        _monthController.text != _initialMonth ||
+        _yearController.text != _initialYear ||
+        _selectedColorIndex != _initialColorIndex ||
+        _selectedNetwork != _initialNetwork ||
+        _cardType != _initialCardType ||
+        _selectedDeactivationDays != _initialDeactivationDays ||
+        _selectedDate != _initialDate;
   }
 
-  bool _isSameDate(DateTime d1, DateTime d2) {
-    return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+  Future<void> _handleBackNavigation() async {
+    if (_hasUnsavedChanges && !_isSaving) {
+      final shouldDiscard = await _showUnsavedChangesDialog(context);
+      if (shouldDiscard && mounted) {
+        Navigator.pop(context);
+      }
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -129,64 +129,60 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   }
 
   Future<void> _pickDate() async {
-    final now = DateTime.now();
-    final firstDate = now.subtract(const Duration(days: 365));
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
-      firstDate: firstDate,
-      lastDate: now,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
     );
-
-    if (picked != null) {
-      setState(() => _selectedDate = picked);
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
     }
   }
 
   void _onSave() async {
+    if (_isSaving) return;
     if (!_formKey.currentState!.validate()) return;
-
-    FocusScope.of(context).unfocus();
 
     setState(() {
       _isSaving = true;
     });
 
-    final name = _nameController.text.trim();
-    final digits = _digitsController.text.trim();
-    final month = _monthController.text.trim();
-    final year = _yearController.text.trim();
+    final card = CreditCard(
+      id: _cardId,
+      cardName: _nameController.text.trim(),
+      lastFourDigits: _digitsController.text.trim(),
+      lastTransactionDate: _selectedDate,
+      colorIndex: _selectedColorIndex,
+      cardType: _cardType,
+      network: _selectedNetwork,
+      expiryMonth: _monthController.text.trim(),
+      expiryYear: _yearController.text.trim(),
+      deactivationPeriodDays: _selectedDeactivationDays,
+    );
 
-    if (widget.cardToEdit != null) {
-      final updated = widget.cardToEdit!.copyWith(
-        cardName: name,
-        lastFourDigits: digits.isNotEmpty ? digits : '0001',
-        lastTransactionDate: _selectedDate,
-        colorIndex: _selectedColorIndex,
-        network: _selectedNetwork,
-        cardType: _cardType,
-        expiryMonth: month.isNotEmpty ? month : '12',
-        expiryYear: year.isNotEmpty ? year : '28',
-        deactivationPeriodDays: _selectedDeactivationDays,
-      );
-      await ref.read(cardNotifierProvider.notifier).updateCard(updated);
-    } else {
+    if (widget.cardToEdit == null) {
       await ref.read(cardNotifierProvider.notifier).addCard(
-            id: _cardId,
-            cardName: name,
-            lastFourDigits: digits.isNotEmpty ? digits : '0001',
-            lastTransactionDate: _selectedDate,
-            colorIndex: _selectedColorIndex,
-            network: _selectedNetwork,
-            cardType: _cardType,
-            expiryMonth: month.isNotEmpty ? month : '12',
-            expiryYear: year.isNotEmpty ? year : '28',
-            deactivationPeriodDays: _selectedDeactivationDays,
+            id: card.id,
+            cardName: card.cardName,
+            lastFourDigits: card.lastFourDigits,
+            lastTransactionDate: card.lastTransactionDate,
+            colorIndex: card.colorIndex,
+            bankName: card.bankName,
+            cardType: card.cardType,
+            network: card.network,
+            expiryMonth: card.expiryMonth,
+            expiryYear: card.expiryYear,
+            deactivationPeriodDays: card.deactivationPeriodDays,
           );
+    } else {
+      await ref.read(cardNotifierProvider.notifier).updateCard(card);
     }
 
     // Give the form exit fade time to settle cleanly
-    await Future.delayed(const Duration(milliseconds: 160));
+    await Future.delayed(const Duration(milliseconds: 140));
 
     if (!mounted) return;
 
@@ -260,7 +256,8 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                       backgroundColor: isDark
                           ? const Color(0xFF0F172A)
                           : const Color(0xFFF1F5F9),
-                      foregroundColor: Theme.of(context).colorScheme.onSurface,
+                      foregroundColor:
+                          Theme.of(context).colorScheme.onSurface,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -282,8 +279,8 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(dialogCtx, true),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentRose,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppTheme.accentAmber,
+                      foregroundColor: Colors.black,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -304,181 +301,16 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
         ],
       ),
     );
-
     return result ?? false;
   }
 
-  Future<void> _handleBackNavigation() async {
-    if (!_hasUnsavedChanges || _isSaving) {
-      Navigator.pop(context);
-      return;
+  Future<void> _showDigitsDialog(BuildContext context) async {
+    final digits = await CardDigitsDialog.show(context, _digitsController.text);
+    if (digits != null && mounted) {
+      setState(() {
+        _digitsController.text = digits;
+      });
     }
-    final shouldDiscard = await _showUnsavedChangesDialog(context);
-    if (shouldDiscard && mounted) {
-      Navigator.pop(context);
-    }
-  }
-
-  void _showDigitsDialog(BuildContext context) {
-    final tempController = TextEditingController(
-      text: _digitsController.text == '0000' ? '' : _digitsController.text,
-    );
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
-
-    showDialog(
-      context: context,
-      builder: (dialogCtx) {
-        final mediaQuery = MediaQuery.of(dialogCtx);
-        final isLandscape = mediaQuery.orientation == Orientation.landscape;
-        final availableWidth = mediaQuery.size.width - 48.0;
-        final dialogWidth = availableWidth.clamp(300.0, 400.0);
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          insetPadding: EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: isLandscape || mediaQuery.size.height < 500 ? 12 : 24,
-          ),
-          clipBehavior: Clip.antiAlias,
-          backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
-              Theme.of(context).cardTheme.color,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: dialogWidth,
-              minWidth: dialogWidth,
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.pin_outlined,
-                          color: primaryColor,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Last 4 Digits',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Enter the last 4 digits of your card:',
-                    style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: tempController,
-                    autofocus: true,
-                    maxLength: 4,
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) {
-                      final val = tempController.text.trim();
-                      setState(() {
-                        _digitsController.text =
-                            val.isNotEmpty ? val : '0001';
-                      });
-                      Navigator.pop(dialogCtx);
-                    },
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 4,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
-                      hintText: '0001',
-                      counterText: '',
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFCBD5E1),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () => Navigator.pop(dialogCtx),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark
-                                ? AppTheme.primaryAccentDark
-                                : AppTheme.primaryNavy,
-                            foregroundColor:
-                                isDark ? Colors.black : Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () {
-                            final val = tempController.text.trim();
-                            setState(() {
-                              _digitsController.text =
-                                  val.isNotEmpty ? val : '0001';
-                            });
-                            Navigator.pop(dialogCtx);
-                          },
-                          child: Text(
-                            'Save',
-                            style: TextStyle(
-                              color: isDark ? Colors.black : Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -546,597 +378,432 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-              // CARD CAROUSEL SLIDER (Swipe to select card color)
-              AnimatedOpacity(
-                opacity: _isSaving ? 0.0 : 1.0,
-                duration: const Duration(milliseconds: 160),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: _FieldLabel(text: 'SELECT CARD COLOR'),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              SizedBox(
-                height: 195,
-                child: PageView.builder(
-                  controller: _pageController,
-                  clipBehavior: Clip.none,
-                  itemCount: AppTheme.cardThemes.length + 1,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentPage = index;
-                      if (index < AppTheme.cardThemes.length) {
-                        _selectedColorIndex = index;
-                      } else {
-                        _selectedColorIndex = _customRgbColorValue;
-                      }
-                    });
-                  },
-                  itemBuilder: (context, index) {
-                    final isCustomRgbPage = index == AppTheme.cardThemes.length;
-                    final cardColor =
-                        isCustomRgbPage ? _customRgbColorValue : index;
-                    final cardForPage =
-                        previewCard.copyWith(colorIndex: cardColor);
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Stack(
-                        children: [
-                          CreditCardView(
-                            card: cardForPage,
-                            isInteractive: false,
-                            heroTag: index == _currentPage
-                                ? 'card-hero-$_cardId'
-                                : null,
-                            onCardTypeTap: () {
-                              setState(() {
-                                _cardType = _cardType == 'Credit Card'
-                                    ? 'Debit Card'
-                                    : 'Credit Card';
-                              });
-                            },
-                            onDigitsTap: () => _showDigitsDialog(context),
-                            onNetworkSelected: (net) {
-                              setState(() => _selectedNetwork = net);
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              AnimatedOpacity(
-                opacity: _isSaving ? 0.0 : 1.0,
-                duration: const Duration(milliseconds: 160),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 12),
-
-                    // Page Indicator Dots (. . . . . . 🎨)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(AppTheme.cardThemes.length + 1, (index) {
-                  final isSelected = _currentPage == index;
-                  final isCustomDot = index == AppTheme.cardThemes.length;
-                  final primaryColor = Theme.of(context).colorScheme.primary;
-
-                  return GestureDetector(
-                    onTap: () {
-                      _pageController.animateToPage(
-                        index,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOutCubic,
-                      );
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      width: isSelected ? 22 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? primaryColor
-                            : (isCustomDot
-                                ? primaryColor.withValues(alpha: 0.4)
-                                : (isDark
-                                    ? const Color(0xFF334155)
-                                    : const Color(0xFFCBD5E1))),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-
-              const SizedBox(height: 24),
-
-              // INLINE COLOR PICKER (visible only on custom color page)
-              AnimatedCrossFade(
-                firstChild: const SizedBox.shrink(),
-                secondChild: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardTheme.color,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF334155)
-                            : const Color(0xFFE2E8F0),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                      // CARD CAROUSEL SLIDER (Swipe to select card color)
+                      AnimatedOpacity(
+                        opacity: _isSaving ? 0.0 : 1.0,
+                        duration: const Duration(milliseconds: 160),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.0),
+                          child: _FieldLabel(text: 'SELECT CARD COLOR'),
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header with Title and Hex Code Badge
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withValues(alpha: 0.08),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Icon(
-                                    Icons.palette_outlined,
-                                    color: Theme.of(context).colorScheme.primary,
-                                    size: 20,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'Pick Your Color',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            // Hex Value Display Badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? const Color(0xFF0F172A)
-                                    : const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: isDark
-                                      ? const Color(0xFF334155)
-                                      : const Color(0xFFE2E8F0),
-                                ),
-                              ),
-                              child: Text(
-                                '#${Color(_customRgbColorValue).toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'monospace',
-                                  color: Theme.of(context).colorScheme.primary,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
+                      ),
+                      const SizedBox(height: 10),
 
-                        // Main Color Picker Area
-                        SizedBox(
-                          width: double.infinity,
-                          height: 170,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: ColorPickerArea(
-                              HSVColor.fromColor(Color(_customRgbColorValue)),
-                              (hsv) {
-                                setState(() {
-                                  _customRgbColorValue =
-                                      hsv.toColor().toARGB32();
-                                  _selectedColorIndex = _customRgbColorValue;
-                                });
-                              },
-                              PaletteType.hsvWithHue,
-                            ),
-                          ),
-                        ),
+                      SizedBox(
+                        height: 195,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          clipBehavior: Clip.none,
+                          itemCount: AppTheme.cardThemes.length + 1,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _currentPage = index;
+                              if (index < AppTheme.cardThemes.length) {
+                                _selectedColorIndex = index;
+                              } else {
+                                _selectedColorIndex = _customRgbColorValue;
+                              }
+                            });
+                          },
+                          itemBuilder: (context, index) {
+                            final isCustomRgbPage =
+                                index == AppTheme.cardThemes.length;
+                            final cardColor =
+                                isCustomRgbPage ? _customRgbColorValue : index;
+                            final cardForPage =
+                                previewCard.copyWith(colorIndex: cardColor);
 
-                        const SizedBox(height: 16),
-
-                        // Slider & SQUARE Color Preview Row
-                        Row(
-                          children: [
-                            // SQUARE Color Preview Container
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 150),
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                color: Color(_customRgbColorValue),
-                                borderRadius: BorderRadius.circular(9),
-                                border: Border.all(
-                                    color: isDark
-                                        ? const Color(0xFF475569)
-                                        : const Color(0xFFCBD5E1),
-                                    width: 1.5),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Color(_customRgbColorValue)
-                                        .withValues(alpha: 0.35),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Stack(
+                                children: [
+                                  CreditCardView(
+                                    card: cardForPage,
+                                    isInteractive: false,
+                                    heroTag: index == _currentPage
+                                        ? 'card-hero-$_cardId'
+                                        : null,
+                                    onCardTypeTap: () {
+                                      setState(() {
+                                        _cardType = _cardType == 'Credit Card'
+                                            ? 'Debit Card'
+                                            : 'Credit Card';
+                                      });
+                                    },
+                                    onDigitsTap: () => _showDigitsDialog(context),
+                                    onNetworkSelected: (net) {
+                                      setState(() => _selectedNetwork = net);
+                                    },
                                   ),
                                 ],
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            // Hue Slider
-                            Expanded(
-                              child: SizedBox(
-                                height: 38,
-                                child: ColorPickerSlider(
-                                  TrackType.hue,
-                                  HSVColor.fromColor(
-                                      Color(_customRgbColorValue)),
-                                  (hsv) {
-                                    setState(() {
-                                      _customRgbColorValue =
-                                          hsv.toColor().toARGB32();
-                                      _selectedColorIndex =
-                                          _customRgbColorValue;
-                                    });
-                                  },
-                                  displayThumbColor: true,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        // Quick Preset Color Swatches
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            const Color(0xFF0F172A), // Slate Dark
-                            const Color(0xFF1E1B4B), // Midnight Indigo
-                            const Color(0xFF065F46), // Deep Emerald
-                            const Color(0xFF831843), // Rich Magenta
-                            const Color(0xFF1E3A8A), // Ocean Navy
-                            const Color(0xFF581C87), // Royal Violet
-                            const Color(0xFF991B1B), // Crimson Red
-                            const Color(0xFFB45309), // Amber Gold
-                            const Color(0xFF15803D), // Forest Green
-                            const Color(0xFF0284C7), // Sky Blue
-                            const Color(0xFFBE185D), // Rose Pink
-                          ].map((swatch) {
-                            final isSelected =
-                                _customRgbColorValue == swatch.toARGB32();
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _customRgbColorValue = swatch.toARGB32();
-                                  _selectedColorIndex = _customRgbColorValue;
-                                });
-                              },
-                              child: Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: swatch,
-                                  borderRadius: BorderRadius.circular(7),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Colors.transparent,
-                                    width: isSelected ? 2.5 : 0,
-                                  ),
-                                ),
-                                child: isSelected
-                                    ? const Icon(Icons.check_rounded,
-                                        color: Colors.white, size: 16)
-                                    : null,
                               ),
                             );
-                          }).toList(),
+                          },
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                crossFadeState: _currentPage == AppTheme.cardThemes.length
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-                duration: const Duration(milliseconds: 200),
-              ),
-
-              const SizedBox(height: 20),
-
-              // NICKNAME INPUT
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _FieldLabel(text: 'NICKNAME (REQUIRED)'),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _nameController,
-                      onChanged: (_) => setState(() {}),
-                      decoration: const InputDecoration(
-                        hintText: 'e.g. Swiggy HDFC',
                       ),
-                      validator: (val) {
-                        if (val == null || val.trim().isEmpty) {
-                          return 'Please enter a nickname';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 20),
+                      AnimatedOpacity(
+                        opacity: _isSaving ? 0.0 : 1.0,
+                        duration: const Duration(milliseconds: 160),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 12),
 
-              // EXP. MONTH & EXP. YEAR (Row)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const _FieldLabel(text: 'EXP. MONTH (OPTIONAL)'),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _monthController,
-                            maxLength: 2,
-                            keyboardType: TextInputType.number,
-                            onChanged: (_) => setState(() {}),
-                            decoration: const InputDecoration(
-                              hintText: 'MM',
-                              counterText: '',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const _FieldLabel(text: 'EXP. YEAR (OPTIONAL)'),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _yearController,
-                            maxLength: 2,
-                            keyboardType: TextInputType.number,
-                            onChanged: (_) => setState(() {}),
-                            decoration: const InputDecoration(
-                              hintText: 'YY',
-                              counterText: '',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                            // Page Indicator Dots (. . . . . . 🎨)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(
+                                AppTheme.cardThemes.length + 1,
+                                (index) {
+                                  final isSelected = _currentPage == index;
+                                  final isCustomDot =
+                                      index == AppTheme.cardThemes.length;
+                                  final primaryColor =
+                                      Theme.of(context).colorScheme.primary;
 
-              // DEACTIVATION TIMELINE & LAST TRANSACTION DATE (Row)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const _FieldLabel(text: 'DEACTIVATION TIMELINE'),
-                          const SizedBox(height: 8),
-                          DropdownButtonFormField<int>(
-                            initialValue: _selectedDeactivationDays,
-                            isExpanded: true,
-                            dropdownColor:
-                                isDark ? const Color(0xFF1E293B) : Colors.white,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 16),
-                              fillColor: Theme.of(context)
-                                  .inputDecorationTheme
-                                  .fillColor,
-                              filled: true,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: isDark
-                                      ? const Color(0xFF334155)
-                                      : const Color(0xFFE2E8F0),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: isDark
-                                      ? const Color(0xFF334155)
-                                      : const Color(0xFFE2E8F0),
-                                ),
-                              ),
-                            ),
-                            icon: Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 90,
-                                child: Text('3 Months',
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                              DropdownMenuItem(
-                                value: 180,
-                                child: Text('6 Months',
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                              DropdownMenuItem(
-                                value: 270,
-                                child: Text('9 Months',
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                              DropdownMenuItem(
-                                value: 365,
-                                child: Text('1 Year',
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                            ],
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() {
-                                  _selectedDeactivationDays = val;
-                                });
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const _FieldLabel(text: 'LAST TRANSACTION DATE'),
-                          const SizedBox(height: 8),
-                          InkWell(
-                            onTap: _pickDate,
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 16),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .inputDecorationTheme
-                                    .fillColor,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isDark
-                                      ? const Color(0xFF334155)
-                                      : const Color(0xFFE2E8F0),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      dateFormat.format(_selectedDate),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
+                                  return GestureDetector(
+                                    onTap: () {
+                                      _pageController.animateToPage(
+                                        index,
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        curve: Curves.easeOutCubic,
+                                      );
+                                    },
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 3),
+                                      width: isSelected ? 22 : 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? primaryColor
+                                            : (isCustomDot
+                                                ? primaryColor.withValues(
+                                                    alpha: 0.4)
+                                                : (isDark
+                                                    ? const Color(0xFF334155)
+                                                    : const Color(0xFFCBD5E1))),
+                                        borderRadius: BorderRadius.circular(4),
                                       ),
                                     ),
+                                  );
+                                },
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // INLINE COLOR PICKER (visible only on custom color page)
+                            CardColorPicker(
+                              customRgbColorValue: _customRgbColorValue,
+                              onColorChanged: (newColor) {
+                                setState(() {
+                                  _customRgbColorValue = newColor;
+                                  _selectedColorIndex = _customRgbColorValue;
+                                });
+                              },
+                              isVisible:
+                                  _currentPage == AppTheme.cardThemes.length,
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // NICKNAME INPUT
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const _FieldLabel(text: 'NICKNAME (REQUIRED)'),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                    controller: _nameController,
+                                    onChanged: (_) => setState(() {}),
+                                    decoration: const InputDecoration(
+                                      hintText: 'e.g. Swiggy HDFC',
+                                    ),
+                                    validator: (val) {
+                                      if (val == null || val.trim().isEmpty) {
+                                        return 'Please enter a nickname';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  Icon(Icons.calendar_today_outlined,
-                                      size: 18,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface),
                                 ],
                               ),
                             ),
-                          ),
-                        ],
+
+                            const SizedBox(height: 20),
+
+                            // EXP. MONTH & EXP. YEAR (Row)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const _FieldLabel(
+                                            text: 'EXP. MONTH (OPTIONAL)'),
+                                        const SizedBox(height: 8),
+                                        TextFormField(
+                                          controller: _monthController,
+                                          maxLength: 2,
+                                          keyboardType: TextInputType.number,
+                                          onChanged: (_) => setState(() {}),
+                                          decoration: const InputDecoration(
+                                            hintText: 'MM',
+                                            counterText: '',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const _FieldLabel(
+                                            text: 'EXP. YEAR (OPTIONAL)'),
+                                        const SizedBox(height: 8),
+                                        TextFormField(
+                                          controller: _yearController,
+                                          maxLength: 2,
+                                          keyboardType: TextInputType.number,
+                                          onChanged: (_) => setState(() {}),
+                                          decoration: const InputDecoration(
+                                            hintText: 'YY',
+                                            counterText: '',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // DEACTIVATION TIMELINE & LAST TRANSACTION DATE (Row)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const _FieldLabel(
+                                            text: 'DEACTIVATION TIMELINE'),
+                                        const SizedBox(height: 8),
+                                        DropdownButtonFormField<int>(
+                                          initialValue:
+                                              _selectedDeactivationDays,
+                                          isExpanded: true,
+                                          dropdownColor: isDark
+                                              ? const Color(0xFF1E293B)
+                                              : Colors.white,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
+                                          ),
+                                          decoration: InputDecoration(
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 16),
+                                            fillColor: Theme.of(context)
+                                                .inputDecorationTheme
+                                                .fillColor,
+                                            filled: true,
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              borderSide: BorderSide(
+                                                color: isDark
+                                                    ? const Color(0xFF334155)
+                                                    : const Color(0xFFE2E8F0),
+                                              ),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              borderSide: BorderSide(
+                                                color: isDark
+                                                    ? const Color(0xFF334155)
+                                                    : const Color(0xFFE2E8F0),
+                                              ),
+                                            ),
+                                          ),
+                                          icon: Icon(
+                                            Icons.keyboard_arrow_down_rounded,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
+                                          ),
+                                          items: const [
+                                            DropdownMenuItem(
+                                              value: 90,
+                                              child: Text('3 Months',
+                                                  overflow:
+                                                      TextOverflow.ellipsis),
+                                            ),
+                                            DropdownMenuItem(
+                                              value: 180,
+                                              child: Text('6 Months',
+                                                  overflow:
+                                                      TextOverflow.ellipsis),
+                                            ),
+                                            DropdownMenuItem(
+                                              value: 270,
+                                              child: Text('9 Months',
+                                                  overflow:
+                                                      TextOverflow.ellipsis),
+                                            ),
+                                            DropdownMenuItem(
+                                              value: 365,
+                                              child: Text('1 Year',
+                                                  overflow:
+                                                      TextOverflow.ellipsis),
+                                            ),
+                                          ],
+                                          onChanged: (val) {
+                                            if (val != null) {
+                                              setState(() {
+                                                _selectedDeactivationDays = val;
+                                              });
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const _FieldLabel(
+                                            text: 'LAST TRANSACTION DATE'),
+                                        const SizedBox(height: 8),
+                                        InkWell(
+                                          onTap: _pickDate,
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 14, vertical: 16),
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context)
+                                                  .inputDecorationTheme
+                                                  .fillColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: isDark
+                                                    ? const Color(0xFF334155)
+                                                    : const Color(0xFFE2E8F0),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    dateFormat
+                                                        .format(_selectedDate),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Icon(
+                                                    Icons
+                                                        .calendar_today_outlined,
+                                                    size: 18,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      // Sticky Bottom Save Button
-      SafeArea(
-        top: false,
-        child: AnimatedOpacity(
-          opacity: _isSaving ? 0.0 : 1.0,
-          duration: const Duration(milliseconds: 160),
-          child: Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _onSave,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark
-                      ? AppTheme.primaryAccentDark
-                      : AppTheme.primaryNavy,
-                  foregroundColor: isDark ? Colors.black : Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
               ),
-              elevation: 2,
             ),
-              child: Text(
-                isEditing ? 'Save Changes' : 'Add Card',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.black : Colors.white,
+            // Sticky Bottom Save Button
+            SafeArea(
+              top: false,
+              child: AnimatedOpacity(
+                opacity: _isSaving ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 160),
+                child: Container(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _onSave,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark
+                            ? AppTheme.primaryAccentDark
+                            : AppTheme.primaryNavy,
+                        foregroundColor: isDark ? Colors.black : Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 2,
+                      ),
+                      child: Text(
+                        isEditing ? 'Save Changes' : 'Add Card',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.black : Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
-      ),
-    ),
-  ],
-),
       ),
     );
   }

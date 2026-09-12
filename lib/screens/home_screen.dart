@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_widget/home_widget.dart';
-import '../models/app_settings.dart';
 import '../models/credit_card.dart';
 import '../providers/card_provider.dart';
 import '../providers/settings_provider.dart';
@@ -16,6 +15,9 @@ import '../utils/page_transitions.dart';
 import '../widgets/card_tile.dart';
 import '../widgets/credit_card_view.dart';
 import '../widgets/delete_confirmation_dialog.dart';
+import '../widgets/home/edit_user_name_dialog.dart';
+import '../widgets/home/home_bottom_nav_bar.dart';
+import '../widgets/home/home_empty_state.dart';
 import 'add_edit_card_screen.dart';
 import 'card_details_screen.dart';
 import 'notification_logs_screen.dart';
@@ -33,7 +35,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedTab = 0;
   late PageController _pageController;
   late ScrollController _homeScrollController;
-  final GlobalKey _addCardPillKey = GlobalKey();
   StreamSubscription<Uri?>? _widgetClickSubscription;
 
   @override
@@ -140,172 +141,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  void _showEditNameDialog(
-      BuildContext context, String currentName, List cards) {
-    final controller = TextEditingController(text: currentName);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
-
-    showDialog(
-      context: context,
-      builder: (dialogCtx) {
-        final mediaQuery = MediaQuery.of(dialogCtx);
-        final isLandscape = mediaQuery.orientation == Orientation.landscape;
-        final availableWidth = mediaQuery.size.width - 48.0;
-        final dialogWidth = availableWidth.clamp(300.0, 400.0);
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          insetPadding: EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: isLandscape || mediaQuery.size.height < 500 ? 12 : 24,
-          ),
-          clipBehavior: Clip.antiAlias,
-          backgroundColor: Theme.of(context).dialogTheme.backgroundColor ??
-              Theme.of(context).cardTheme.color,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: dialogWidth,
-              minWidth: dialogWidth,
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.person_outline_rounded,
-                          color: primaryColor,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Edit Your Name',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: controller,
-                    autofocus: true,
-                    maxLength: 25,
-                    textCapitalization: TextCapitalization.words,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) {
-                      final newName = controller.text.trim();
-                      if (newName.isNotEmpty) {
-                        final settings = ref.read(settingsNotifierProvider);
-                        ref
-                            .read(settingsNotifierProvider.notifier)
-                            .updateSettings(
-                                settings.copyWith(userName: newName),
-                                cards.cast());
-                      }
-                      Navigator.pop(dialogCtx);
-                    },
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Enter your name',
-                      counterText: '',
-                      hintStyle: const TextStyle(
-                        color: AppTheme.textMuted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFCBD5E1),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () => Navigator.pop(dialogCtx),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark
-                                ? AppTheme.primaryAccentDark
-                                : AppTheme.primaryNavy,
-                            foregroundColor:
-                                isDark ? Colors.black : Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () {
-                            final newName = controller.text.trim();
-                            if (newName.isNotEmpty) {
-                              final settings =
-                                  ref.read(settingsNotifierProvider);
-                              ref
-                                  .read(settingsNotifierProvider.notifier)
-                                  .updateSettings(
-                                      settings.copyWith(userName: newName),
-                                      cards.cast());
-                            }
-                            Navigator.pop(dialogCtx);
-                          },
-                          child: Text(
-                            'Save',
-                            style: TextStyle(
-                              color: isDark ? Colors.black : Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
+  void _onCardAdded(String cardId) {
+    if (_homeScrollController.hasClients && _homeScrollController.offset > 0) {
+      _homeScrollController.jumpTo(0.0);
+    }
+    HapticFeedback.mediumImpact();
   }
 
   @override
@@ -400,8 +240,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         // Tappable User Name Header
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => _showEditNameDialog(
-                                context, settings.userName, cards),
+                            onTap: () => EditUserNameDialog.show(
+                              context: context,
+                              currentName: settings.userName,
+                              onSave: (newName) {
+                                ref
+                                    .read(settingsNotifierProvider.notifier)
+                                    .updateSettings(
+                                        settings.copyWith(userName: newName),
+                                        cards.cast());
+                              },
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -492,7 +341,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                   Expanded(
                     child: cards.isEmpty
-                        ? _buildEmptyState(settings)
+                        ? HomeEmptyState(
+                            settings: settings,
+                            onCardAdded: _onCardAdded,
+                          )
                         : SingleChildScrollView(
                             controller: _homeScrollController,
                             child: Column(
@@ -759,328 +611,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
 
       // Custom Floating Bottom Navigation Bar (Mathematically Centered 3-Column Grid)
-      bottomNavigationBar: Container(
-        height: 74,
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardTheme.color,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Builder(
-            builder: (context) {
-              final activeColor =
-                  isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy;
-              final inactiveColor =
-                  isDark ? AppTheme.textMutedDark : AppTheme.textMuted;
-
-              return Row(
-                children: [
-                  // Left Tab: Home (33.3% width slot)
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        if (_selectedTab == 0) {
-                          if (_homeScrollController.hasClients &&
-                              _homeScrollController.offset > 0) {
-                            _homeScrollController.animateTo(
-                              0.0,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeOutCubic,
-                            );
-                          }
-                        } else {
-                          setState(() => _selectedTab = 0);
-                        }
-                      },
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _selectedTab == 0
-                                   ? activeColor.withValues(alpha: isDark ? 0.2 : 0.1)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              _selectedTab == 0
-                                  ? Icons.home_rounded
-                                  : Icons.home_outlined,
-                              color: _selectedTab == 0 ? activeColor : inactiveColor,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Home',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: _selectedTab == 0
-                                  ? FontWeight.bold
-                                  : FontWeight.w500,
-                              color: _selectedTab == 0 ? activeColor : inactiveColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Center Tab: Add Card Button (Rounded Square Navy Tile with Text)
-                  Expanded(
-                    child: Builder(
-                      builder: (btnContext) {
-                        Offset? tapPosition;
-                        return InkWell(
-                          onTapDown: (details) {
-                            tapPosition = details.globalPosition;
-                          },
-                          onTap: () async {
-                            final pillBox = _addCardPillKey.currentContext
-                                ?.findRenderObject() as RenderBox?;
-                            final originRect = pillBox != null && pillBox.hasSize
-                                ? pillBox.localToGlobal(Offset.zero) & pillBox.size
-                                : null;
-                            final center = originRect?.center ?? tapPosition;
-                            tapPosition = null;
-
-                            final addedCardId = await Navigator.push<String?>(
-                              context,
-                              pillRevealRoute(
-                                const AddEditCardScreen(),
-                                originRect: originRect,
-                                center: center,
-                              ),
-                            );
-                            if (addedCardId != null && mounted) {
-                              if (_homeScrollController.hasClients &&
-                                  _homeScrollController.offset > 0) {
-                                _homeScrollController.jumpTo(0.0);
-                              }
-                              HapticFeedback.mediumImpact();
-                            }
-                          },
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                key: _addCardPillKey,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: activeColor,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: activeColor.withValues(alpha: 0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  Icons.add_card_rounded,
-                                  color: isDark ? Colors.black : Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Add Card',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: activeColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Right Tab: Settings (33.3% width slot)
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => setState(() => _selectedTab = 1),
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _selectedTab == 1
-                                  ? activeColor.withValues(alpha: isDark ? 0.2 : 0.1)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              _selectedTab == 1
-                                  ? Icons.settings_rounded
-                                  : Icons.settings_outlined,
-                              color: _selectedTab == 1 ? activeColor : inactiveColor,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Settings',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: _selectedTab == 1
-                                  ? FontWeight.bold
-                                  : FontWeight.w500,
-                              color: _selectedTab == 1 ? activeColor : inactiveColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(AppSettings settings) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFFF1F5F9),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.credit_card_off_outlined,
-                size: 56,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'No Cards Tracked Yet',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Add your credit cards to track the 365-day deactivation countdown!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: AppTheme.textMuted,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () async {
-                final addedCardId = await Navigator.push<String?>(
-                  context,
-                  slideUpRoute(const AddEditCardScreen()),
-                );
-                if (addedCardId != null && mounted) {
-                  if (_homeScrollController.hasClients &&
-                      _homeScrollController.offset > 0) {
-                    _homeScrollController.jumpTo(0.0);
-                  }
-                  HapticFeedback.mediumImpact();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isDark
-                    ? AppTheme.primaryAccentDark
-                    : AppTheme.primaryNavy,
-                foregroundColor: isDark ? Colors.black : Colors.white,
-                elevation: 0,
-                minimumSize: const Size(200, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: Text(
-                'Add First Card',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: isDark ? Colors.black : Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () async {
-                HapticFeedback.selectionClick();
-                final restored = await SettingsScreen.handleRestoreBackup(
-                  context,
-                  ref,
-                  settings,
-                );
-                if (restored && mounted) {
-                  HapticFeedback.mediumImpact();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isDark
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFFF1F5F9),
-                foregroundColor: Theme.of(context).colorScheme.onSurface,
-                elevation: 0,
-                minimumSize: const Size(200, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: isDark
-                        ? const Color(0xFF334155)
-                        : const Color(0xFFE2E8F0),
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: Text(
-                'Restore from Backup',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ],
-        ),
+      bottomNavigationBar: HomeBottomNavBar(
+        selectedTab: _selectedTab,
+        onTabSelected: (tab) => setState(() => _selectedTab = tab),
+        onHomeReselected: () {
+          if (_homeScrollController.hasClients &&
+              _homeScrollController.offset > 0) {
+            _homeScrollController.animateTo(
+              0.0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+            );
+          }
+        },
+        onCardAdded: _onCardAdded,
       ),
     );
   }
