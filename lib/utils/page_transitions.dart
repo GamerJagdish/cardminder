@@ -344,9 +344,9 @@ Route<T> pillRevealRoute<T>(
   Rect? originRect,
   Offset? center,
   Color? borderColor,
-  double borderWidth = 2.5,
-  Duration transitionDuration = const Duration(milliseconds: 350),
-  Duration reverseTransitionDuration = const Duration(milliseconds: 350),
+  double borderWidth = 1,
+  Duration transitionDuration = const Duration(milliseconds: 300),
+  Duration reverseTransitionDuration = const Duration(milliseconds: 300),
 }) {
   return PageRouteBuilder<T>(
     transitionDuration: transitionDuration,
@@ -363,7 +363,7 @@ Route<T> pillRevealRoute<T>(
         builder: (context, animChild) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           final effectiveColor = borderColor ??
-              (isDark ? Colors.white : AppTheme.primaryNavy);
+              (isDark ? const Color.fromARGB(125, 58, 58, 58) : const Color.fromARGB(123, 85, 114, 145));
 
           return Stack(
             fit: StackFit.expand,
