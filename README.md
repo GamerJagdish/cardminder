@@ -2,7 +2,7 @@
 
 An Android app that keeps your credit and debit cards from getting deactivated due to inactivity.
 
-Most banks quietly deactivate a card if you don't use it for 365 days. I kept forgetting to swipe cards I don't use often, so I built this to track the last transaction date on each card and remind me before the deadline hits.
+Most banks quietly deactivate a card if you don't use it for 365 days. I kept forgetting about the cards I don't use often, so I built this to track the last transaction date on each card and remind me before the deadline hits.
 
 ## What it does
 
@@ -14,17 +14,18 @@ Most banks quietly deactivate a card if you don't use it for 365 days. I kept fo
 
 ## How it works
 
-Add a card with its nickname, last four digits, network, and the date you last used it. The app calculates when it'll hit the 365 day mark and starts counting down. When you actually use the card, just open it and tap the button to log a new transaction, which resets the timer.
+Add a card with its nickname, last four digits, network, and the date you last used it. The app works out when it'll hit the 365 day mark and starts counting down. When you actually use the card, open it and tap the button to log a new transaction, which resets the timer.
 
-The widget on your home screen shows your cards sorted by urgency so the ones about to expire are easy to spot. You can filter it to only show cards that are getting close to the deadline, and choose how many cards it displays.
+The widget on your home screen shows your cards sorted by urgency, so the ones about to expire are easy to spot. You can filter it to only show cards that are getting close to the deadline, and choose how many cards it displays.
 
 ## Screens
 
 - **Home**: a carousel of your cards plus a list sorted by urgency (safe, warning, urgent)
-- **Card details**: shows days remaining, last transaction date, deadline, and lets you log a new transaction or edit/delete the card
+- **Card details**: days remaining, last transaction date, deadline, and options to log a new transaction or edit/delete the card
 - **Add/Edit card**: a live preview of the card as you fill in the form, with a color picker for the card design
 - **Settings**: control widget size, filtering, sorting, and notification toggles
 - **Notification history**: a simple log of every reminder that's been sent
+
 ## Screenshots
 
 <p align="center">
@@ -32,9 +33,10 @@ The widget on your home screen shows your cards sorted by urgency so the ones ab
   <img src="assets/screenshots/cardminder-card-details.jpg" alt="CardMinder card details screenshot" width="250" />
   <img src="assets/screenshots/cardminder-add-card.jpg" alt="CardMinder add card screen screenshot" width="250" />
 </p>
+
 ## Installation
 
-You can download the latest APK from the [releases page](https://github.com/GamerJagdish/cardminder/releases).
+Grab the latest APK from the [releases page](https://github.com/GamerJagdish/cardminder/releases).
 
 If you'd rather build it yourself, clone the repo and use Flutter:
 
@@ -55,11 +57,11 @@ You'll find it at `build/app/outputs/flutter-apk/app-release.apk`.
 
 ## Contributing
 
-Contributions, bug reports, and feature requests are welcome. Feel free to open an issue or a pull request.
+Contributions, bug reports, and feature requests are welcome. Open an issue or a pull request whenever.
 
 ## Support
 
-If you find this useful, consider supporting the project:
+If you find this useful, consider buying me a coffee:
 
 <a href="https://www.buymeacoffee.com/gamerjagdish" target="_blank" title="buymeacoffee">
   <img src="https://iili.io/JoQ1MeS.md.png" alt="buymeacoffee-yellow-badge" style="width: 204px;">
