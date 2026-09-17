@@ -28,15 +28,18 @@ class CardNetworkLogo extends StatelessWidget {
                 : Colors.white)
             : (isDark ? Colors.white : const Color(0xFF0F172A)));
 
+    final defaultHeight = height ?? 36;
+
     switch (netLower) {
       case 'mastercard':
         return SvgPicture.asset(
           'assets/logos/mastercard.svg',
-          height: height ?? 32,
+          height: defaultHeight,
           width: width,
           fit: BoxFit.contain,
         );
       case 'rupay':
+        final imgHeight = defaultHeight > 8 ? defaultHeight - 8 : defaultHeight;
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
           decoration: BoxDecoration(
@@ -45,7 +48,7 @@ class CardNetworkLogo extends StatelessWidget {
           ),
           child: Image.asset(
             'assets/logos/rupay.png',
-            height: height ?? 22,
+            height: imgHeight,
             width: width,
             fit: BoxFit.contain,
           ),
@@ -54,11 +57,12 @@ class CardNetworkLogo extends StatelessWidget {
       case 'american express':
         return SvgPicture.asset(
           'assets/logos/amex.svg',
-          height: height ?? 32,
+          height: defaultHeight,
           width: width,
           fit: BoxFit.contain,
         );
       case 'discover':
+        final imgHeight = defaultHeight > 8 ? defaultHeight - 8 : defaultHeight;
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
           decoration: BoxDecoration(
@@ -67,7 +71,7 @@ class CardNetworkLogo extends StatelessWidget {
           ),
           child: Image.asset(
             'assets/logos/discover.png',
-            height: height ?? 22,
+            height: imgHeight,
             width: width,
             fit: BoxFit.contain,
           ),
@@ -76,7 +80,7 @@ class CardNetworkLogo extends StatelessWidget {
       default:
         return SvgPicture.asset(
           'assets/logos/visa.svg',
-          height: height ?? 26,
+          height: defaultHeight,
           width: width,
           fit: BoxFit.contain,
           colorFilter: ColorFilter.mode(

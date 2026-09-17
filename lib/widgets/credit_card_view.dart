@@ -337,18 +337,19 @@ class _CreditCardViewState extends State<CreditCardView>
                                   value: net,
                                   child: Row(
                                     children: [
-                                      SizedBox(
-                                        width: 44,
-                                        height: 26,
-                                        child: Center(
-                                            child:
-                                                CardNetworkLogo(
-                                                  network: net,
-                                                  color: isSelected
-                                                      ? selectedColor
-                                                      : itemTextColor,
-                                                )),
-                                      ),
+                                       SizedBox(
+                                         width: 52,
+                                         height: 28,
+                                         child: Center(
+                                             child:
+                                                 CardNetworkLogo(
+                                                   network: net,
+                                                   height: 24,
+                                                   color: isSelected
+                                                       ? selectedColor
+                                                       : itemTextColor,
+                                                 )),
+                                       ),
                                       const SizedBox(width: 12),
                                       Text(
                                         net,
@@ -374,7 +375,10 @@ class _CreditCardViewState extends State<CreditCardView>
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 4),
+                                  horizontal: 8, vertical: 4),
+                              constraints: const BoxConstraints(
+                                minHeight: 40,
+                              ),
                               decoration: BoxDecoration(
                                 color: badgeBg,
                                 borderRadius: BorderRadius.circular(10),
@@ -407,7 +411,7 @@ class _CreditCardViewState extends State<CreditCardView>
                                   ),
                                   const SizedBox(width: 4),
                                   Icon(Icons.arrow_drop_down_rounded,
-                                      color: iconColor, size: 18),
+                                      color: iconColor, size: 20),
                                 ],
                               ),
                             ),
