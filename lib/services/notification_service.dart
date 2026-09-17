@@ -1,8 +1,9 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:github_release_apk_updater/github_release_apk_updater.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../models/app_settings.dart';
 import '../models/credit_card.dart';
@@ -27,20 +28,36 @@ class NotificationService {
     iOS: DarwinNotificationDetails(),
   );
 
+  static Future<void>? _initFuture;
+  static bool _isInitialized = false;
+
+  /// Idempotent, thread-safe initialization of timezone database and local notifications.
   static Future<void> init() async {
+    if (_isInitialized) return;
+    if (_initFuture != null) return _initFuture!;
+    _initFuture = _doInit();
+    await _initFuture;
+    _isInitialized = true;
+  }
+
+  static Future<void> _doInit() async {
     tz.initializeTimeZones();
-    try {
-      final timeZoneInfo = await FlutterTimezone.getLocalTimezone()
-          .timeout(const Duration(seconds: 2));
-      final timeZoneName = timeZoneInfo.identifier;
-      tz.setLocalLocation(tz.getLocation(timeZoneName));
-    } catch (_) {
+    if (kDebugMode && Platform.environment.containsKey('FLUTTER_TEST')) {
+      tz.setLocalLocation(tz.getLocation('UTC'));
+    } else {
       try {
-        final dynamic timeZoneInfo = await FlutterTimezone.getLocalTimezone()
+        final timeZoneInfo = await FlutterTimezone.getLocalTimezone()
             .timeout(const Duration(seconds: 2));
-        final String timeZoneName = timeZoneInfo.toString();
+        final timeZoneName = timeZoneInfo.identifier;
         tz.setLocalLocation(tz.getLocation(timeZoneName));
-      } catch (_) {}
+      } catch (_) {
+        try {
+          final dynamic timeZoneInfo = await FlutterTimezone.getLocalTimezone()
+              .timeout(const Duration(seconds: 2));
+          final String timeZoneName = timeZoneInfo.toString();
+          tz.setLocalLocation(tz.getLocation(timeZoneName));
+        } catch (_) {}
+      }
     }
 
     void onNotificationResponse(NotificationResponse response) {
@@ -99,6 +116,7 @@ class NotificationService {
     required int progressPercent,
     required String progressText,
   }) async {
+    await init();
     final androidDetails = AndroidNotificationDetails(
       'cardminder_updates',
       'App Updates',
@@ -125,6 +143,7 @@ class NotificationService {
     required String versionName,
     required String filePath,
   }) async {
+    await init();
     const androidDetails = AndroidNotificationDetails(
       'cardminder_updates',
       'App Updates',
@@ -147,12 +166,14 @@ class NotificationService {
   }
 
   static Future<void> cancelUpdateNotification() async {
+    if (!_isInitialized) return;
     try {
       await _notificationsPlugin.cancel(id: updateNotificationId);
     } catch (_) {}
   }
 
   static Future<void> requestPermissions() async {
+    await init();
     try {
       final androidImplementation =
           _notificationsPlugin.resolvePlatformSpecificImplementation<
@@ -167,6 +188,7 @@ class NotificationService {
     List<CreditCard> cards, {
     AppSettings? settings,
   }) async {
+    await init();
     await _notificationsPlugin.cancelAll();
 
     final config = settings ?? AppSettings();
@@ -254,6 +276,7 @@ class NotificationService {
   /// Debug-only: fire a notification immediately to verify permissions/channel.
   static Future<void> showTestNotification() async {
     assert(kDebugMode);
+    await init();
     await _notificationsPlugin.show(
       id: _debugImmediateId,
       title: '💳 CardMinder Test',
@@ -265,6 +288,7 @@ class NotificationService {
   /// Debug-only: schedule a notification ~1 minute from now.
   static Future<DateTime> scheduleTestNotificationInOneMinute() async {
     assert(kDebugMode);
+    await init();
     final scheduledDate =
         tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
     try {
@@ -292,6 +316,7 @@ class NotificationService {
   /// Debug-only: list notifications the OS has queued.
   static Future<List<PendingNotificationRequest>> getPendingNotifications() async {
     assert(kDebugMode);
+    await init();
     return _notificationsPlugin.pendingNotificationRequests();
   }
 }
