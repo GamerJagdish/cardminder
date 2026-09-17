@@ -128,12 +128,11 @@ class CircularRevealBorderPainter extends CustomPainter {
 
     final isLightColor = color.computeLuminance() > 0.5;
 
-    // Outer subtle ambient glow / shadow
+    // Outer subtle ambient outline
     final glowPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = borderWidth + (isLightColor ? 3.0 : 1.5)
-      ..color = color.withValues(alpha: (isLightColor ? 0.35 : 0.15) * opacity)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5);
+      ..strokeWidth = borderWidth + (isLightColor ? 2.5 : 1.5)
+      ..color = color.withValues(alpha: (isLightColor ? 0.25 : 0.12) * opacity);
     canvas.drawCircle(focalPoint, currentRadius, glowPaint);
 
     // Inner sharp, high-contrast solid stroke
@@ -168,24 +167,21 @@ Route<T> circularRevealRoute<T>(
     reverseTransitionDuration: reverseTransitionDuration,
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final curvedAnimation = CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeInOutCubic,
-        reverseCurve: Curves.easeInOutCubic,
-      );
       return AnimatedBuilder(
-        animation: curvedAnimation,
+        animation: animation,
         builder: (context, animChild) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           final effectiveColor = borderColor ??
               (isDark ? Colors.white : AppTheme.primaryNavy);
+          final curvedValue =
+              Curves.easeInOutCubic.transform(animation.value);
 
           return Stack(
             fit: StackFit.expand,
             children: [
               ClipPath(
                 clipper: CircularRevealClipper(
-                  fraction: curvedAnimation.value,
+                  fraction: curvedValue,
                   center: center,
                 ),
                 child: animChild,
@@ -193,7 +189,7 @@ Route<T> circularRevealRoute<T>(
               IgnorePointer(
                 child: CustomPaint(
                   painter: CircularRevealBorderPainter(
-                    fraction: curvedAnimation.value,
+                    fraction: curvedValue,
                     center: center,
                     color: effectiveColor,
                     borderWidth: borderWidth,
@@ -311,12 +307,11 @@ class PillRevealBorderPainter extends CustomPainter {
 
     final isLightColor = color.computeLuminance() > 0.5;
 
-    // Outer subtle ambient glow / shadow
+    // Outer subtle ambient outline
     final glowPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = borderWidth + (isLightColor ? 3.0 : 1.5)
-      ..color = color.withValues(alpha: (isLightColor ? 0.35 : 0.15) * opacity)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5);
+      ..strokeWidth = borderWidth + (isLightColor ? 2.5 : 1.5)
+      ..color = color.withValues(alpha: (isLightColor ? 0.25 : 0.12) * opacity);
     canvas.drawRRect(rrect, glowPaint);
 
     // Inner sharp solid stroke
@@ -353,24 +348,21 @@ Route<T> pillRevealRoute<T>(
     reverseTransitionDuration: reverseTransitionDuration,
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final curvedAnimation = CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeInOutCubic,
-        reverseCurve: Curves.easeInOutCubic,
-      );
       return AnimatedBuilder(
-        animation: curvedAnimation,
+        animation: animation,
         builder: (context, animChild) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           final effectiveColor = borderColor ??
               (isDark ? const Color.fromARGB(125, 58, 58, 58) : const Color.fromARGB(123, 85, 114, 145));
+          final curvedValue =
+              Curves.easeInOutCubic.transform(animation.value);
 
           return Stack(
             fit: StackFit.expand,
             children: [
               ClipPath(
                 clipper: PillRevealClipper(
-                  fraction: curvedAnimation.value,
+                  fraction: curvedValue,
                   originRect: originRect,
                   center: center,
                 ),
@@ -379,7 +371,7 @@ Route<T> pillRevealRoute<T>(
               IgnorePointer(
                 child: CustomPaint(
                   painter: PillRevealBorderPainter(
-                    fraction: curvedAnimation.value,
+                    fraction: curvedValue,
                     originRect: originRect,
                     center: center,
                     color: effectiveColor,
