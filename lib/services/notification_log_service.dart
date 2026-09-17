@@ -30,9 +30,10 @@ class NotificationLogService {
     return logs;
   }
 
-  Future<void> generateLogsForCards(List<CreditCard> cards) async {
+  Future<bool> generateLogsForCards(List<CreditCard> cards) async {
     final existingLogs = loadLogs();
     final now = DateTime.now();
+    bool hasNew = false;
 
     for (var card in cards) {
       final days = card.daysRemaining;
@@ -56,9 +57,11 @@ class NotificationLogService {
             isRead: false,
           );
           await saveLog(newLog);
+          hasNew = true;
         }
       }
     }
+    return hasNew;
   }
 
   Future<void> saveLog(NotificationLog log) async {
@@ -95,8 +98,10 @@ class NotificationLogNotifier extends Notifier<List<NotificationLog>> {
   }
 
   Future<void> updateLogsForCards(List<CreditCard> cards) async {
-    await _service.generateLogsForCards(cards);
-    loadLogs();
+    final hasNew = await _service.generateLogsForCards(cards);
+    if (hasNew) {
+      loadLogs();
+    }
   }
 
   Future<void> markAllAsRead() async {

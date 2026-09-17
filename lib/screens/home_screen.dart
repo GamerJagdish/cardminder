@@ -45,11 +45,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
     _homeScrollController = ScrollController();
     _initWidgetLaunchHandling();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    _initDeferredBackgroundTasks();
+  }
+
+  void _initDeferredBackgroundTasks() {
+    // Allow initial frames, layout, and entrance animations to settle
+    // smoothly before executing non-urgent background maintenance.
+    Future.delayed(const Duration(milliseconds: 1200), () async {
+      if (!mounted) return;
       final cards = ref.read(cardNotifierProvider).cards;
-      ref
-          .read(notificationLogNotifierProvider.notifier)
-          .updateLogsForCards(cards);
+
+      try {
+        await ref
+            .read(notificationLogNotifierProvider.notifier)
+            .updateLogsForCards(cards);
+      } catch (_) {}
+
+      if (!mounted) return;
 
       try {
         await WidgetService.updateHomeWidget(cards);
