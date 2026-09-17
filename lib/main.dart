@@ -10,6 +10,9 @@ import 'theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Disallow HTTP runtime fetching to ensure fonts load exclusively from local bundled assets
+  GoogleFonts.config.allowRuntimeFetching = false;
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
