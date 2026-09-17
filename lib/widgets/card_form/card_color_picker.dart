@@ -33,196 +33,218 @@ class CardColorPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return AnimatedCrossFade(
-      firstChild: const SizedBox.shrink(),
-      secondChild: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardTheme.color,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) {
+        return SizeTransition(
+          sizeFactor: animation,
+          alignment: Alignment.center,
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with Title and Hex Code Badge
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          Icons.palette_outlined,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Pick Your Color',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
+        );
+      },
+      child: isVisible
+          ? KeyedSubtree(
+              key: const ValueKey('card_color_picker_visible'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardTheme.color,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  // Hex Value Display Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF0F172A)
-                          : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF334155)
-                            : const Color(0xFFE2E8F0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header with Title and Hex Code Badge
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  Icons.palette_outlined,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Pick Your Color',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Hex Value Display Badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            child: Text(
+                              '#${Color(customRgbColorValue).toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'monospace',
+                                color: Theme.of(context).colorScheme.primary,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    child: Text(
-                      '#${Color(customRgbColorValue).toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'monospace',
-                        color: Theme.of(context).colorScheme.primary,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-              // Main Color Picker Area
-              SizedBox(
-                width: double.infinity,
-                height: 170,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: ColorPickerArea(
-                    HSVColor.fromColor(Color(customRgbColorValue)),
-                    (hsv) {
-                      onColorChanged(hsv.toColor().toARGB32());
-                    },
-                    PaletteType.hsvWithHue,
+                      // Main Color Picker Area
+                      SizedBox(
+                        width: double.infinity,
+                        height: 170,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: ColorPickerArea(
+                            HSVColor.fromColor(Color(customRgbColorValue)),
+                            (hsv) {
+                              onColorChanged(hsv.toColor().toARGB32());
+                            },
+                            PaletteType.hsvWithHue,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Slider & SQUARE Color Preview Row
+                      Row(
+                        children: [
+                          // SQUARE Color Preview Container
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: Color(customRgbColorValue),
+                              borderRadius: BorderRadius.circular(9),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF475569)
+                                    : const Color(0xFFCBD5E1),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(customRgbColorValue)
+                                      .withValues(alpha: 0.35),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Hue Slider
+                          Expanded(
+                            child: SizedBox(
+                              height: 38,
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  if (constraints.maxWidth <= 20) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return ColorPickerSlider(
+                                    TrackType.hue,
+                                    HSVColor.fromColor(Color(customRgbColorValue)),
+                                    (hsv) {
+                                      onColorChanged(hsv.toColor().toARGB32());
+                                    },
+                                    displayThumbColor: true,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Quick Preset Color Swatches
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: presetSwatches.map((swatch) {
+                          final isSelected =
+                              customRgbColorValue == swatch.toARGB32();
+                          return GestureDetector(
+                            onTap: () {
+                              onColorChanged(swatch.toARGB32());
+                            },
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: swatch,
+                                borderRadius: BorderRadius.circular(7),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Colors.transparent,
+                                  width: isSelected ? 2.5 : 0,
+                                ),
+                              ),
+                              child: isSelected
+                                  ? const Icon(Icons.check_rounded,
+                                      color: Colors.white, size: 16)
+                                  : null,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ),
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              // Slider & SQUARE Color Preview Row
-              Row(
-                children: [
-                  // SQUARE Color Preview Container
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: Color(customRgbColorValue),
-                      borderRadius: BorderRadius.circular(9),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF475569)
-                            : const Color(0xFFCBD5E1),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(customRgbColorValue)
-                              .withValues(alpha: 0.35),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Hue Slider
-                  Expanded(
-                    child: SizedBox(
-                      height: 38,
-                      child: ColorPickerSlider(
-                        TrackType.hue,
-                        HSVColor.fromColor(Color(customRgbColorValue)),
-                        (hsv) {
-                          onColorChanged(hsv.toColor().toARGB32());
-                        },
-                        displayThumbColor: true,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 14),
-
-              // Quick Preset Color Swatches
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: presetSwatches.map((swatch) {
-                  final isSelected =
-                      customRgbColorValue == swatch.toARGB32();
-                  return GestureDetector(
-                    onTap: () {
-                      onColorChanged(swatch.toARGB32());
-                    },
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: swatch,
-                        borderRadius: BorderRadius.circular(7),
-                        border: Border.all(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.transparent,
-                          width: isSelected ? 2.5 : 0,
-                        ),
-                      ),
-                      child: isSelected
-                          ? const Icon(Icons.check_rounded,
-                              color: Colors.white, size: 16)
-                          : null,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-        ),
-      ),
-      crossFadeState: isVisible
-          ? CrossFadeState.showSecond
-          : CrossFadeState.showFirst,
-      duration: const Duration(milliseconds: 200),
+            )
+          : const SizedBox.shrink(
+              key: ValueKey('card_color_picker_hidden'),
+            ),
     );
   }
 }
