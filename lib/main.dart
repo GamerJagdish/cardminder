@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
 import 'services/notification_log_service.dart';
@@ -12,6 +14,11 @@ void main() async {
 
   // Disallow HTTP runtime fetching to ensure fonts load exclusively from local bundled assets
   GoogleFonts.config.allowRuntimeFetching = false;
+
+  LicenseRegistry.addLicense(() async* {
+    final license = await rootBundle.loadString('google_fonts/OFL.txt');
+    yield LicenseEntryWithLineBreaks(const ['google_fonts'], license);
+  });
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
