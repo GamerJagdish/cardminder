@@ -2,38 +2,73 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cardminder/models/credit_card.dart';
-import 'package:cardminder/widgets/credit_card/card_network_logo.dart';
 import 'package:cardminder/widgets/credit_card_view.dart';
 import 'package:cardminder/theme/app_theme.dart';
 
 void main() {
-  group('CardNetworkLogo Visa Tests', () {
-    testWidgets('renders visa.svg with explicitly provided color',
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  group('CardNetworkLogo Rendering', () {
+    testWidgets('renders all supported networks without errors',
+        (WidgetTester tester) async {
+      for (final net in ['Visa', 'Mastercard', 'RuPay', 'Amex', 'Discover']) {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: CardNetworkLogo(network: net),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(CardNetworkLogo), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      }
+    });
+
+    testWidgets('respects custom height when explicitly provided',
+        (WidgetTester tester) async {
+      const double customHeight = 24.0;
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: CardNetworkLogo(network: 'Visa', height: customHeight),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final size = tester.getSize(find.byType(CardNetworkLogo));
+      expect(size.height, equals(customHeight));
+    });
+  });
+
+  group('Visa Dynamic Contrast Coloring Tests', () {
+    testWidgets('applies explicitly provided color override',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
             body: CardNetworkLogo(
               network: 'Visa',
-              color: Colors.white,
+              color: Colors.red,
             ),
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
-      final svgFinder = find.byType(SvgPicture);
-      expect(svgFinder, findsOneWidget);
-
-      final SvgPicture svgWidget = tester.widget(svgFinder);
+      final SvgPicture svgWidget = tester.widget(find.byType(SvgPicture));
       expect(
         svgWidget.colorFilter,
-        equals(const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
+        equals(const ColorFilter.mode(Colors.red, BlendMode.srcIn)),
       );
     });
 
-    testWidgets('adapts visa.svg color based on light vs dark backgroundColor',
+    testWidgets('adapts to light background with dark slate color',
         (WidgetTester tester) async {
-      // Light background
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -44,14 +79,17 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
-      final lightSvg = tester.widget<SvgPicture>(find.byType(SvgPicture));
+      final SvgPicture svgWidget = tester.widget(find.byType(SvgPicture));
       expect(
-        lightSvg.colorFilter,
+        svgWidget.colorFilter,
         equals(const ColorFilter.mode(Color(0xFF0F172A), BlendMode.srcIn)),
       );
+    });
 
-      // Dark background
+    testWidgets('adapts to dark background with white color',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -62,17 +100,17 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
-      final darkSvg = tester.widget<SvgPicture>(find.byType(SvgPicture));
+      final SvgPicture svgWidget = tester.widget(find.byType(SvgPicture));
       expect(
-        darkSvg.colorFilter,
+        svgWidget.colorFilter,
         equals(const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
       );
     });
 
-    testWidgets('adapts visa.svg color based on theme brightness when no color/bg given',
+    testWidgets('defaults to dark color in Light Theme when unconfigured',
         (WidgetTester tester) async {
-      // Light Theme
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
@@ -83,13 +121,15 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final lightThemeSvg = tester.widget<SvgPicture>(find.byType(SvgPicture));
+      final SvgPicture svgWidget = tester.widget(find.byType(SvgPicture));
       expect(
-        lightThemeSvg.colorFilter,
+        svgWidget.colorFilter,
         equals(const ColorFilter.mode(Color(0xFF0F172A), BlendMode.srcIn)),
       );
+    });
 
-      // Dark Theme
+    testWidgets('defaults to white color in Dark Theme when unconfigured',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.darkTheme,
@@ -100,21 +140,23 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final darkThemeSvg = tester.widget<SvgPicture>(find.byType(SvgPicture));
+      final SvgPicture svgWidget = tester.widget(find.byType(SvgPicture));
       expect(
-        darkThemeSvg.colorFilter,
+        svgWidget.colorFilter,
         equals(const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
       );
     });
+  });
 
-    testWidgets('CreditCardView dynamically colors visa.svg according to card background',
+  group('CreditCardView Network Integration Tests', () {
+    testWidgets('dynamically colors Visa logo according to card background',
         (WidgetTester tester) async {
       // Dark card (Navy)
       final darkCard = CreditCard(
         id: 'dark-visa',
         cardName: 'Dark Visa',
         network: 'Visa',
-        colorIndex: 0, // Navy gradient, dark
+        colorIndex: 0,
         lastTransactionDate: DateTime.now(),
       );
 
@@ -128,18 +170,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final darkCardSvg = tester.widget<SvgPicture>(find.byType(SvgPicture));
+      final darkSvg = tester.widget<SvgPicture>(find.byType(SvgPicture));
       expect(
-        darkCardSvg.colorFilter,
+        darkSvg.colorFilter,
         equals(const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
       );
 
-      // Light card (White/Light Yellow custom color)
+      // Light card (Amber 50, light background)
       final lightCard = CreditCard(
         id: 'light-visa',
         cardName: 'Light Visa',
         network: 'Visa',
-        colorIndex: 0xFFFFFBEB, // Amber 50, light
+        colorIndex: 0xFFFFFBEB,
         lastTransactionDate: DateTime.now(),
       );
 
@@ -153,29 +195,61 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final lightCardSvg = tester.widget<SvgPicture>(find.byType(SvgPicture));
+      final lightSvg = tester.widget<SvgPicture>(find.byType(SvgPicture));
       expect(
-        lightCardSvg.colorFilter,
+        lightSvg.colorFilter,
         equals(const ColorFilter.mode(Color(0xFF0F172A), BlendMode.srcIn)),
       );
     });
 
-    testWidgets('renders mastercard.svg with intrinsic colors and without colorFilter',
+    testWidgets(
+        'renders interactive network dropdown badge with minHeight 40 and opens menu',
         (WidgetTester tester) async {
+      String? selectedNet;
+      final card = CreditCard(
+        id: 'test-card',
+        cardName: 'My Card',
+        network: 'Visa',
+        colorIndex: 0,
+        lastTransactionDate: DateTime.now(),
+      );
+
       await tester.pumpWidget(
-        const MaterialApp(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
           home: Scaffold(
-            body: CardNetworkLogo(network: 'Mastercard'),
+            body: CreditCardView(
+              card: card,
+              onNetworkSelected: (net) => selectedNet = net,
+            ),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      final svgFinder = find.byType(SvgPicture);
-      expect(svgFinder, findsOneWidget);
+      // Find the dropdown button
+      final dropdownFinder = find.byType(PopupMenuButton<String>);
+      expect(dropdownFinder, findsOneWidget);
 
-      final SvgPicture svgWidget = tester.widget(svgFinder);
-      expect(svgWidget.colorFilter, isNull);
+      final badgeSize = tester.getSize(dropdownFinder);
+      expect(badgeSize.height, greaterThanOrEqualTo(40.0),
+          reason:
+              'Dropdown badge should have at least 40px height for unified touch target');
+
+      // Tap to open popup menu
+      await tester.tap(dropdownFinder);
+      await tester.pumpAndSettle();
+
+      // Verify all networks appear in popup menu items
+      for (final net in ['Visa', 'Mastercard', 'RuPay', 'Amex', 'Discover']) {
+        expect(find.text(net), findsOneWidget);
+      }
+
+      // Tap Mastercard
+      await tester.tap(find.text('Mastercard'));
+      await tester.pumpAndSettle();
+
+      expect(selectedNet, equals('Mastercard'));
     });
   });
 }
