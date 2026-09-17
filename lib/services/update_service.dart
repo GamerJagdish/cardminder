@@ -58,7 +58,7 @@ class UpdateService {
     try {
       final dir = await getExternalStorageDirectory();
       if (dir == null) return;
-      final list = dir.listSync();
+      final list = await dir.list().toList();
       for (final item in list) {
         if (item is File && item.path.endsWith('.apk')) {
           final name = item.uri.pathSegments.last;
@@ -81,7 +81,7 @@ class UpdateService {
     try {
       final dir = await getExternalStorageDirectory();
       if (dir == null) return;
-      final list = dir.listSync();
+      final list = await dir.list().toList();
       for (final item in list) {
         if (item is File &&
             (item.path.endsWith('.apk') || item.path.endsWith('.download'))) {
