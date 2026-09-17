@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
 import 'services/notification_log_service.dart';
-import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 import 'theme/app_theme.dart';
 
@@ -21,13 +20,10 @@ void main() async {
   );
 
   await StorageService.init();
-  await SettingsNotifier.init();
-  await NotificationLogService.init();
-  try {
-    await NotificationService.init();
-  } catch (e) {
-    debugPrint('NotificationService init failed: $e');
-  }
+  await Future.wait([
+    SettingsNotifier.init(),
+    NotificationLogService.init(),
+  ]);
 
   runApp(
     const ProviderScope(
