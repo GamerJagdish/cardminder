@@ -30,8 +30,8 @@ class CardNetworkLogo extends StatelessWidget {
 
     switch (netLower) {
       case 'mastercard':
-        return Image.asset(
-          'assets/logos/mastercard.png',
+        return SvgPicture.asset(
+          'assets/logos/mastercard.svg',
           height: height ?? 32,
           width: width,
           fit: BoxFit.contain,

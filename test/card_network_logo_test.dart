@@ -159,5 +159,23 @@ void main() {
         equals(const ColorFilter.mode(Color(0xFF0F172A), BlendMode.srcIn)),
       );
     });
+
+    testWidgets('renders mastercard.svg with intrinsic colors and without colorFilter',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CardNetworkLogo(network: 'Mastercard'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final svgFinder = find.byType(SvgPicture);
+      expect(svgFinder, findsOneWidget);
+
+      final SvgPicture svgWidget = tester.widget(svgFinder);
+      expect(svgWidget.colorFilter, isNull);
+    });
   });
 }
