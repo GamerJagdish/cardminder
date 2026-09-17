@@ -342,7 +342,12 @@ class _CreditCardViewState extends State<CreditCardView>
                                         height: 26,
                                         child: Center(
                                             child:
-                                                CardNetworkLogo(network: net)),
+                                                CardNetworkLogo(
+                                                  network: net,
+                                                  color: isSelected
+                                                      ? selectedColor
+                                                      : itemTextColor,
+                                                )),
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
@@ -396,7 +401,8 @@ class _CreditCardViewState extends State<CreditCardView>
                                     child: KeyedSubtree(
                                       key: ValueKey('net-${card.network}'),
                                       child: CardNetworkLogo(
-                                          network: card.network),
+                                          network: card.network,
+                                          color: textColor),
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -424,7 +430,9 @@ class _CreditCardViewState extends State<CreditCardView>
                             child: KeyedSubtree(
                               key: ValueKey('net-${card.network}'),
                               child:
-                                  CardNetworkLogo(network: card.network),
+                                  CardNetworkLogo(
+                                      network: card.network,
+                                      color: textColor),
                             ),
                           ),
                       ],
