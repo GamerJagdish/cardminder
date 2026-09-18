@@ -34,7 +34,7 @@ class CardNetworkLogo extends StatelessWidget {
 
     switch (netLower) {
       case 'mastercard':
-        final mcHeight = height != null ? height! * 1.18 : 41.0;
+        final mcHeight = height ?? 38.0;
         return SvgPicture.asset(
           'assets/logos/mastercard.svg',
           height: mcHeight,
@@ -53,9 +53,10 @@ class CardNetworkLogo extends StatelessWidget {
         );
       case 'amex':
       case 'american express':
+        final amexHeight = height ?? 38.0;
         return SvgPicture.asset(
           'assets/logos/amex.svg',
-          height: defaultHeight,
+          height: amexHeight,
           width: width,
           fit: BoxFit.contain,
         );

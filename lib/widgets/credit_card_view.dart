@@ -278,7 +278,8 @@ class _CreditCardViewState extends State<CreditCardView>
 
               // Card Content Padding
               Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0, vertical: 22.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -379,7 +380,7 @@ class _CreditCardViewState extends State<CreditCardView>
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
+                                  horizontal: 8, vertical: 2),
                               constraints: const BoxConstraints(
                                 minHeight: 40,
                               ),
