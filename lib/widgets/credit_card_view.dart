@@ -342,13 +342,17 @@ class _CreditCardViewState extends State<CreditCardView>
                                          height: 28,
                                          child: Center(
                                              child:
-                                                 CardNetworkLogo(
-                                                   network: net,
-                                                   height: 24,
-                                                   color: isSelected
-                                                       ? selectedColor
-                                                       : itemTextColor,
-                                                 )),
+                                                  CardNetworkLogo(
+                                                    network: net,
+                                                    height: 24,
+                                                    color: isSelected
+                                                        ? selectedColor
+                                                        : itemTextColor,
+                                                    backgroundColor:
+                                                        Theme.of(context)
+                                                            .cardTheme
+                                                            .color,
+                                                  )),
                                        ),
                                       const SizedBox(width: 12),
                                       Text(
@@ -406,7 +410,8 @@ class _CreditCardViewState extends State<CreditCardView>
                                       key: ValueKey('net-${card.network}'),
                                       child: CardNetworkLogo(
                                           network: card.network,
-                                          color: textColor),
+                                          color: textColor,
+                                          backgroundColor: colors.first),
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -436,7 +441,8 @@ class _CreditCardViewState extends State<CreditCardView>
                               child:
                                   CardNetworkLogo(
                                       network: card.network,
-                                      color: textColor),
+                                      color: textColor,
+                                      backgroundColor: colors.first),
                             ),
                           ),
                       ],

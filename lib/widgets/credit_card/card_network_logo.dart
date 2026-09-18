@@ -21,14 +21,16 @@ class CardNetworkLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     final netLower = network.toLowerCase();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final effectiveColor = color ??
-        (backgroundColor != null
-            ? (backgroundColor!.computeLuminance() > 0.45
-                ? const Color(0xFF0F172A)
-                : Colors.white)
-            : (isDark ? Colors.white : const Color(0xFF0F172A)));
+    final isLightBg = backgroundColor != null
+        ? backgroundColor!.computeLuminance() > 0.45
+        : (color != null
+            ? color!.computeLuminance() < 0.5
+            : !isDark);
 
-    final defaultHeight = height ?? 36;
+    final effectiveColor = color ??
+        (isLightBg ? const Color(0xFF0F172A) : Colors.white);
+
+    final defaultHeight = height ?? 34.0;
 
     switch (netLower) {
       case 'mastercard':
@@ -39,19 +41,14 @@ class CardNetworkLogo extends StatelessWidget {
           fit: BoxFit.contain,
         );
       case 'rupay':
-        final imgHeight = defaultHeight > 8 ? defaultHeight - 8 : defaultHeight;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Image.asset(
-            'assets/logos/rupay.png',
-            height: imgHeight,
-            width: width,
-            fit: BoxFit.contain,
-          ),
+        final assetPath = isLightBg
+            ? 'assets/logos/Rupay-Blue.png'
+            : 'assets/logos/RuPay-White.png';
+        return Image.asset(
+          assetPath,
+          height: defaultHeight,
+          width: width,
+          fit: BoxFit.contain,
         );
       case 'amex':
       case 'american express':

@@ -148,6 +148,81 @@ void main() {
     });
   });
 
+  group('RuPay Dynamic Brand Logo Switching Tests', () {
+    testWidgets('adapts to light background with Rupay-Blue.png',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CardNetworkLogo(
+              network: 'RuPay',
+              backgroundColor: Colors.white,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final imageFinder = find.byType(Image);
+      expect(imageFinder, findsOneWidget);
+      final Image imageWidget = tester.widget(imageFinder);
+      expect((imageWidget.image as AssetImage).assetName,
+          equals('assets/logos/Rupay-Blue.png'));
+    });
+
+    testWidgets('adapts to dark background with RuPay-White.png',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CardNetworkLogo(
+              network: 'RuPay',
+              backgroundColor: Colors.black,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final imageFinder = find.byType(Image);
+      expect(imageFinder, findsOneWidget);
+      final Image imageWidget = tester.widget(imageFinder);
+      expect((imageWidget.image as AssetImage).assetName,
+          equals('assets/logos/RuPay-White.png'));
+    });
+
+    testWidgets('defaults to blue logo in Light Theme and white logo in Dark Theme',
+        (WidgetTester tester) async {
+      // Light theme
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const Scaffold(
+            body: CardNetworkLogo(network: 'RuPay'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      Image imageWidget = tester.widget(find.byType(Image));
+      expect((imageWidget.image as AssetImage).assetName,
+          equals('assets/logos/Rupay-Blue.png'));
+
+      // Dark theme
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const Scaffold(
+            body: CardNetworkLogo(network: 'RuPay'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      imageWidget = tester.widget(find.byType(Image));
+      expect((imageWidget.image as AssetImage).assetName,
+          equals('assets/logos/RuPay-White.png'));
+    });
+  });
+
   group('CreditCardView Network Integration Tests', () {
     testWidgets('dynamically colors Visa logo according to card background',
         (WidgetTester tester) async {
@@ -199,6 +274,59 @@ void main() {
       expect(
         lightSvg.colorFilter,
         equals(const ColorFilter.mode(Color(0xFF0F172A), BlendMode.srcIn)),
+      );
+    });
+
+    testWidgets('dynamically switches RuPay logo according to card background',
+        (WidgetTester tester) async {
+      // Dark card (Navy)
+      final darkCard = CreditCard(
+        id: 'dark-rupay',
+        cardName: 'Dark RuPay',
+        network: 'RuPay',
+        colorIndex: 0,
+        lastTransactionDate: DateTime.now(),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Scaffold(
+            body: CreditCardView(card: darkCard),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final darkImage = tester.widget<Image>(find.byType(Image));
+      expect(
+        (darkImage.image as AssetImage).assetName,
+        equals('assets/logos/RuPay-White.png'),
+      );
+
+      // Light card (Amber 50, light background)
+      final lightCard = CreditCard(
+        id: 'light-rupay',
+        cardName: 'Light RuPay',
+        network: 'RuPay',
+        colorIndex: 0xFFFFFBEB,
+        lastTransactionDate: DateTime.now(),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: CreditCardView(card: lightCard),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final lightImage = tester.widget<Image>(find.byType(Image));
+      expect(
+        (lightImage.image as AssetImage).assetName,
+        equals('assets/logos/Rupay-Blue.png'),
       );
     });
 
