@@ -61,19 +61,12 @@ class CardNetworkLogo extends StatelessWidget {
           fit: BoxFit.contain,
         );
       case 'discover':
-        final imgHeight = defaultHeight > 8 ? defaultHeight - 8 : defaultHeight;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Image.asset(
-            'assets/logos/discover.png',
-            height: imgHeight,
-            width: width,
-            fit: BoxFit.contain,
-          ),
+        final discoverHeight = height ?? 38.0;
+        return Image.asset(
+          'assets/logos/discover.png',
+          height: discoverHeight,
+          width: width,
+          fit: BoxFit.contain,
         );
       case 'visa':
       default:
