@@ -34,9 +34,10 @@ class CardNetworkLogo extends StatelessWidget {
 
     switch (netLower) {
       case 'mastercard':
+        final mcHeight = height != null ? height! * 1.18 : 41.0;
         return SvgPicture.asset(
           'assets/logos/mastercard.svg',
-          height: defaultHeight,
+          height: mcHeight,
           width: width,
           fit: BoxFit.contain,
         );
