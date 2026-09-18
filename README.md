@@ -6,11 +6,11 @@ Most banks quietly deactivate a card if you don't use it for 365 days. I kept fo
 
 ## What it does
 
+- Everything is stored locally on your phone, nothing is sent anywhere
 - Tracks the last transaction date for each card and counts down to the 365 day deactivation deadline
-- Home screen widget that shows up to 5 cards at once with live countdowns
+- Home screen widget that shows all cards at once with day counter
 - Notifies you 30, 14, 7, and 1 day before a card is about to go inactive
 - Keeps a log of past notifications so you can see what you missed
-- Everything is stored locally on your phone, nothing is sent anywhere
 
 ## How it works
 
