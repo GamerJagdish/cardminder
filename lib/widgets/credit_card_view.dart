@@ -6,10 +6,12 @@ import '../theme/app_theme.dart';
 import 'credit_card/card_network_logo.dart';
 import 'credit_card/contactless_waves_widget.dart';
 import 'credit_card/emv_chip_widget.dart';
+import 'credit_card/flip_3d.dart';
 
 export 'credit_card/card_network_logo.dart';
 export 'credit_card/contactless_waves_widget.dart';
 export 'credit_card/emv_chip_widget.dart';
+export 'credit_card/flip_3d.dart';
 
 class CreditCardView extends StatefulWidget {
   final CreditCard card;
@@ -294,21 +296,19 @@ class _CreditCardViewState extends State<CreditCardView>
                     Row(
                       children: [
                         Expanded(
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 200),
-                            child: Align(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Flip3DText(
+                              text: displayName,
+                              axis: FlipAxis.vertical,
                               alignment: Alignment.centerLeft,
-                              child: Text(
-                                displayName,
-                                key: ValueKey('name-$displayName'),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.2,
-                                ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.2,
                               ),
                             ),
                           ),
@@ -357,32 +357,14 @@ class _CreditCardViewState extends State<CreditCardView>
                                   letterSpacing: 1.5,
                                 ),
                               ),
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 250),
-                                transitionBuilder: (child, animation) {
-                                  return SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(0.0, 0.4),
-                                      end: Offset.zero,
-                                    ).animate(CurvedAnimation(
-                                      parent: animation,
-                                      curve: Curves.easeOutCubic,
-                                    )),
-                                    child: FadeTransition(
-                                      opacity: animation,
-                                      child: child,
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  digits,
-                                  key: ValueKey('digits-$digits'),
-                                  style: TextStyle(
-                                    color: textColor,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.2,
-                                  ),
+                              Flip3DText(
+                                text: digits,
+                                axis: FlipAxis.vertical,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
                                 ),
                               ),
                               if (onDigitsTap != null) ...[
@@ -414,16 +396,13 @@ class _CreditCardViewState extends State<CreditCardView>
                               ),
                             ),
                             const SizedBox(height: 2),
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 200),
-                              child: Text(
-                                card.expiryDateString,
-                                key: ValueKey('exp-${card.expiryDateString}'),
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            Flip3DText(
+                              text: card.expiryDateString,
+                              axis: FlipAxis.vertical,
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
@@ -431,27 +410,28 @@ class _CreditCardViewState extends State<CreditCardView>
 
                         GestureDetector(
                           onTap: onCardTypeTap,
-                          child: Container(
-                            padding: onCardTypeTap != null
-                                ? const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4)
-                                : EdgeInsets.zero,
-                            decoration: onCardTypeTap != null
-                                ? BoxDecoration(
-                                    color: badgeBg,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                        color: badgeBorder, width: 0.8),
-                                  )
-                                : null,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 200),
-                                  child: Text(
-                                    card.cardType.toUpperCase(),
-                                    key: ValueKey('type-${card.cardType}'),
+                          child: AnimatedSize(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeInOutCubic,
+                            child: Container(
+                              padding: onCardTypeTap != null
+                                  ? const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4)
+                                  : EdgeInsets.zero,
+                              decoration: onCardTypeTap != null
+                                  ? BoxDecoration(
+                                      color: badgeBg,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                          color: badgeBorder, width: 0.8),
+                                    )
+                                  : null,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flip3DText(
+                                    text: card.cardType.toUpperCase(),
+                                    axis: FlipAxis.horizontal,
                                     style: TextStyle(
                                       color: textColor,
                                       fontSize: 11,
@@ -459,13 +439,13 @@ class _CreditCardViewState extends State<CreditCardView>
                                       letterSpacing: 0.5,
                                     ),
                                   ),
-                                ),
-                                if (onCardTypeTap != null) ...[
-                                  const SizedBox(width: 4),
-                                  Icon(Icons.sync_alt_rounded,
-                                      color: textMuted, size: 12),
+                                  if (onCardTypeTap != null) ...[
+                                    const SizedBox(width: 4),
+                                    Icon(Icons.sync_alt_rounded,
+                                        color: textMuted, size: 12),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ),
                         ),
@@ -549,7 +529,7 @@ class _CreditCardViewState extends State<CreditCardView>
                           }).toList();
                         },
                         child: AnimatedSize(
-                          duration: const Duration(milliseconds: 260),
+                          duration: const Duration(milliseconds: 200),
                           curve: Curves.easeInOutCubic,
                           alignment: Alignment.centerRight,
                           child: Container(
