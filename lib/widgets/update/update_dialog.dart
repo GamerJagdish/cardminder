@@ -590,7 +590,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                 Text(
                   'Install Update',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 19,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.2,
                   ),
