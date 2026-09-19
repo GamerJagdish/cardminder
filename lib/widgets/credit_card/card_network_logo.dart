@@ -31,11 +31,9 @@ class CardNetworkLogo extends StatelessWidget {
     final effectiveColor = color ??
         (isLightBg ? AppTheme.primaryNavy : AppTheme.surfaceWhite);
 
-    final defaultHeight = height ?? 34.0;
-
     switch (netLower) {
       case 'mastercard':
-        final mcHeight = height ?? 38.0;
+        final mcHeight = height ?? 34.0;
         return SvgPicture.asset(
           'assets/logos/mastercard.svg',
           height: mcHeight,
@@ -46,15 +44,16 @@ class CardNetworkLogo extends StatelessWidget {
         final assetPath = isLightBg
             ? 'assets/logos/Rupay-Blue.png'
             : 'assets/logos/RuPay-White.png';
+        final rupayHeight = height ?? 24.0;
         return Image.asset(
           assetPath,
-          height: defaultHeight,
+          height: rupayHeight,
           width: width,
           fit: BoxFit.contain,
         );
       case 'amex':
       case 'american express':
-        final amexHeight = height ?? 38.0;
+        final amexHeight = height ?? 40.0;
         return SvgPicture.asset(
           'assets/logos/amex.svg',
           height: amexHeight,
@@ -62,7 +61,7 @@ class CardNetworkLogo extends StatelessWidget {
           fit: BoxFit.contain,
         );
       case 'discover':
-        final discoverHeight = height ?? 38.0;
+        final discoverHeight = height ?? 36.0;
         return Image.asset(
           'assets/logos/discover.png',
           height: discoverHeight,
@@ -71,9 +70,10 @@ class CardNetworkLogo extends StatelessWidget {
         );
       case 'visa':
       default:
+        final visaHeight = height ?? 28.0;
         return SvgPicture.asset(
           'assets/logos/visa.svg',
-          height: defaultHeight,
+          height: visaHeight,
           width: width,
           fit: BoxFit.contain,
           colorFilter: ColorFilter.mode(

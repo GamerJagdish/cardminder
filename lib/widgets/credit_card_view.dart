@@ -290,9 +290,8 @@ class _CreditCardViewState extends State<CreditCardView>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Top Row: Card Nickname & Network Logo
+                    // Top Row: Card Nickname (Decoupled from Network Logo)
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: AnimatedSwitcher(
@@ -314,145 +313,7 @@ class _CreditCardViewState extends State<CreditCardView>
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        if (onNetworkSelected != null)
-                          PopupMenuButton<String>(
-                            onSelected: onNetworkSelected,
-                            offset: const Offset(0, 36),
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            color: Theme.of(context).cardTheme.color,
-                            surfaceTintColor: Colors.transparent,
-                            tooltip: 'Select Network',
-                            itemBuilder: (context) {
-                              final selectedColor =
-                                  context.colors.buttonPrimaryBg;
-                              final itemTextColor =
-                                  Theme.of(context).colorScheme.onSurface;
-
-                              return [
-                                'Visa',
-                                'Mastercard',
-                                'RuPay',
-                                'Amex',
-                                'Discover',
-                              ].map((net) {
-                                final isSelected = card.network.toLowerCase() ==
-                                    net.toLowerCase();
-                                return PopupMenuItem<String>(
-                                  value: net,
-                                  child: Row(
-                                    children: [
-                                       SizedBox(
-                                         width: 52,
-                                         height: 28,
-                                         child: Center(
-                                             child:
-                                                  CardNetworkLogo(
-                                                    network: net,
-                                                    height: 24,
-                                                    color: isSelected
-                                                        ? selectedColor
-                                                        : itemTextColor,
-                                                    backgroundColor:
-                                                        Theme.of(context)
-                                                            .cardTheme
-                                                            .color,
-                                                  )),
-                                       ),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        net,
-                                        style: TextStyle(
-                                          fontWeight: isSelected
-                                              ? FontWeight.bold
-                                              : FontWeight.w500,
-                                          color: isSelected
-                                              ? selectedColor
-                                              : itemTextColor,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      if (isSelected) ...[
-                                        const Spacer(),
-                                        Icon(Icons.check_rounded,
-                                            size: 18, color: selectedColor),
-                                      ],
-                                    ],
-                                  ),
-                                );
-                              }).toList();
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 2),
-                              constraints: const BoxConstraints(
-                                minHeight: 40,
-                              ),
-                              decoration: BoxDecoration(
-                                color: badgeBg,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                    color: badgeBorder, width: 0.8),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 250),
-                                    transitionBuilder: (child, animation) {
-                                      return ScaleTransition(
-                                        scale: CurvedAnimation(
-                                          parent: animation,
-                                          curve: Curves.easeOutBack,
-                                        ),
-                                        child: FadeTransition(
-                                          opacity: animation,
-                                          child: child,
-                                        ),
-                                      );
-                                    },
-                                    child: KeyedSubtree(
-                                      key: ValueKey('net-${card.network}'),
-                                      child: CardNetworkLogo(
-                                          network: card.network,
-                                          color: textColor,
-                                          backgroundColor: colors.first),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Icon(Icons.arrow_drop_down_rounded,
-                                      color: iconColor, size: 20),
-                                ],
-                              ),
-                            ),
-                          )
-                        else
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 250),
-                            transitionBuilder: (child, animation) {
-                              return ScaleTransition(
-                                scale: CurvedAnimation(
-                                  parent: animation,
-                                  curve: Curves.easeOutBack,
-                                ),
-                                child: FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                ),
-                              );
-                            },
-                            child: KeyedSubtree(
-                              key: ValueKey('net-${card.network}'),
-                              child:
-                                  CardNetworkLogo(
-                                      network: card.network,
-                                      color: textColor,
-                                      backgroundColor: colors.first),
-                            ),
-                          ),
+                        SizedBox(width: onNetworkSelected != null ? 105 : 85),
                       ],
                     ),
 
@@ -612,6 +473,147 @@ class _CreditCardViewState extends State<CreditCardView>
                     ),
                   ],
                 ),
+              ),
+              // Top-Right Card Network Logo Overlay (Decoupled from Column layout)
+              Positioned(
+                top: 16,
+                right: 20,
+                child: onNetworkSelected != null
+                    ? PopupMenuButton<String>(
+                        onSelected: onNetworkSelected,
+                        offset: const Offset(0, 36),
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        color: Theme.of(context).cardTheme.color,
+                        surfaceTintColor: Colors.transparent,
+                        tooltip: 'Select Network',
+                        itemBuilder: (context) {
+                          final selectedColor =
+                              context.colors.buttonPrimaryBg;
+                          final itemTextColor =
+                              Theme.of(context).colorScheme.onSurface;
+
+                          return [
+                            'Visa',
+                            'Mastercard',
+                            'RuPay',
+                            'Amex',
+                            'Discover',
+                          ].map((net) {
+                            final isSelected = card.network.toLowerCase() ==
+                                net.toLowerCase();
+                            return PopupMenuItem<String>(
+                              value: net,
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 52,
+                                    height: 28,
+                                    child: Center(
+                                      child: CardNetworkLogo(
+                                        network: net,
+                                        height: 24,
+                                        color: isSelected
+                                            ? selectedColor
+                                            : itemTextColor,
+                                        backgroundColor:
+                                            Theme.of(context)
+                                                .cardTheme
+                                                .color,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    net,
+                                    style: TextStyle(
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                      color: isSelected
+                                          ? selectedColor
+                                          : itemTextColor,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  if (isSelected) ...[
+                                    const Spacer(),
+                                    Icon(Icons.check_rounded,
+                                        size: 18, color: selectedColor),
+                                  ],
+                                ],
+                              ),
+                            );
+                          }).toList();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          constraints: const BoxConstraints(
+                            minHeight: 40,
+                          ),
+                          decoration: BoxDecoration(
+                            color: badgeBg,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: badgeBorder, width: 0.8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 250),
+                                transitionBuilder: (child, animation) {
+                                  return ScaleTransition(
+                                    scale: CurvedAnimation(
+                                      parent: animation,
+                                      curve: Curves.easeOutBack,
+                                    ),
+                                    child: FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                                child: KeyedSubtree(
+                                  key: ValueKey('net-${card.network}'),
+                                  child: CardNetworkLogo(
+                                      network: card.network,
+                                      color: textColor,
+                                      backgroundColor: colors.first),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(Icons.arrow_drop_down_rounded,
+                                  color: iconColor, size: 20),
+                            ],
+                          ),
+                        ),
+                      )
+                    : AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        transitionBuilder: (child, animation) {
+                          return ScaleTransition(
+                            scale: CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutBack,
+                            ),
+                            child: FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: KeyedSubtree(
+                          key: ValueKey('net-${card.network}'),
+                          child: CardNetworkLogo(
+                              network: card.network,
+                              color: textColor,
+                              backgroundColor: colors.first),
+                        ),
+                      ),
               ),
               // Dynamic Holographic Light Sheen Overlay
               Positioned.fill(
