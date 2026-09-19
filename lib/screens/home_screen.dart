@@ -420,7 +420,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                      final activeDotColor =
                                          context.colors.buttonPrimaryBg;
                                      final inactiveDotColor =
-                                         context.colors.borderSubtle;
+                                         context.colors.border;
 
                                     return AnimatedContainer(
                                       duration:

@@ -476,7 +476,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                             : (isCustomDot
                                                 ? primaryColor.withValues(
                                                     alpha: 0.4)
-                                                : context.colors.borderSubtle),
+                                                : context.colors.border),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                     ),

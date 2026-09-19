@@ -421,7 +421,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
             color: context.colors.containerBorder,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: context.colors.borderSubtle,
+              color: context.colors.border,
               width: 1,
             ),
           ),

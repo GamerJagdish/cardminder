@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 class AppColors extends ThemeExtension<AppColors> {
   // --- Surfaces & Wells ---
   final Color surfaceSubtle;
-  final Color surfaceSubtleSecondary;
   final Color surfaceCard;
   final Color inputFill;
   final Color containerBorder;
@@ -17,7 +16,6 @@ class AppColors extends ThemeExtension<AppColors> {
 
   // --- Borders ---
   final Color border;
-  final Color borderSubtle;
 
   // --- Text & Icons ---
   final Color textPrimary;
@@ -29,7 +27,6 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color buttonPrimaryFg;
   final Color buttonGhostBg;
   final Color buttonGhostFg;
-  final Color buttonMutedFg;
   final Color circleButtonBg;
   final Color editActionBg;
   final Color destructive;
@@ -55,14 +52,12 @@ class AppColors extends ThemeExtension<AppColors> {
 
   const AppColors({
     required this.surfaceSubtle,
-    required this.surfaceSubtleSecondary,
     required this.surfaceCard,
     required this.inputFill,
     required this.containerBorder,
     required this.cardShadow,
     required this.handleBar,
     required this.border,
-    required this.borderSubtle,
     required this.textPrimary,
     required this.textMuted,
     required this.textSubtle,
@@ -70,7 +65,6 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.buttonPrimaryFg,
     required this.buttonGhostBg,
     required this.buttonGhostFg,
-    required this.buttonMutedFg,
     required this.circleButtonBg,
     required this.editActionBg,
     required this.destructive,
@@ -94,14 +88,12 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Design tokens for Light Mode.
   static const AppColors light = AppColors(
     surfaceSubtle: Color(0xFFF1F5F9), // Slate 100
-    surfaceSubtleSecondary: Color(0xFFF8FAFC), // Slate 50
     surfaceCard: Color(0xFFFFFFFF), // Crisp white
     inputFill: Color(0xFFF8FAFC), // Slate 50
     containerBorder: Color(0xFFE2E8F0), // Slate 200
     cardShadow: Color(0x05000000), // Colors.black @ 2% alpha
     handleBar: Color(0x2E000000), // Colors.black @ 18% alpha
     border: Color(0xFFE2E8F0), // Slate 200
-    borderSubtle: Color(0xFFCBD5E1), // Slate 300
     textPrimary: Color(0xFF0F172A), // Slate 900
     textMuted: Color(0xFF94A3B8), // Slate 400
     textSubtle: Color(0xFF475569), // Slate 600
@@ -109,7 +101,6 @@ class AppColors extends ThemeExtension<AppColors> {
     buttonPrimaryFg: Colors.white,
     buttonGhostBg: Color(0x08000000), // Colors.black @ 3% alpha
     buttonGhostFg: Color(0xFF64748B), // Slate 500
-    buttonMutedFg: Color(0xFF475569), // Slate 600
     circleButtonBg: Color(0x14000000), // Colors.black @ 8% alpha
     editActionBg: Color(0xFF0F172A), // Dark navy
     destructive: Color(0xFFEF4444),
@@ -133,14 +124,12 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Design tokens for Dark Mode.
   static const AppColors dark = AppColors(
     surfaceSubtle: Color(0xFF0F172A), // Slate 900
-    surfaceSubtleSecondary: Color(0xFF1E293B), // Slate 800
     surfaceCard: Color(0xFF1E293B), // Dark slate
     inputFill: Color(0xFF0F172A), // Slate 900
     containerBorder: Color(0xFF1E293B), // Slate 800
     cardShadow: Color(0x05000000), // Colors.black @ 2% alpha
     handleBar: Color(0x2EFFFFFF), // Colors.white @ 18% alpha
     border: Color(0xFF334155), // Slate 700
-    borderSubtle: Color(0xFF334155),
     textPrimary: Color(0xFFF8FAFC), // Slate 50
     textMuted: Color(0xFF64748B), // Slate 500
     textSubtle: Color(0xFFCBD5E1), // Slate 300
@@ -148,7 +137,6 @@ class AppColors extends ThemeExtension<AppColors> {
     buttonPrimaryFg: Colors.black,
     buttonGhostBg: Color(0x0AFFFFFF), // Colors.white @ 4% alpha
     buttonGhostFg: Color(0xFF94A3B8), // Slate 400
-    buttonMutedFg: Color(0xFF94A3B8), // Slate 400
     circleButtonBg: Color(0x1FFFFFFF), // Colors.white @ 12% alpha
     editActionBg: Color(0xFF334155), // Slate 700
     destructive: Color(0xFFEF4444),
@@ -172,14 +160,12 @@ class AppColors extends ThemeExtension<AppColors> {
   @override
   AppColors copyWith({
     Color? surfaceSubtle,
-    Color? surfaceSubtleSecondary,
     Color? surfaceCard,
     Color? inputFill,
     Color? containerBorder,
     Color? cardShadow,
     Color? handleBar,
     Color? border,
-    Color? borderSubtle,
     Color? textPrimary,
     Color? textMuted,
     Color? textSubtle,
@@ -187,7 +173,6 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? buttonPrimaryFg,
     Color? buttonGhostBg,
     Color? buttonGhostFg,
-    Color? buttonMutedFg,
     Color? circleButtonBg,
     Color? editActionBg,
     Color? destructive,
@@ -209,15 +194,12 @@ class AppColors extends ThemeExtension<AppColors> {
   }) {
     return AppColors(
       surfaceSubtle: surfaceSubtle ?? this.surfaceSubtle,
-      surfaceSubtleSecondary:
-          surfaceSubtleSecondary ?? this.surfaceSubtleSecondary,
       surfaceCard: surfaceCard ?? this.surfaceCard,
       inputFill: inputFill ?? this.inputFill,
       containerBorder: containerBorder ?? this.containerBorder,
       cardShadow: cardShadow ?? this.cardShadow,
       handleBar: handleBar ?? this.handleBar,
       border: border ?? this.border,
-      borderSubtle: borderSubtle ?? this.borderSubtle,
       textPrimary: textPrimary ?? this.textPrimary,
       textMuted: textMuted ?? this.textMuted,
       textSubtle: textSubtle ?? this.textSubtle,
@@ -225,7 +207,6 @@ class AppColors extends ThemeExtension<AppColors> {
       buttonPrimaryFg: buttonPrimaryFg ?? this.buttonPrimaryFg,
       buttonGhostBg: buttonGhostBg ?? this.buttonGhostBg,
       buttonGhostFg: buttonGhostFg ?? this.buttonGhostFg,
-      buttonMutedFg: buttonMutedFg ?? this.buttonMutedFg,
       circleButtonBg: circleButtonBg ?? this.circleButtonBg,
       editActionBg: editActionBg ?? this.editActionBg,
       destructive: destructive ?? this.destructive,
@@ -252,15 +233,12 @@ class AppColors extends ThemeExtension<AppColors> {
     if (other is! AppColors) return this;
     return AppColors(
       surfaceSubtle: Color.lerp(surfaceSubtle, other.surfaceSubtle, t)!,
-      surfaceSubtleSecondary: Color.lerp(
-          surfaceSubtleSecondary, other.surfaceSubtleSecondary, t)!,
       surfaceCard: Color.lerp(surfaceCard, other.surfaceCard, t)!,
       inputFill: Color.lerp(inputFill, other.inputFill, t)!,
       containerBorder: Color.lerp(containerBorder, other.containerBorder, t)!,
       cardShadow: Color.lerp(cardShadow, other.cardShadow, t)!,
       handleBar: Color.lerp(handleBar, other.handleBar, t)!,
       border: Color.lerp(border, other.border, t)!,
-      borderSubtle: Color.lerp(borderSubtle, other.borderSubtle, t)!,
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
       textMuted: Color.lerp(textMuted, other.textMuted, t)!,
       textSubtle: Color.lerp(textSubtle, other.textSubtle, t)!,
@@ -270,7 +248,6 @@ class AppColors extends ThemeExtension<AppColors> {
           Color.lerp(buttonPrimaryFg, other.buttonPrimaryFg, t)!,
       buttonGhostBg: Color.lerp(buttonGhostBg, other.buttonGhostBg, t)!,
       buttonGhostFg: Color.lerp(buttonGhostFg, other.buttonGhostFg, t)!,
-      buttonMutedFg: Color.lerp(buttonMutedFg, other.buttonMutedFg, t)!,
       circleButtonBg: Color.lerp(circleButtonBg, other.circleButtonBg, t)!,
       editActionBg: Color.lerp(editActionBg, other.editActionBg, t)!,
       destructive: Color.lerp(destructive, other.destructive, t)!,

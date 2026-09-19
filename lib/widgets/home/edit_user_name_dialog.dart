@@ -138,7 +138,7 @@ class _EditUserNameDialogState extends State<EditUserNameDialog> {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
-                          color: context.colors.borderSubtle,
+                          color: context.colors.border,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

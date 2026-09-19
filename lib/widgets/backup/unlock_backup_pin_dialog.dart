@@ -241,7 +241,7 @@ class _UnlockBackupPinDialogState extends State<UnlockBackupPinDialog> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 13),
                           side: BorderSide(
-                            color: context.colors.borderSubtle,
+                            color: context.colors.border,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),

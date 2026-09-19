@@ -263,7 +263,7 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                                               final buttonBorder =
                                                   context.colors.containerBorder;
                                               final buttonFg =
-                                                  context.colors.buttonMutedFg;
+                                                  context.colors.buttonGhostFg;
 
                                               return Padding(
                                                 padding: const EdgeInsets.only(

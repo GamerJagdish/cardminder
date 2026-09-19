@@ -28,7 +28,7 @@ class HomeEmptyState extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: context.colors.surfaceSubtleSecondary,
+                color: context.colors.surfaceSubtle,
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -98,7 +98,7 @@ class HomeEmptyState extends ConsumerWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: context.colors.surfaceSubtleSecondary,
+                backgroundColor: context.colors.surfaceSubtle,
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
                 elevation: 0,
                 minimumSize: const Size(200, 48),
