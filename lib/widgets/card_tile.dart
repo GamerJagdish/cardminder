@@ -140,7 +140,7 @@ class _CardTileBody extends StatelessWidget {
     // Compute contrast text color for thumbnail badge if needed
     final isThumbnailLight = cardColors.first.computeLuminance() > 0.45;
     final thumbnailTextColor =
-        isThumbnailLight ? AppTheme.textDark : AppTheme.surfaceWhite;
+        isThumbnailLight ? AppTheme.primaryNavy : AppTheme.surfaceWhite;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

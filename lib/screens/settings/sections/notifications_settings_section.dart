@@ -118,7 +118,7 @@ class NotificationsSettingsSection extends StatelessWidget {
                         thumbColor: WidgetStateProperty.resolveWith((states) {
                           if (states.contains(WidgetState.selected)) {
                             return isDark
-                                ? AppTheme.textDark
+                                ? AppTheme.primaryNavy
                                 : AppTheme.surfaceWhite;
                           }
                           return isDark

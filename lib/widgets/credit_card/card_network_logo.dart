@@ -29,7 +29,7 @@ class CardNetworkLogo extends StatelessWidget {
             : !isDark);
 
     final effectiveColor = color ??
-        (isLightBg ? AppTheme.textDark : AppTheme.surfaceWhite);
+        (isLightBg ? AppTheme.primaryNavy : AppTheme.surfaceWhite);
 
     final defaultHeight = height ?? 34.0;
 

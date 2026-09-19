@@ -464,7 +464,7 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                   isLandscape ? 10 : 16,
                 ),
                 decoration: BoxDecoration(
-                  color: context.colors.dialogBg,
+                  color: context.colors.surfaceCard,
                 ),
                 child: SizedBox(
                   width: double.infinity,

@@ -207,7 +207,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                                                 horizontal: 10, vertical: 5),
                                             decoration: BoxDecoration(
                                               color:
-                                                  context.colors.containerFill,
+                                                  context.colors.containerBorder,
                                               borderRadius: BorderRadius.circular(20),
                                             ),
                                             child: Row(
@@ -239,7 +239,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                                                 horizontal: 10, vertical: 5),
                                             decoration: BoxDecoration(
                                               color:
-                                                  context.colors.containerFill,
+                                                  context.colors.containerBorder,
                                               borderRadius: BorderRadius.circular(20),
                                             ),
                                             child: Row(
@@ -418,7 +418,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
           height: 50,
           width: constraints.maxWidth,
           decoration: BoxDecoration(
-            color: context.colors.containerFill,
+            color: context.colors.containerBorder,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: context.colors.borderSubtle,

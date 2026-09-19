@@ -63,7 +63,7 @@ Future<bool?> showDeleteConfirmationDialog({
                 child: TextButton(
                   onPressed: () => Navigator.pop(dialogCtx, false),
                   style: TextButton.styleFrom(
-                    backgroundColor: dialogCtx.colors.buttonSecondaryBg,
+                    backgroundColor: dialogCtx.colors.surfaceSubtle,
                     foregroundColor: Theme.of(context).colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

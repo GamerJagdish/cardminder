@@ -180,23 +180,23 @@ class _CreditCardViewState extends State<CreditCardView>
 
     // Dynamic contrast coloring based on background luminance
     final isLightBg = colors.first.computeLuminance() > 0.45;
-    final textColor = isLightBg ? AppTheme.textDark : AppTheme.surfaceWhite;
+    final textColor = isLightBg ? AppTheme.primaryNavy : AppTheme.surfaceWhite;
     final textMuted = isLightBg
         ? AppTheme.slate700
-        : AppTheme.pureWhite.withValues(alpha: 0.70);
+        : AppTheme.surfaceWhite.withValues(alpha: 0.70);
     final textSubtle = isLightBg
         ? AppTheme.slate600
-        : AppTheme.pureWhite.withValues(alpha: 0.60);
-    final iconColor = isLightBg ? AppTheme.textDark : AppTheme.surfaceWhite;
+        : AppTheme.surfaceWhite.withValues(alpha: 0.60);
+    final iconColor = isLightBg ? AppTheme.primaryNavy : AppTheme.surfaceWhite;
     final badgeBg = isLightBg
         ? AppTheme.pureBlack.withValues(alpha: 0.08)
-        : AppTheme.pureWhite.withValues(alpha: 0.18);
+        : AppTheme.surfaceWhite.withValues(alpha: 0.18);
     final badgeBorder = isLightBg
         ? AppTheme.pureBlack.withValues(alpha: 0.26)
-        : AppTheme.pureWhite.withValues(alpha: 0.38);
+        : AppTheme.surfaceWhite.withValues(alpha: 0.38);
     final ambientCircleColor = isLightBg
         ? AppTheme.pureBlack.withValues(alpha: 0.04)
-        : AppTheme.pureWhite.withValues(alpha: 0.08);
+        : AppTheme.surfaceWhite.withValues(alpha: 0.08);
 
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isUrgent = _isUrgent(card);
@@ -625,10 +625,10 @@ class _CreditCardViewState extends State<CreditCardView>
                         end: Alignment(-_currentOffset.dx * 2.5 + 0.4,
                             -_currentOffset.dy * 2.5 + 0.4),
                         colors: [
-                          AppTheme.pureWhite.withValues(alpha: 0.0),
-                          AppTheme.pureWhite.withValues(
+                          AppTheme.surfaceWhite.withValues(alpha: 0.0),
+                          AppTheme.surfaceWhite.withValues(
                               alpha: _isInteracting ? 0.24 : 0.07),
-                          AppTheme.pureWhite.withValues(alpha: 0.0),
+                          AppTheme.surfaceWhite.withValues(alpha: 0.0),
                         ],
                         stops: const [0.25, 0.5, 0.75],
                       ),

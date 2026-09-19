@@ -887,8 +887,8 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
                   center: const Alignment(-0.35, -0.40),
                   radius: 0.55,
                   colors: [
-                    AppTheme.pureWhite.withValues(alpha: 0.38),
-                    AppTheme.pureWhite.withValues(alpha: 0.0),
+                    AppTheme.surfaceWhite.withValues(alpha: 0.38),
+                    AppTheme.surfaceWhite.withValues(alpha: 0.0),
                   ],
                   stops: const [0.0, 1.0],
                 ),
@@ -950,7 +950,7 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
         color: AppTheme.pureBlack.withValues(alpha: 0.52),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: AppTheme.pureWhite.withValues(alpha: 0.12),
+          color: AppTheme.surfaceWhite.withValues(alpha: 0.12),
           width: 0.8,
         ),
       ),

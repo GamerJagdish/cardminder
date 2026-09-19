@@ -7,10 +7,8 @@ export 'app_colors.dart';
 class AppTheme {
   static const Color bgLight = Color(0xFFF8FAFC); // Clean light background
   static const Color surfaceWhite = Color(0xFFFFFFFF); // Crisp white surface
-  static const Color pureWhite = Color(0xFFFFFFFF); // Pure white
   static const Color primaryNavy = Color(0xFF0F172A); // Dark navy button / primary
   static const Color textMuted = Color(0xFF94A3B8); // Muted grey text
-  static const Color textDark = Color(0xFF0F172A); // Dark text
   static const Color pureBlack = Color(0xFF000000); // Pure black
   static const Color defaultCustomRgbCardColor = Color(0xFFE11D48); // Rose default custom RGB
 
@@ -18,7 +16,6 @@ class AppTheme {
   static const Color bgDark = Color(0xFF0B0F19); // Midnight dark background
   static const Color surfaceDark = Color(0xFF1E293B); // Dark slate card surface
   static const Color primaryAccentDark = Color(0xFFF8FAFC); // Solid light accent
-  static const Color textLight = Color(0xFFF8FAFC); // White/light text
   static const Color textMutedDark = Color(0xFF64748B); // Muted slate text in dark mode
   static const Color borderDark = Color(0xFF334155); // Border in dark mode
 
@@ -148,11 +145,11 @@ class AppTheme {
         backgroundColor: bgLight,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: textDark),
+        iconTheme: const IconThemeData(color: primaryNavy),
         titleTextStyle: GoogleFonts.plusJakartaSans(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: textDark,
+          color: primaryNavy,
         ),
       ),
       cardTheme: CardThemeData(
@@ -216,11 +213,11 @@ class AppTheme {
         backgroundColor: bgDark,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: textLight),
+        iconTheme: const IconThemeData(color: primaryAccentDark),
         titleTextStyle: GoogleFonts.plusJakartaSans(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: textLight,
+          color: primaryAccentDark,
         ),
       ),
       cardTheme: CardThemeData(

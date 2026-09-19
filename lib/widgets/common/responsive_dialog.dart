@@ -49,7 +49,7 @@ class ResponsiveDialog extends StatelessWidget {
         vertical: verticalInset,
       ),
       clipBehavior: clipContent ? Clip.antiAlias : Clip.none,
-      backgroundColor: backgroundColor ?? context.colors.dialogBg,
+      backgroundColor: backgroundColor ?? context.colors.surfaceCard,
       elevation: 8,
       surfaceTintColor: Colors.transparent,
       child: ConstrainedBox(

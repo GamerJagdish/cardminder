@@ -83,7 +83,7 @@ class _UnlockBackupPinDialogState extends State<UnlockBackupPinDialog> {
         vertical: isLandscape || mediaQuery.size.height < 500 ? 12 : 24,
       ),
       clipBehavior: Clip.antiAlias,
-      backgroundColor: context.colors.dialogBg,
+      backgroundColor: context.colors.surfaceCard,
       elevation: 8,
       child: ConstrainedBox(
         constraints: BoxConstraints(
