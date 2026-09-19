@@ -548,71 +548,42 @@ class _CreditCardViewState extends State<CreditCardView>
                             );
                           }).toList();
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          constraints: const BoxConstraints(
-                            minHeight: 40,
-                          ),
-                          decoration: BoxDecoration(
-                            color: badgeBg,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                                color: badgeBorder, width: 0.8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 250),
-                                transitionBuilder: (child, animation) {
-                                  return ScaleTransition(
-                                    scale: CurvedAnimation(
-                                      parent: animation,
-                                      curve: Curves.easeOutBack,
-                                    ),
-                                    child: FadeTransition(
-                                      opacity: animation,
-                                      child: child,
-                                    ),
-                                  );
-                                },
-                                child: KeyedSubtree(
-                                  key: ValueKey('net-${card.network}'),
-                                  child: CardNetworkLogo(
-                                      network: card.network,
-                                      color: textColor,
-                                      backgroundColor: colors.first),
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeInOutCubic,
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            constraints: const BoxConstraints(
+                              minHeight: 40,
+                            ),
+                            decoration: BoxDecoration(
+                              color: badgeBg,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                  color: badgeBorder, width: 0.8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                FlipCardNetworkLogo(
+                                  network: card.network,
+                                  color: textColor,
+                                  backgroundColor: colors.first,
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(Icons.arrow_drop_down_rounded,
-                                  color: iconColor, size: 20),
-                            ],
+                                const SizedBox(width: 4),
+                                Icon(Icons.arrow_drop_down_rounded,
+                                    color: iconColor, size: 20),
+                              ],
+                            ),
                           ),
                         ),
                       )
-                    : AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 250),
-                        transitionBuilder: (child, animation) {
-                          return ScaleTransition(
-                            scale: CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeOutBack,
-                            ),
-                            child: FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: KeyedSubtree(
-                          key: ValueKey('net-${card.network}'),
-                          child: CardNetworkLogo(
-                              network: card.network,
-                              color: textColor,
-                              backgroundColor: colors.first),
-                        ),
+                    : FlipCardNetworkLogo(
+                        network: card.network,
+                        color: textColor,
+                        backgroundColor: colors.first,
                       ),
               ),
               // Dynamic Holographic Light Sheen Overlay
