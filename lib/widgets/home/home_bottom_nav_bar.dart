@@ -28,10 +28,8 @@ class _HomeBottomNavBarState extends State<HomeBottomNavBar> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeColor =
-        isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy;
-    final inactiveColor =
-        isDark ? AppTheme.textMutedDark : AppTheme.textMuted;
+    final activeColor = context.colors.buttonPrimaryBg;
+    final inactiveColor = context.colors.textMuted;
 
     return Container(
       height: 74,
@@ -39,7 +37,7 @@ class _HomeBottomNavBarState extends State<HomeBottomNavBar> {
         color: Theme.of(context).cardTheme.color,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+            color: AppTheme.pureBlack.withValues(alpha: isDark ? 0.2 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -154,7 +152,7 @@ class _HomeBottomNavBarState extends State<HomeBottomNavBar> {
                       ),
                       child: Icon(
                         Icons.add_card_rounded,
-                        color: isDark ? Colors.black : Colors.white,
+                        color: context.colors.buttonPrimaryFg,
                         size: 20,
                       ),
                     ),

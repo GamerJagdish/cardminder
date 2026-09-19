@@ -25,14 +25,14 @@ class ChangelogSectionHelper {
       case 'feature:':
         return AppTheme.accentEmerald;
       case 'fix:':
-        return const Color(0xFFF43F5E); // Rose 500
+        return AppTheme.changelogBreaking; // Rose 500
       case 'refactor:':
-        return const Color(0xFF38BDF8); // Sky 400
+        return AppTheme.changelogFeature; // Sky 400
       case 'chore:':
-        return const Color(0xFFA78BFA); // Violet 400
+        return AppTheme.changelogRefactor; // Violet 400
       case 'other:':
       default:
-        return const Color(0xFF94A3B8); // Slate 400
+        return AppTheme.slate400; // Slate 400
     }
   }
 
@@ -50,10 +50,10 @@ class ChangelogSectionHelper {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+          color: context.colors.inputFill,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            color: context.colors.containerBorder,
           ),
         ),
         child: Text(
@@ -62,7 +62,7 @@ class ChangelogSectionHelper {
             fontSize: 14.5,
             height: 1.55,
             letterSpacing: 0.15,
-            color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+            color: isDark ? AppTheme.slate300 : AppTheme.slate700,
           ),
         ),
       );
@@ -110,8 +110,8 @@ class ChangelogSectionHelper {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isDark
-                          ? const Color(0xFF64748B)
-                          : const Color(0xFF94A3B8),
+                          ? AppTheme.slate500
+                          : AppTheme.slate400,
                     ),
                   ),
                   Expanded(
@@ -140,7 +140,7 @@ class ChangelogSectionHelper {
               fontSize: 14.5,
               height: 1.50,
               letterSpacing: 0.15,
-              color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF1E293B),
+              color: isDark ? AppTheme.slate200 : AppTheme.slate800,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -153,7 +153,7 @@ class ChangelogSectionHelper {
                   fontSize: 13.5,
                   height: 1.50,
                   letterSpacing: 0.1,
-                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  color: isDark ? AppTheme.slate400 : AppTheme.slate500,
                 ),
               ),
             ),
@@ -167,7 +167,7 @@ class ChangelogSectionHelper {
         fontSize: 14.5,
         height: 1.55,
         letterSpacing: 0.15,
-        color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+        color: isDark ? AppTheme.slate300 : AppTheme.slate700,
         fontWeight: FontWeight.w400,
       ),
     );

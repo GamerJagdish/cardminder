@@ -29,7 +29,6 @@ class _SetBackupPinDialogState extends State<SetBackupPinDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).colorScheme.primary;
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
@@ -40,7 +39,7 @@ class _SetBackupPinDialogState extends State<SetBackupPinDialog> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: context.colors.border,
           width: 1.2,
         ),
       ),
@@ -49,7 +48,7 @@ class _SetBackupPinDialogState extends State<SetBackupPinDialog> {
         vertical: isLandscape || mediaQuery.size.height < 500 ? 12 : 24,
       ),
       clipBehavior: Clip.antiAlias,
-      backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
+      backgroundColor: context.colors.dialogBg,
       elevation: 8,
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -109,7 +108,7 @@ class _SetBackupPinDialogState extends State<SetBackupPinDialog> {
                   'Enter a 4-digit PIN to encrypt your backup file. You will need this same PIN to restore your data.',
                   style: TextStyle(
                     fontSize: 13,
-                    color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                    color: context.colors.textSubtle,
                     height: 1.4,
                   ),
                 ),
@@ -165,9 +164,7 @@ class _SetBackupPinDialogState extends State<SetBackupPinDialog> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 13),
                           side: BorderSide(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFCBD5E1),
+                            color: context.colors.borderSubtle,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -187,10 +184,8 @@ class _SetBackupPinDialogState extends State<SetBackupPinDialog> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark
-                              ? AppTheme.primaryAccentDark
-                              : AppTheme.primaryNavy,
-                          foregroundColor: isDark ? Colors.black : Colors.white,
+                          backgroundColor: context.colors.buttonPrimaryBg,
+                          foregroundColor: context.colors.buttonPrimaryFg,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 13),
                           shape: RoundedRectangleBorder(
@@ -201,7 +196,7 @@ class _SetBackupPinDialogState extends State<SetBackupPinDialog> {
                         child: Text(
                           'Create Backup',
                           style: TextStyle(
-                            color: isDark ? Colors.black : Colors.white,
+                            color: context.colors.buttonPrimaryFg,
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                           ),

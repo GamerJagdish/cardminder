@@ -11,7 +11,6 @@ class RestoreConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final availableWidth = mediaQuery.size.width - 48.0;
@@ -21,7 +20,7 @@ class RestoreConfirmDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: context.colors.border,
           width: 1.2,
         ),
       ),
@@ -30,7 +29,7 @@ class RestoreConfirmDialog extends StatelessWidget {
         vertical: isLandscape || mediaQuery.size.height < 500 ? 12 : 24,
       ),
       clipBehavior: Clip.antiAlias,
-      backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
+      backgroundColor: context.colors.dialogBg,
       elevation: 8,
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -90,10 +89,10 @@ class RestoreConfirmDialog extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                  color: context.colors.inputFill,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                    color: context.colors.border,
                   ),
                 ),
                 child: Column(
@@ -152,7 +151,7 @@ class RestoreConfirmDialog extends StatelessWidget {
                         'Restoring will overwrite your current card list and settings with this backup.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDark ? const Color(0xFFFCD34D) : const Color(0xFF92400E),
+                          color: context.colors.badgeWarningFg,
                           height: 1.35,
                         ),
                       ),
@@ -170,9 +169,7 @@ class RestoreConfirmDialog extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         side: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFCBD5E1),
+                          color: context.colors.borderSubtle,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -193,7 +190,7 @@ class RestoreConfirmDialog extends StatelessWidget {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.accentEmerald,
-                        foregroundColor: Colors.white,
+                        foregroundColor: AppTheme.surfaceWhite,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(
@@ -204,7 +201,7 @@ class RestoreConfirmDialog extends StatelessWidget {
                       child: const Text(
                         'Restore Now',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppTheme.surfaceWhite,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),

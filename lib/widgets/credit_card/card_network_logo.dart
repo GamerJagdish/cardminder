@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../theme/app_theme.dart';
 
 class CardNetworkLogo extends StatelessWidget {
   final String network;
@@ -28,7 +29,7 @@ class CardNetworkLogo extends StatelessWidget {
             : !isDark);
 
     final effectiveColor = color ??
-        (isLightBg ? const Color(0xFF0F172A) : Colors.white);
+        (isLightBg ? AppTheme.textDark : AppTheme.surfaceWhite);
 
     final defaultHeight = height ?? 34.0;
 

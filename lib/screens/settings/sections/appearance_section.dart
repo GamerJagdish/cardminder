@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../models/app_settings.dart';
+import '../../../theme/app_theme.dart';
 import '../widgets/settings_section_header.dart';
 import '../widgets/settings_tiles.dart';
 
@@ -31,7 +32,7 @@ class AppearanceSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: context.colors.cardShadow,
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

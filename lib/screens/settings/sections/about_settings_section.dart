@@ -40,7 +40,7 @@ class AboutSettingsSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: context.colors.cardShadow,
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -61,9 +61,7 @@ class AboutSettingsSection extends StatelessWidget {
                         height: 40,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF1F5F9),
+                          color: context.colors.surfaceSubtle,
                           shape: BoxShape.circle,
                         ),
                         child: developerClickCount >= 12
@@ -128,9 +126,7 @@ class AboutSettingsSection extends StatelessWidget {
                         height: 40,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF1F5F9),
+                          color: context.colors.surfaceSubtle,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -191,9 +187,7 @@ class AboutSettingsSection extends StatelessWidget {
                         height: 40,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF1F5F9),
+                          color: context.colors.surfaceSubtle,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -272,9 +266,7 @@ class AboutSettingsSection extends StatelessWidget {
                         height: 40,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF1F5F9),
+                          color: context.colors.surfaceSubtle,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -338,9 +330,7 @@ class AboutSettingsSection extends StatelessWidget {
                         height: 40,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF1F5F9),
+                          color: context.colors.surfaceSubtle,
                           shape: BoxShape.circle,
                         ),
                         child: SvgPicture.asset(
@@ -349,7 +339,7 @@ class AboutSettingsSection extends StatelessWidget {
                           height: 19,
                           colorFilter: isDark
                               ? const ColorFilter.mode(
-                                  Colors.white, BlendMode.srcIn)
+                                  AppTheme.surfaceWhite, BlendMode.srcIn)
                               : ColorFilter.mode(
                                   Theme.of(context).colorScheme.onSurface,
                                   BlendMode.srcIn,

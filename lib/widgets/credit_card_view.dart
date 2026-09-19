@@ -180,17 +180,23 @@ class _CreditCardViewState extends State<CreditCardView>
 
     // Dynamic contrast coloring based on background luminance
     final isLightBg = colors.first.computeLuminance() > 0.45;
-    final textColor = isLightBg ? const Color(0xFF0F172A) : Colors.white;
-    final textMuted = isLightBg ? const Color(0xFF334155) : Colors.white70;
-    final textSubtle = isLightBg ? const Color(0xFF475569) : Colors.white60;
-    final iconColor = isLightBg ? const Color(0xFF0F172A) : Colors.white;
+    final textColor = isLightBg ? AppTheme.textDark : AppTheme.surfaceWhite;
+    final textMuted = isLightBg
+        ? AppTheme.slate700
+        : AppTheme.pureWhite.withValues(alpha: 0.70);
+    final textSubtle = isLightBg
+        ? AppTheme.slate600
+        : AppTheme.pureWhite.withValues(alpha: 0.60);
+    final iconColor = isLightBg ? AppTheme.textDark : AppTheme.surfaceWhite;
     final badgeBg = isLightBg
-        ? Colors.black.withValues(alpha: 0.08)
-        : Colors.white.withValues(alpha: 0.18);
-    final badgeBorder = isLightBg ? Colors.black26 : Colors.white38;
+        ? AppTheme.pureBlack.withValues(alpha: 0.08)
+        : AppTheme.pureWhite.withValues(alpha: 0.18);
+    final badgeBorder = isLightBg
+        ? AppTheme.pureBlack.withValues(alpha: 0.26)
+        : AppTheme.pureWhite.withValues(alpha: 0.38);
     final ambientCircleColor = isLightBg
-        ? Colors.black.withValues(alpha: 0.04)
-        : Colors.white.withValues(alpha: 0.08);
+        ? AppTheme.pureBlack.withValues(alpha: 0.04)
+        : AppTheme.pureWhite.withValues(alpha: 0.08);
 
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isUrgent = _isUrgent(card);
@@ -321,9 +327,10 @@ class _CreditCardViewState extends State<CreditCardView>
                             surfaceTintColor: Colors.transparent,
                             tooltip: 'Select Network',
                             itemBuilder: (context) {
-                              final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-                              final selectedColor = isDarkTheme ? AppTheme.primaryAccentDark : AppTheme.primaryNavy;
-                              final itemTextColor = Theme.of(context).colorScheme.onSurface;
+                              final selectedColor =
+                                  context.colors.buttonPrimaryBg;
+                              final itemTextColor =
+                                  Theme.of(context).colorScheme.onSurface;
 
                               return [
                                 'Visa',
@@ -618,10 +625,10 @@ class _CreditCardViewState extends State<CreditCardView>
                         end: Alignment(-_currentOffset.dx * 2.5 + 0.4,
                             -_currentOffset.dy * 2.5 + 0.4),
                         colors: [
-                          Colors.white.withValues(alpha: 0.0),
-                          Colors.white.withValues(
+                          AppTheme.pureWhite.withValues(alpha: 0.0),
+                          AppTheme.pureWhite.withValues(
                               alpha: _isInteracting ? 0.24 : 0.07),
-                          Colors.white.withValues(alpha: 0.0),
+                          AppTheme.pureWhite.withValues(alpha: 0.0),
                         ],
                         stops: const [0.25, 0.5, 0.75],
                       ),

@@ -121,10 +121,10 @@ class _DebugNotificationToolsState extends State<DebugNotificationTools> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+        border: Border.all(color: AppTheme.accentAmber, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: context.colors.cardShadow,
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

@@ -19,8 +19,6 @@ class HomeEmptyState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -30,9 +28,7 @@ class HomeEmptyState extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFFF1F5F9),
+                color: context.colors.surfaceSubtleSecondary,
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -71,10 +67,8 @@ class HomeEmptyState extends ConsumerWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDark
-                    ? AppTheme.primaryAccentDark
-                    : AppTheme.primaryNavy,
-                foregroundColor: isDark ? Colors.black : Colors.white,
+                backgroundColor: context.colors.buttonPrimaryBg,
+                foregroundColor: context.colors.buttonPrimaryFg,
                 elevation: 0,
                 minimumSize: const Size(200, 48),
                 shape: RoundedRectangleBorder(
@@ -86,7 +80,7 @@ class HomeEmptyState extends ConsumerWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
-                  color: isDark ? Colors.black : Colors.white,
+                  color: context.colors.buttonPrimaryFg,
                 ),
               ),
             ),
@@ -104,18 +98,14 @@ class HomeEmptyState extends ConsumerWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDark
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFFF1F5F9),
+                backgroundColor: context.colors.surfaceSubtleSecondary,
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
                 elevation: 0,
                 minimumSize: const Size(200, 48),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color: isDark
-                        ? const Color(0xFF334155)
-                        : const Color(0xFFE2E8F0),
+                    color: context.colors.border,
                     width: 1,
                   ),
                 ),

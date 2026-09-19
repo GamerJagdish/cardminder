@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 enum UrgencyStatus {
   safe,
@@ -9,13 +10,13 @@ enum UrgencyStatus {
   Color get color {
     switch (this) {
       case UrgencyStatus.safe:
-        return const Color(0xFF10B981); // Emerald green
+        return AppTheme.accentEmerald;
       case UrgencyStatus.warning:
-        return const Color(0xFFF59E0B); // Amber / Gold
+        return AppTheme.accentAmber;
       case UrgencyStatus.critical:
-        return const Color(0xFFEF4444); // Crimson red
+        return AppTheme.accentRose;
       case UrgencyStatus.expired:
-        return const Color(0xFF6B7280); // Muted gray
+        return AppTheme.badgeNeutralFgLight;
     }
   }
 
@@ -23,13 +24,13 @@ enum UrgencyStatus {
     if (isDark) {
       switch (this) {
         case UrgencyStatus.safe:
-          return const Color(0xFF064E3B); // Dark emerald container
+          return AppTheme.badgeSafeBgDark;
         case UrgencyStatus.warning:
-          return const Color(0xFF78350F); // Dark amber container
+          return AppTheme.badgeWarningBgDark;
         case UrgencyStatus.critical:
-          return const Color(0xFF7F1D1D); // Dark red container
+          return AppTheme.badgeUrgentBgDark;
         case UrgencyStatus.expired:
-          return const Color(0xFF1E293B); // Dark slate container
+          return AppTheme.badgeNeutralBgDark;
       }
     }
     return bgLightColor;
@@ -39,13 +40,13 @@ enum UrgencyStatus {
     if (isDark) {
       switch (this) {
         case UrgencyStatus.safe:
-          return const Color(0xFF34D399); // Vibrant emerald green
+          return AppTheme.badgeSafeFgDark;
         case UrgencyStatus.warning:
-          return const Color(0xFFFDE047); // Vibrant bright yellow text
+          return AppTheme.badgeWarningTextDark;
         case UrgencyStatus.critical:
-          return const Color(0xFFFCA5A5); // Vibrant bright rose text
+          return AppTheme.badgeUrgentFgDark;
         case UrgencyStatus.expired:
-          return const Color(0xFF94A3B8); // Slate grey text
+          return AppTheme.badgeNeutralFgDark;
       }
     }
     return color;
@@ -54,13 +55,13 @@ enum UrgencyStatus {
   Color get bgLightColor {
     switch (this) {
       case UrgencyStatus.safe:
-        return const Color(0xFFDCFCE7); // Light green badge bg
+        return AppTheme.badgeSafeBgLight;
       case UrgencyStatus.warning:
-        return const Color(0xFFFEF3C7); // Light amber badge bg
+        return AppTheme.badgeWarningBgLight;
       case UrgencyStatus.critical:
-        return const Color(0xFFFEE2E2); // Light red badge bg
+        return AppTheme.badgeUrgentBgLight;
       case UrgencyStatus.expired:
-        return const Color(0xFFF3F4F6); // Light gray badge bg
+        return AppTheme.badgeNeutralBgLight;
     }
   }
 

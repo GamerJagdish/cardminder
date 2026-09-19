@@ -58,7 +58,6 @@ class _EditUserNameDialogState extends State<EditUserNameDialog> {
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final availableWidth = mediaQuery.size.width - 48.0;
     final dialogWidth = availableWidth.clamp(300.0, 400.0);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Dialog(
@@ -139,9 +138,7 @@ class _EditUserNameDialogState extends State<EditUserNameDialog> {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFCBD5E1),
+                          color: context.colors.borderSubtle,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -161,11 +158,8 @@ class _EditUserNameDialogState extends State<EditUserNameDialog> {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? AppTheme.primaryAccentDark
-                            : AppTheme.primaryNavy,
-                        foregroundColor:
-                            isDark ? Colors.black : Colors.white,
+                        backgroundColor: context.colors.buttonPrimaryBg,
+                        foregroundColor: context.colors.buttonPrimaryFg,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -176,7 +170,7 @@ class _EditUserNameDialogState extends State<EditUserNameDialog> {
                       child: Text(
                         'Save',
                         style: TextStyle(
-                          color: isDark ? Colors.black : Colors.white,
+                          color: context.colors.buttonPrimaryFg,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

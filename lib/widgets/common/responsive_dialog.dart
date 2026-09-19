@@ -25,7 +25,6 @@ class ResponsiveDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final screenWidth = mediaQuery.size.width;
@@ -41,7 +40,7 @@ class ResponsiveDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius),
         side: BorderSide(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: context.colors.border,
           width: 1.2,
         ),
       ),
@@ -50,8 +49,7 @@ class ResponsiveDialog extends StatelessWidget {
         vertical: verticalInset,
       ),
       clipBehavior: clipContent ? Clip.antiAlias : Clip.none,
-      backgroundColor: backgroundColor ??
-          (isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite),
+      backgroundColor: backgroundColor ?? context.colors.dialogBg,
       elevation: 8,
       surfaceTintColor: Colors.transparent,
       child: ConstrainedBox(

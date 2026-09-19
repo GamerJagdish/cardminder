@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import '../../theme/app_theme.dart';
 
 /// Interactive custom RGB color picker widget featuring hue slider,
 /// real-time square color preview, hex code badge, and preset swatches.
@@ -15,19 +16,7 @@ class CardColorPicker extends StatelessWidget {
     required this.isVisible,
   });
 
-  static const List<Color> presetSwatches = [
-    Color(0xFF0F172A), // Slate Dark
-    Color(0xFF1E1B4B), // Midnight Indigo
-    Color(0xFF065F46), // Deep Emerald
-    Color(0xFF831843), // Rich Magenta
-    Color(0xFF1E3A8A), // Ocean Navy
-    Color(0xFF581C87), // Royal Violet
-    Color(0xFF991B1B), // Crimson Red
-    Color(0xFFB45309), // Amber Gold
-    Color(0xFF15803D), // Forest Green
-    Color(0xFF0284C7), // Sky Blue
-    Color(0xFFBE185D), // Rose Pink
-  ];
+  static const List<Color> presetSwatches = AppTheme.paletteSwatches;
 
   @override
   Widget build(BuildContext context) {
@@ -58,11 +47,11 @@ class CardColorPicker extends StatelessWidget {
                     color: Theme.of(context).cardTheme.color,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      color: context.colors.border,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
+                        color: AppTheme.pureBlack.withValues(alpha: 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -108,14 +97,10 @@ class CardColorPicker extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF0F172A)
-                                  : const Color(0xFFF1F5F9),
+                              color: context.colors.surfaceSubtle,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: isDark
-                                    ? const Color(0xFF334155)
-                                    : const Color(0xFFE2E8F0),
+                                color: context.colors.border,
                               ),
                             ),
                             child: Text(
@@ -164,8 +149,8 @@ class CardColorPicker extends StatelessWidget {
                               borderRadius: BorderRadius.circular(9),
                               border: Border.all(
                                 color: isDark
-                                    ? const Color(0xFF475569)
-                                    : const Color(0xFFCBD5E1),
+                                    ? AppTheme.slate600
+                                    : AppTheme.slate300,
                                 width: 1.5,
                               ),
                               boxShadow: [
@@ -231,7 +216,7 @@ class CardColorPicker extends StatelessWidget {
                               ),
                               child: isSelected
                                   ? const Icon(Icons.check_rounded,
-                                      color: Colors.white, size: 16)
+                                      color: AppTheme.surfaceWhite, size: 16)
                                   : null,
                             ),
                           );

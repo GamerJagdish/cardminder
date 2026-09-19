@@ -258,15 +258,12 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                                           if (index ==
                                               _displayedReleases.length) {
                                             if (_hasMore) {
-                                              final buttonBg = isDark
-                                                  ? const Color(0xFF0F172A)
-                                                  : const Color(0xFFF1F5F9);
-                                              final buttonBorder = isDark
-                                                  ? const Color(0xFF1E293B)
-                                                  : const Color(0xFFE2E8F0);
-                                              final buttonFg = isDark
-                                                  ? const Color(0xFF94A3B8)
-                                                  : const Color(0xFF475569);
+                                              final buttonBg =
+                                                  context.colors.surfaceSubtle;
+                                              final buttonBorder =
+                                                  context.colors.containerBorder;
+                                              final buttonFg =
+                                                  context.colors.buttonMutedFg;
 
                                               return Padding(
                                                 padding: const EdgeInsets.only(
@@ -351,20 +348,15 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                                                 bottom: 16),
                                             padding: const EdgeInsets.all(16),
                                             decoration: BoxDecoration(
-                                              color: isDark
-                                                  ? const Color(0xFF0F172A)
-                                                  : const Color(0xFFF8FAFC),
+                                              color: context.colors.inputFill,
                                               borderRadius:
                                                   BorderRadius.circular(18),
                                               border: Border.all(
                                                 color: isCurrent
                                                     ? AppTheme.accentEmerald
                                                         .withValues(alpha: 0.5)
-                                                    : isDark
-                                                        ? const Color(
-                                                            0xFF1E293B)
-                                                        : const Color(
-                                                            0xFFE2E8F0),
+                                                    : context
+                                                        .colors.containerBorder,
                                                 width: isCurrent ? 1.4 : 1.0,
                                               ),
                                             ),
@@ -430,16 +422,13 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                                                         .formattedDate.isNotEmpty)
                                                       Text(
                                                         release.formattedDate,
-                                                        style: TextStyle(
-                                                          fontSize: 12.5,
-                                                          color: isDark
-                                                              ? const Color(
-                                                                  0xFF94A3B8)
-                                                              : const Color(
-                                                                  0xFF64748B),
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
+                                                         style: TextStyle(
+                                                           fontSize: 12.5,
+                                                           color: context.colors
+                                                               .buttonGhostFg,
+                                                           fontWeight:
+                                                               FontWeight.w500,
+                                                         ),
                                                       ),
                                                   ],
                                                 ),
@@ -475,7 +464,7 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                   isLandscape ? 10 : 16,
                 ),
                 decoration: BoxDecoration(
-                  color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
+                  color: context.colors.dialogBg,
                 ),
                 child: SizedBox(
                   width: double.infinity,
@@ -483,12 +472,8 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(
-                      foregroundColor: isDark
-                          ? const Color(0xFF94A3B8)
-                          : const Color(0xFF64748B),
-                      backgroundColor: isDark
-                          ? Colors.white.withValues(alpha: 0.04)
-                          : Colors.black.withValues(alpha: 0.03),
+                      foregroundColor: context.colors.buttonGhostFg,
+                      backgroundColor: context.colors.buttonGhostBg,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),

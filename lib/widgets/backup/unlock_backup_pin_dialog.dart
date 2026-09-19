@@ -65,7 +65,6 @@ class _UnlockBackupPinDialogState extends State<UnlockBackupPinDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final availableWidth = mediaQuery.size.width - 48.0;
@@ -75,7 +74,7 @@ class _UnlockBackupPinDialogState extends State<UnlockBackupPinDialog> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: context.colors.border,
           width: 1.2,
         ),
       ),
@@ -84,7 +83,7 @@ class _UnlockBackupPinDialogState extends State<UnlockBackupPinDialog> {
         vertical: isLandscape || mediaQuery.size.height < 500 ? 12 : 24,
       ),
       clipBehavior: Clip.antiAlias,
-      backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
+      backgroundColor: context.colors.dialogBg,
       elevation: 8,
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -144,7 +143,7 @@ class _UnlockBackupPinDialogState extends State<UnlockBackupPinDialog> {
                   'Enter the 4-digit PIN you used when this backup was created to decrypt your card data.',
                   style: TextStyle(
                     fontSize: 13,
-                    color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                    color: context.colors.textSubtle,
                     height: 1.4,
                   ),
                 ),
@@ -242,9 +241,7 @@ class _UnlockBackupPinDialogState extends State<UnlockBackupPinDialog> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 13),
                           side: BorderSide(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFCBD5E1),
+                            color: context.colors.borderSubtle,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -264,10 +261,8 @@ class _UnlockBackupPinDialogState extends State<UnlockBackupPinDialog> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark
-                              ? AppTheme.primaryAccentDark
-                              : AppTheme.primaryNavy,
-                          foregroundColor: isDark ? Colors.black : Colors.white,
+                          backgroundColor: context.colors.buttonPrimaryBg,
+                          foregroundColor: context.colors.buttonPrimaryFg,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 13),
                           shape: RoundedRectangleBorder(
@@ -281,13 +276,13 @@ class _UnlockBackupPinDialogState extends State<UnlockBackupPinDialog> {
                                 height: 18,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: isDark ? Colors.black : Colors.white,
+                                  color: context.colors.buttonPrimaryFg,
                                 ),
                               )
                             : Text(
                                 'Unlock',
                                 style: TextStyle(
-                                  color: isDark ? Colors.black : Colors.white,
+                                  color: context.colors.buttonPrimaryFg,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 13,
                                 ),

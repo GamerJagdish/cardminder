@@ -41,7 +41,7 @@ class CardCountdownBanner extends StatelessWidget {
             color: showCelebration
                 ? AppTheme.accentEmerald
                     .withValues(alpha: isDark ? 0.25 : 0.15)
-                : Colors.black.withValues(alpha: 0.02),
+                : context.colors.cardShadow,
             blurRadius: showCelebration ? 18 : 10,
             offset: const Offset(0, 4),
           ),
@@ -65,13 +65,11 @@ class CardCountdownBanner extends StatelessWidget {
                     return CircularProgressIndicator(
                       value: animatedValue,
                       strokeWidth: 8,
-                      backgroundColor: isDark
-                          ? const Color(0xFF334155)
-                          : const Color(0xFFE2E8F0),
+                      backgroundColor: context.colors.border,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         isDark
                             ? (urgency == UrgencyStatus.safe
-                                ? const Color(0xFF34D399)
+                                ? AppTheme.badgeSafeFgDark
                                 : urgency.badgeTextColor(isDark))
                             : urgency.color,
                       ),

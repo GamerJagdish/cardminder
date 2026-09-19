@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import '../services/sound_effect_service.dart';
+import '../theme/app_theme.dart';
 
 export '../services/sound_effect_service.dart';
 
@@ -56,7 +57,7 @@ class _SpecialEffectOverlayState extends State<SpecialEffectOverlay>
         child: FadeTransition(
           opacity: _backdropFade,
           child: Material(
-            color: Colors.black.withValues(alpha: 0.76),
+            color: AppTheme.pureBlack.withValues(alpha: 0.76),
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -76,8 +77,8 @@ class _SpecialEffectOverlayState extends State<SpecialEffectOverlay>
                         center: Alignment.center,
                         radius: 0.85,
                         colors: [
-                          const Color(0xFFF59E0B).withValues(alpha: 0.18),
-                          const Color(0xFFEF4444).withValues(alpha: 0.07),
+                          AppTheme.accentAmber.withValues(alpha: 0.18),
+                          AppTheme.accentRose.withValues(alpha: 0.07),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.5, 1.0],
@@ -115,15 +116,15 @@ class _SpecialEffectOverlayState extends State<SpecialEffectOverlay>
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF59E0B),
-                      foregroundColor: Colors.black,
+                      backgroundColor: AppTheme.accentAmber,
+                      foregroundColor: AppTheme.pureBlack,
                       elevation: 8,
                       shadowColor:
-                          const Color(0xFFF59E0B).withValues(alpha: 0.5),
+                          AppTheme.accentAmber.withValues(alpha: 0.5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side:
-                            const BorderSide(color: Colors.white, width: 1.5),
+                            const BorderSide(color: AppTheme.surfaceWhite, width: 1.5),
                       ),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 26,
@@ -203,14 +204,7 @@ class _ContinuousRainLayerState extends State<_ContinuousRainLayer>
       _recordEmojiPicture('✨', 20, 0.90), // 4: Sparkle
     ];
 
-    final confettiPalette = [
-      const Color(0xFFEF4444),
-      const Color(0xFFF59E0B),
-      const Color(0xFF10B981),
-      const Color(0xFF3B82F6),
-      const Color(0xFFEC4899),
-      const Color(0xFF8B5CF6),
-    ];
+    final confettiPalette = AppTheme.confettiColors;
 
     // 18 clown drops distributed across depth layers, initially scattered across the screen
     for (int i = 0; i < 18; i++) {
@@ -276,7 +270,7 @@ class _ContinuousRainLayerState extends State<_ContinuousRainLayer>
         text: emoji,
         style: TextStyle(
           fontSize: fontSize,
-          color: Colors.white.withValues(alpha: opacity),
+          color: AppTheme.surfaceWhite.withValues(alpha: opacity),
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -376,7 +370,7 @@ class _ContinuousRainPainter extends CustomPainter {
         canvas.restore();
       } else {
         // Confetti ribbon with tumbling rotation
-        _confettiPaint.color = (p.confettiColor ?? const Color(0xFFF59E0B))
+        _confettiPaint.color = (p.confettiColor ?? AppTheme.accentAmber)
             .withValues(alpha: 0.78);
 
         canvas.save();
@@ -817,7 +811,7 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
                               ),
                               gradient: RadialGradient(
                                 colors: [
-                                  Colors.black.withValues(alpha: 0.45),
+                                  AppTheme.pureBlack.withValues(alpha: 0.45),
                                   Colors.transparent,
                                 ],
                                 stops: const [0.3, 1.0],
@@ -893,8 +887,8 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
                   center: const Alignment(-0.35, -0.40),
                   radius: 0.55,
                   colors: [
-                    Colors.white.withValues(alpha: 0.38),
-                    Colors.white.withValues(alpha: 0.0),
+                    AppTheme.pureWhite.withValues(alpha: 0.38),
+                    AppTheme.pureWhite.withValues(alpha: 0.0),
                   ],
                   stops: const [0.0, 1.0],
                 ),
@@ -917,15 +911,15 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
           ),
           constraints: const BoxConstraints(maxWidth: 190),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.surfaceWhite,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFFF59E0B),
+              color: AppTheme.accentAmber,
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.28),
+                color: AppTheme.pureBlack.withValues(alpha: 0.28),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -935,7 +929,7 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
             text,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Color(0xFF1E293B),
+              color: AppTheme.surfaceDark,
               fontWeight: FontWeight.w800,
               fontSize: 12.0,
               height: 1.2,
@@ -953,17 +947,17 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
         vertical: 3,
       ),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.52),
+        color: AppTheme.pureBlack.withValues(alpha: 0.52),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: Colors.white12,
+          color: AppTheme.pureWhite.withValues(alpha: 0.12),
           width: 0.8,
         ),
       ),
       child: const Text(
         'Tap to Honk! • Drag to fling! 🚀',
         style: TextStyle(
-          color: Color(0xFFFDE68A),
+          color: AppTheme.amber200,
           fontSize: 10.5,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.2,

@@ -34,7 +34,7 @@ class NotificationsSettingsSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: context.colors.cardShadow,
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -63,9 +63,7 @@ class NotificationsSettingsSection extends StatelessWidget {
                                       .withValues(alpha: 0.15)
                                   : AppTheme.primaryNavy
                                       .withValues(alpha: 0.08))
-                              : (isDark
-                                  ? const Color(0xFF0F172A)
-                                  : const Color(0xFFF1F5F9)),
+                              : context.colors.surfaceSubtle,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -115,19 +113,17 @@ class NotificationsSettingsSection extends StatelessWidget {
                                 ? AppTheme.primaryAccentDark
                                 : AppTheme.primaryNavy;
                           }
-                          return isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFCBD5E1);
+                          return context.colors.borderSubtle;
                         }),
                         thumbColor: WidgetStateProperty.resolveWith((states) {
                           if (states.contains(WidgetState.selected)) {
                             return isDark
-                                ? const Color(0xFF0F172A)
-                                : Colors.white;
+                                ? AppTheme.textDark
+                                : AppTheme.surfaceWhite;
                           }
                           return isDark
-                              ? const Color(0xFF94A3B8)
-                              : Colors.white;
+                              ? AppTheme.slate400
+                              : AppTheme.surfaceWhite;
                         }),
                         value: settings.notificationsEnabled,
                         onChanged: (val) => onUpdateSettings(

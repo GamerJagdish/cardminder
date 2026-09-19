@@ -309,7 +309,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 decoration: BoxDecoration(
                                   color: isDark
                                       ? AppTheme.accentRose.withValues(alpha: 0.2)
-                                      : const Color(0xFFFEE2E2)
+                                      : AppTheme.badgeUrgentBgLight
                                           .withValues(alpha: 0.5),
                                   borderRadius: BorderRadius.circular(14),
                                   border: Border.all(
@@ -337,7 +337,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     child: Text(
                                       '$unreadLogsCount',
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: AppTheme.surfaceWhite,
                                         fontSize: 9,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -417,12 +417,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   children:
                                       List.generate(cards.length, (index) {
                                     final isSelected = _currentPage == index;
-                                    final activeDotColor = isDark
-                                        ? AppTheme.primaryAccentDark
-                                        : AppTheme.primaryNavy;
-                                    final inactiveDotColor = isDark
-                                        ? const Color(0xFF334155)
-                                        : const Color(0xFFCBD5E1);
+                                     final activeDotColor =
+                                         context.colors.buttonPrimaryBg;
+                                     final inactiveDotColor =
+                                         context.colors.borderSubtle;
 
                                     return AnimatedContainer(
                                       duration:

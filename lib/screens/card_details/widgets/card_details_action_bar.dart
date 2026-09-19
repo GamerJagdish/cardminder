@@ -20,8 +20,6 @@ class CardDetailsActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return SafeArea(
       top: false,
       child: Container(
@@ -39,10 +37,8 @@ class CardDetailsActionBar extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isResetting
                       ? AppTheme.accentEmerald
-                      : (isDark
-                          ? AppTheme.primaryAccentDark
-                          : AppTheme.primaryNavy),
-                  foregroundColor: isDark ? Colors.black : Colors.white,
+                      : context.colors.buttonPrimaryBg,
+                  foregroundColor: context.colors.buttonPrimaryFg,
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -56,14 +52,14 @@ class CardDetailsActionBar extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.check_circle_rounded,
-                                color: Colors.white, size: 20),
+                                color: AppTheme.surfaceWhite, size: 20),
                             SizedBox(width: 8),
                             Text(
                               'Reset Complete!',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: AppTheme.surfaceWhite,
                               ),
                             ),
                           ],
@@ -74,7 +70,7 @@ class CardDetailsActionBar extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.black : Colors.white,
+                            color: context.colors.buttonPrimaryFg,
                           ),
                         ),
                 ),
@@ -92,10 +88,8 @@ class CardDetailsActionBar extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: onEdit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? const Color(0xFF334155)
-                            : AppTheme.primaryNavy,
-                        foregroundColor: Colors.white,
+                        backgroundColor: context.colors.editActionBg,
+                        foregroundColor: AppTheme.surfaceWhite,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -106,7 +100,7 @@ class CardDetailsActionBar extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppTheme.surfaceWhite,
                         ),
                       ),
                     ),
@@ -119,19 +113,19 @@ class CardDetailsActionBar extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: onDelete,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.accentRose,
-                        foregroundColor: Colors.white,
+                        backgroundColor: context.colors.destructive,
+                        foregroundColor: context.colors.destructiveFg,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Delete',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: context.colors.destructiveFg,
                         ),
                       ),
                     ),

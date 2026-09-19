@@ -18,13 +18,11 @@ class ThemeOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeBg = isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy;
-    final activeFg = isDark ? Colors.black : Colors.white;
-    final inactiveBg =
-        isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
-    final inactiveFg =
-        isDark ? const Color(0xFFF8FAFC) : AppTheme.textDark;
+    final colors = context.colors;
+    final activeBg = colors.buttonPrimaryBg;
+    final activeFg = colors.buttonPrimaryFg;
+    final inactiveBg = colors.surfaceSubtle;
+    final inactiveFg = colors.textPrimary;
 
     return Expanded(
       child: GestureDetector(
@@ -35,11 +33,7 @@ class ThemeOptionTile extends StatelessWidget {
             color: isSelected ? activeBg : inactiveBg,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected
-                  ? activeBg
-                  : (isDark
-                      ? const Color(0xFF334155)
-                      : const Color(0xFFE2E8F0)),
+              color: isSelected ? activeBg : colors.border,
               width: 1.5,
             ),
           ),
@@ -83,13 +77,11 @@ class PillOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeBg = isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy;
-    final activeFg = isDark ? Colors.black : Colors.white;
-    final inactiveBg =
-        isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
-    final inactiveFg =
-        isDark ? const Color(0xFFF8FAFC) : AppTheme.textDark;
+    final colors = context.colors;
+    final activeBg = colors.buttonPrimaryBg;
+    final activeFg = colors.buttonPrimaryFg;
+    final inactiveBg = colors.surfaceSubtle;
+    final inactiveFg = colors.textPrimary;
 
     return Expanded(
       child: Padding(
@@ -154,13 +146,11 @@ class ReminderToggleRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(5),
             ),
             side: BorderSide(
-              color: isDark
-                  ? const Color(0xFF475569)
-                  : const Color(0xFF94A3B8),
+              color: isDark ? AppTheme.slate600 : AppTheme.slate400,
               width: 1.5,
             ),
-            activeColor: isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy,
-            checkColor: isDark ? Colors.black : Colors.white,
+            activeColor: context.colors.buttonPrimaryBg,
+            checkColor: context.colors.buttonPrimaryFg,
             onChanged: (val) {
               if (val != null) onChanged(val);
             },
@@ -188,8 +178,6 @@ class DebugActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
@@ -197,7 +185,7 @@ class DebugActionButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: Theme.of(context).colorScheme.onSurface,
           side: BorderSide(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+            color: context.colors.border,
           ),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
           shape: RoundedRectangleBorder(

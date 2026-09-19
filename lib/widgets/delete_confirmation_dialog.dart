@@ -6,7 +6,6 @@ Future<bool?> showDeleteConfirmationDialog({
   required String cardName,
 }) {
   final displayName = cardName.trim().isEmpty ? 'this card' : '"$cardName"';
-  final isDark = Theme.of(context).brightness == Brightness.dark;
 
   return showDialog<bool>(
     context: context,
@@ -64,9 +63,7 @@ Future<bool?> showDeleteConfirmationDialog({
                 child: TextButton(
                   onPressed: () => Navigator.pop(dialogCtx, false),
                   style: TextButton.styleFrom(
-                    backgroundColor: isDark
-                        ? const Color(0xFF0F172A)
-                        : const Color(0xFFF1F5F9),
+                    backgroundColor: dialogCtx.colors.buttonSecondaryBg,
                     foregroundColor: Theme.of(context).colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -89,8 +86,8 @@ Future<bool?> showDeleteConfirmationDialog({
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(dialogCtx, true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accentRose,
-                    foregroundColor: Colors.white,
+                    backgroundColor: dialogCtx.colors.destructive,
+                    foregroundColor: dialogCtx.colors.destructiveFg,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

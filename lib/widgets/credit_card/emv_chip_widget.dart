@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 
 class EmvChipWidget extends StatelessWidget {
   const EmvChipWidget({super.key});
@@ -13,21 +14,16 @@ class EmvChipWidget extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFFE27D),
-            Color(0xFFE5B53B),
-            Color(0xFFCC9928),
-            Color(0xFFE2C470),
-          ],
+          colors: AppTheme.emvChipMetallic,
           stops: [0.0, 0.35, 0.7, 1.0],
         ),
         border: Border.all(
-          color: const Color(0xFF9E781C).withValues(alpha: 0.65),
+          color: AppTheme.emvChipBorder.withValues(alpha: 0.65),
           width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: AppTheme.pureBlack.withValues(alpha: 0.2),
             blurRadius: 3,
             offset: const Offset(0, 1.5),
           ),
@@ -51,13 +47,13 @@ class ChipGridPainter extends CustomPainter {
 
     // Dark etched groove paint
     final groovePaint = Paint()
-      ..color = const Color(0xFF6B4E08).withValues(alpha: 0.7)
+      ..color = AppTheme.emvChipTrace.withValues(alpha: 0.7)
       ..strokeWidth = 0.9
       ..style = PaintingStyle.stroke;
 
     // Light metallic highlight for engraved relief
     final highlightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.5)
+      ..color = AppTheme.surfaceWhite.withValues(alpha: 0.5)
       ..strokeWidth = 0.6
       ..style = PaintingStyle.stroke;
 

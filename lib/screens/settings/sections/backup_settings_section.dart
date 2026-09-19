@@ -41,7 +41,7 @@ class BackupSettingsSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: context.colors.cardShadow,
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -56,9 +56,7 @@ class BackupSettingsSection extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF0F172A)
-                          : const Color(0xFFF1F5F9),
+                      color: context.colors.surfaceSubtle,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
@@ -99,14 +97,10 @@ class BackupSettingsSection extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF8FAFC),
+                          color: context.colors.inputFill,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFE2E8F0),
+                            color: context.colors.border,
                           ),
                         ),
                         child: Row(
@@ -124,9 +118,7 @@ class BackupSettingsSection extends StatelessWidget {
                                           color: isCustom
                                               ? AppTheme.accentEmerald
                                                   .withValues(alpha: 0.15)
-                                              : (isDark
-                                                  ? const Color(0xFF334155)
-                                                  : const Color(0xFFE2E8F0)),
+                                              : context.colors.border,
                                           borderRadius:
                                               BorderRadius.circular(6),
                                         ),
@@ -193,8 +185,8 @@ class BackupSettingsSection extends StatelessWidget {
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? const Color(0xFF1E293B)
-                                      : const Color(0xFFF1F5F9),
+                                      ? AppTheme.surfaceDark
+                                      : AppTheme.slate100,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Icon(
@@ -246,9 +238,7 @@ class BackupSettingsSection extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? AppTheme.primaryAccentDark
-                              : AppTheme.primaryNavy,
+                          color: context.colors.buttonPrimaryBg,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         alignment: Alignment.center,
@@ -258,13 +248,13 @@ class BackupSettingsSection extends StatelessWidget {
                             Icon(
                               Icons.file_download_outlined,
                               size: 16,
-                              color: isDark ? Colors.black : Colors.white,
+                              color: context.colors.buttonPrimaryFg,
                             ),
                             const SizedBox(width: 6),
                             Text(
                               'Create Backup',
                               style: TextStyle(
-                                color: isDark ? Colors.black : Colors.white,
+                                color: context.colors.buttonPrimaryFg,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -283,9 +273,7 @@ class BackupSettingsSection extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF1F5F9),
+                          color: context.colors.surfaceSubtle,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         alignment: Alignment.center,

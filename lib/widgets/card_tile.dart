@@ -20,8 +20,7 @@ class SwipeableCardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final editColor = isDark ? const Color(0xFF334155) : AppTheme.primaryNavy;
+    final editColor = context.colors.editActionBg;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6.0),
@@ -30,7 +29,7 @@ class SwipeableCardTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
+              color: AppTheme.pureBlack.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -105,12 +104,12 @@ class _SwipeActionBackground extends StatelessWidget {
     final labelWidget = Text(
       label,
       style: const TextStyle(
-        color: Colors.white,
+        color: AppTheme.surfaceWhite,
         fontWeight: FontWeight.bold,
         fontSize: 14,
       ),
     );
-    final iconWidget = Icon(icon, color: Colors.white, size: 22);
+    final iconWidget = Icon(icon, color: AppTheme.surfaceWhite, size: 22);
 
     return Container(
       color: color,
@@ -140,7 +139,8 @@ class _CardTileBody extends StatelessWidget {
 
     // Compute contrast text color for thumbnail badge if needed
     final isThumbnailLight = cardColors.first.computeLuminance() > 0.45;
-    final thumbnailTextColor = isThumbnailLight ? const Color(0xFF0F172A) : Colors.white;
+    final thumbnailTextColor =
+        isThumbnailLight ? AppTheme.textDark : AppTheme.surfaceWhite;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

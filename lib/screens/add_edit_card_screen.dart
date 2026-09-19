@@ -32,7 +32,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
 
   int _currentPage = 0;
   int _selectedColorIndex = 0;
-  int _customRgbColorValue = const Color(0xFFE11D48).toARGB32();
+  int _customRgbColorValue = AppTheme.defaultCustomRgbCardColor.toARGB32();
   String _selectedNetwork = 'Visa';
   String _cardType = 'Credit Card';
   int _selectedDeactivationDays = 365;
@@ -196,8 +196,6 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   }
 
   Future<bool> _showUnsavedChangesDialog(BuildContext context) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final result = await showDialog<bool>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
@@ -254,9 +252,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   child: TextButton(
                     onPressed: () => Navigator.pop(dialogCtx, false),
                     style: TextButton.styleFrom(
-                      backgroundColor: isDark
-                          ? const Color(0xFF0F172A)
-                          : const Color(0xFFF1F5F9),
+                      backgroundColor: context.colors.surfaceSubtle,
                       foregroundColor:
                           Theme.of(context).colorScheme.onSurface,
                       shape: RoundedRectangleBorder(
@@ -281,7 +277,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                     onPressed: () => Navigator.pop(dialogCtx, true),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accentAmber,
-                      foregroundColor: Colors.black,
+                      foregroundColor: AppTheme.pureBlack,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -335,8 +331,6 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
       cardType: _cardType,
     );
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return PopScope(
       canPop: !_hasUnsavedChanges || _isSaving,
       onPopInvokedWithResult: (didPop, result) async {
@@ -358,9 +352,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   color: Theme.of(context).cardTheme.color,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF334155)
-                        : const Color(0xFFE2E8F0),
+                    color: context.colors.border,
                   ),
                 ),
                 child: const Icon(Icons.arrow_back_rounded, size: 20),
@@ -484,9 +476,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                             : (isCustomDot
                                                 ? primaryColor.withValues(
                                                     alpha: 0.4)
-                                                : (isDark
-                                                    ? const Color(0xFF334155)
-                                                    : const Color(0xFFCBD5E1))),
+                                                : context.colors.borderSubtle),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                     ),
@@ -622,9 +612,8 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                           initialValue:
                                               _selectedDeactivationDays,
                                           isExpanded: true,
-                                          dropdownColor: isDark
-                                              ? const Color(0xFF1E293B)
-                                              : Colors.white,
+                                          dropdownColor:
+                                              context.colors.surfaceCard,
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
@@ -645,18 +634,14 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                               borderRadius:
                                                   BorderRadius.circular(16),
                                               borderSide: BorderSide(
-                                                color: isDark
-                                                    ? const Color(0xFF334155)
-                                                    : const Color(0xFFE2E8F0),
+                                                color: context.colors.border,
                                               ),
                                             ),
                                             enabledBorder: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(16),
                                               borderSide: BorderSide(
-                                                color: isDark
-                                                    ? const Color(0xFF334155)
-                                                    : const Color(0xFFE2E8F0),
+                                                color: context.colors.border,
                                               ),
                                             ),
                                           ),
@@ -726,9 +711,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                               borderRadius:
                                                   BorderRadius.circular(16),
                                               border: Border.all(
-                                                color: isDark
-                                                    ? const Color(0xFF334155)
-                                                    : const Color(0xFFE2E8F0),
+                                                color: context.colors.border,
                                               ),
                                             ),
                                             child: Row(
@@ -793,10 +776,8 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                     child: ElevatedButton(
                       onPressed: _onSave,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? AppTheme.primaryAccentDark
-                            : AppTheme.primaryNavy,
-                        foregroundColor: isDark ? Colors.black : Colors.white,
+                        backgroundColor: context.colors.buttonPrimaryBg,
+                        foregroundColor: context.colors.buttonPrimaryFg,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -807,7 +788,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.black : Colors.white,
+                          color: context.colors.buttonPrimaryFg,
                         ),
                       ),
                     ),

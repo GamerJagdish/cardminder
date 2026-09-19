@@ -172,7 +172,7 @@ Route<T> circularRevealRoute<T>(
         builder: (context, animChild) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           final effectiveColor = borderColor ??
-              (isDark ? Colors.white : AppTheme.primaryNavy);
+              (isDark ? AppTheme.surfaceWhite : AppTheme.primaryNavy);
           final curvedValue =
               Curves.easeInOutCubic.transform(animation.value);
 

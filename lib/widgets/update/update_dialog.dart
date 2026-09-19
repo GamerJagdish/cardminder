@@ -175,14 +175,10 @@ class _UpdateScreenState extends State<UpdateScreen> {
                               width: double.infinity,
                               padding: const EdgeInsets.all(18),
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? const Color(0xFF0F172A)
-                                    : const Color(0xFFF8FAFC),
+                                color: context.colors.inputFill,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: isDark
-                                      ? const Color(0xFF1E293B)
-                                      : const Color(0xFFE2E8F0),
+                                  color: context.colors.containerBorder,
                                 ),
                               ),
                               child: Column(
@@ -210,9 +206,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 10, vertical: 5),
                                             decoration: BoxDecoration(
-                                              color: isDark
-                                                  ? const Color(0xFF1E293B)
-                                                  : const Color(0xFFE2E8F0),
+                                              color:
+                                                  context.colors.containerFill,
                                               borderRadius: BorderRadius.circular(20),
                                             ),
                                             child: Row(
@@ -221,9 +216,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
                                                 Icon(
                                                   Icons.calendar_today_rounded,
                                                   size: 12,
-                                                  color: isDark
-                                                      ? const Color(0xFF94A3B8)
-                                                      : const Color(0xFF64748B),
+                                                  color: context
+                                                      .colors.buttonGhostFg,
                                                 ),
                                                 const SizedBox(width: 5),
                                                 Text(
@@ -244,9 +238,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 10, vertical: 5),
                                             decoration: BoxDecoration(
-                                              color: isDark
-                                                  ? const Color(0xFF1E293B)
-                                                  : const Color(0xFFE2E8F0),
+                                              color:
+                                                  context.colors.containerFill,
                                               borderRadius: BorderRadius.circular(20),
                                             ),
                                             child: Row(
@@ -255,9 +248,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
                                                 Icon(
                                                   Icons.storage_rounded,
                                                   size: 13,
-                                                  color: isDark
-                                                      ? const Color(0xFF94A3B8)
-                                                      : const Color(0xFF64748B),
+                                                  color: context
+                                                      .colors.buttonGhostFg,
                                                 ),
                                                 const SizedBox(width: 5),
                                                 Text(
@@ -289,9 +281,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 1.2,
-                                  color: isDark
-                                      ? const Color(0xFF94A3B8)
-                                      : const Color(0xFF64748B),
+                                  color: context.colors.buttonGhostFg,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -349,12 +339,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
                       child: TextButton(
                         onPressed: () => Navigator.of(context).pop(),
                         style: TextButton.styleFrom(
-                          foregroundColor: isDark
-                              ? const Color(0xFF94A3B8)
-                              : const Color(0xFF64748B),
-                          backgroundColor: isDark
-                              ? Colors.white.withValues(alpha: 0.04)
-                              : Colors.black.withValues(alpha: 0.03),
+                          foregroundColor: context.colors.buttonGhostFg,
+                          backgroundColor: context.colors.buttonGhostBg,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -386,9 +372,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
       child: ElevatedButton(
         onPressed: _startDownload,
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              isDark ? AppTheme.primaryAccentDark : AppTheme.primaryNavy,
-          foregroundColor: isDark ? Colors.black : Colors.white,
+          backgroundColor: context.colors.buttonPrimaryBg,
+          foregroundColor: context.colors.buttonPrimaryFg,
           elevation: 0,
           alignment: Alignment.center,
           shape: RoundedRectangleBorder(
@@ -433,14 +418,10 @@ class _UpdateScreenState extends State<UpdateScreen> {
           height: 50,
           width: constraints.maxWidth,
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF1E293B)
-                : const Color(0xFFE2E8F0),
+            color: context.colors.containerFill,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark
-                  ? const Color(0xFF334155)
-                  : const Color(0xFFCBD5E1),
+              color: context.colors.borderSubtle,
               width: 1,
             ),
           ),
@@ -527,9 +508,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isDark
-                                  ? Colors.white.withValues(alpha: 0.12)
-                                  : Colors.black.withValues(alpha: 0.08),
+                              color: context.colors.circleButtonBg,
                             ),
                             child: Icon(
                               Icons.close_rounded,
@@ -597,7 +576,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
             onPressed: _installApk,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.accentEmerald,
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.surfaceWhite,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),

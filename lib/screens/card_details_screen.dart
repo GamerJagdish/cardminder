@@ -95,8 +95,6 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
     final prevCard = hasPrev ? filteredCards[currentIndex - 1] : null;
     final nextCard = hasNext ? filteredCards[currentIndex + 1] : null;
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -116,9 +114,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
                   color: Theme.of(context).cardTheme.color,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF334155)
-                        : const Color(0xFFE2E8F0),
+                    color: context.colors.border,
                   ),
                 ),
                 child: const Icon(Icons.arrow_back_rounded, size: 20),
@@ -213,8 +209,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
                             height: 4,
                             margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
-                              color: (isDark ? Colors.white : Colors.black)
-                                  .withValues(alpha: 0.18),
+                              color: context.colors.handleBar,
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),

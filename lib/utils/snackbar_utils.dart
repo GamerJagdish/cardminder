@@ -8,18 +8,18 @@ void showAppSuccessSnackBar(
   String? message,
   SnackBarAction? action,
 }) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final colors = context.colors;
   ScaffoldMessenger.of(context).hideCurrentSnackBar();
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFF0F172A),
+      backgroundColor: colors.snackbarBg,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFF1E293B),
+          color: colors.snackbarBorder,
           width: 1.2,
         ),
       ),
@@ -45,10 +45,10 @@ void showAppSuccessSnackBar(
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: colors.snackbarText,
                   ),
                 ),
                 if (message != null && message.isNotEmpty) ...[
@@ -57,7 +57,7 @@ void showAppSuccessSnackBar(
                     message,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: colors.snackbarTextMuted,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -80,18 +80,18 @@ void showAppErrorSnackBar(
   required String title,
   String? message,
 }) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final colors = context.colors;
   ScaffoldMessenger.of(context).hideCurrentSnackBar();
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFF0F172A),
+      backgroundColor: colors.snackbarBg,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFF1E293B),
+          color: colors.snackbarBorder,
           width: 1.2,
         ),
       ),
@@ -117,10 +117,10 @@ void showAppErrorSnackBar(
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: colors.snackbarText,
                   ),
                 ),
                 if (message != null && message.isNotEmpty) ...[
@@ -129,7 +129,7 @@ void showAppErrorSnackBar(
                     message,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: colors.snackbarTextMuted,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -151,18 +151,18 @@ void showAppInfoSnackBar(
   required String title,
   String? message,
 }) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final colors = context.colors;
   ScaffoldMessenger.of(context).hideCurrentSnackBar();
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFF0F172A),
+      backgroundColor: colors.snackbarBg,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFF1E293B),
+          color: colors.snackbarBorder,
           width: 1.2,
         ),
       ),
@@ -171,12 +171,12 @@ void showAppInfoSnackBar(
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+              color: AppTheme.accentSky.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.info_outline_rounded,
-              color: Color(0xFF38BDF8),
+              color: AppTheme.accentSky,
               size: 20,
             ),
           ),
@@ -188,10 +188,10 @@ void showAppInfoSnackBar(
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: colors.snackbarText,
                   ),
                 ),
                 if (message != null && message.isNotEmpty) ...[
@@ -200,7 +200,7 @@ void showAppInfoSnackBar(
                     message,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: colors.snackbarTextMuted,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

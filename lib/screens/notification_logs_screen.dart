@@ -40,9 +40,7 @@ class _NotificationLogsScreenState
                 color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFF334155)
-                      : const Color(0xFFE2E8F0),
+                  color: context.colors.border,
                 ),
               ),
               child: const Icon(Icons.arrow_back_rounded, size: 20),
@@ -89,7 +87,7 @@ class _NotificationLogsScreenState
                     borderRadius: BorderRadius.circular(18),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.02),
+                        color: context.colors.cardShadow,
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -104,10 +102,10 @@ class _NotificationLogsScreenState
                           color: isUrgent
                               ? (isDark
                                   ? AppTheme.accentRose.withValues(alpha: 0.2)
-                                  : const Color(0xFFFEE2E2))
+                                  : AppTheme.badgeUrgentBgLight)
                               : (isDark
                                   ? AppTheme.accentAmber.withValues(alpha: 0.2)
-                                  : const Color(0xFFFEF3C7)),
+                                  : AppTheme.badgeWarningBgLight),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -147,11 +145,11 @@ class _NotificationLogsScreenState
                                         ? (isDark
                                             ? AppTheme.accentRose
                                                 .withValues(alpha: 0.2)
-                                            : const Color(0xFFFEE2E2))
+                                            : AppTheme.badgeUrgentBgLight)
                                         : (isDark
                                             ? AppTheme.accentEmerald
                                                 .withValues(alpha: 0.2)
-                                            : const Color(0xFFDCFCE7)),
+                                            : AppTheme.badgeSafeBgLight),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
@@ -209,7 +207,7 @@ class _NotificationLogsScreenState
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                color: isDark ? AppTheme.surfaceDark : AppTheme.slate100,
                 shape: BoxShape.circle,
               ),
               child: Icon(

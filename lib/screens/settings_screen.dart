@@ -282,7 +282,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsNotifierProvider);
     final cards = ref.watch(cardNotifierProvider).cards;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     void update(AppSettings newSettings) {
       ref.read(settingsNotifierProvider.notifier).updateSettings(
@@ -391,10 +390,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark
-                          ? AppTheme.primaryAccentDark
-                          : AppTheme.primaryNavy,
-                      foregroundColor: isDark ? Colors.black : Colors.white,
+                      backgroundColor: context.colors.buttonPrimaryBg,
+                      foregroundColor: context.colors.buttonPrimaryFg,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -402,14 +399,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     icon: Icon(
                       Icons.sync_rounded,
                       size: 20,
-                      color: isDark ? Colors.black : Colors.white,
+                      color: context.colors.buttonPrimaryFg,
                     ),
                     label: Text(
                       'Sync Widget & Notifications',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
-                        color: isDark ? Colors.black : Colors.white,
+                        color: context.colors.buttonPrimaryFg,
                       ),
                     ),
                   ),
