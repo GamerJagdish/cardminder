@@ -362,8 +362,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
                         child: const Text(
                           'Close',
                           style: TextStyle(
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -399,7 +399,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
           child: Text(
             'Download',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 19,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.2,
             ),
@@ -473,7 +473,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                               Text(
                                 'Downloading...',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Theme.of(context)
                                       .colorScheme
@@ -484,10 +484,10 @@ class _UpdateScreenState extends State<UpdateScreen> {
                               Text(
                                 '$percentInt%',
                                 style: const TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.accentEmerald,
-                                  fontFamily: 'monospace',
+                                  
                                 ),
                               ),
                             ],
@@ -496,9 +496,9 @@ class _UpdateScreenState extends State<UpdateScreen> {
                             Text(
                               sizeInfo,
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 color: AppTheme.textMuted,
-                                fontFamily: 'monospace',
+                                
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,

@@ -496,8 +496,8 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                     child: const Text(
                       'Close',
                       style: TextStyle(
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
