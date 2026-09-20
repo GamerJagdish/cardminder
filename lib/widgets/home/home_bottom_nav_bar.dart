@@ -70,7 +70,7 @@ class _HomeBottomNavBarState extends State<HomeBottomNavBar> {
                       decoration: BoxDecoration(
                         color: widget.selectedTab == 0
                             ? activeColor.withValues(alpha: isDark ? 0.2 : 0.1)
-                            : Colors.transparent,
+                            : activeColor.withValues(alpha: 0.0),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -188,7 +188,7 @@ class _HomeBottomNavBarState extends State<HomeBottomNavBar> {
                       decoration: BoxDecoration(
                         color: widget.selectedTab == 1
                             ? activeColor.withValues(alpha: isDark ? 0.2 : 0.1)
-                            : Colors.transparent,
+                            : activeColor.withValues(alpha: 0.0),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(

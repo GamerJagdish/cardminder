@@ -225,7 +225,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             alpha: isDark ? 0.24 : 0.12),
                         activeCardColor.withValues(
                             alpha: isDark ? 0.08 : 0.04),
-                        Colors.transparent,
+                        activeCardColor.withValues(alpha: 0.0),
                       ],
                       stops: const [0.0, 0.40, 0.75, 1.0],
                     ),

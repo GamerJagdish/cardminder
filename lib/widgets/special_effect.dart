@@ -79,7 +79,7 @@ class _SpecialEffectOverlayState extends State<SpecialEffectOverlay>
                         colors: [
                           AppTheme.accentAmber.withValues(alpha: 0.18),
                           AppTheme.accentRose.withValues(alpha: 0.07),
-                          Colors.transparent,
+                          AppTheme.accentRose.withValues(alpha: 0.0),
                         ],
                         stops: const [0.0, 0.5, 1.0],
                       ),
@@ -812,7 +812,7 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
                               gradient: RadialGradient(
                                 colors: [
                                   AppTheme.pureBlack.withValues(alpha: 0.45),
-                                  Colors.transparent,
+                                  AppTheme.pureBlack.withValues(alpha: 0.0),
                                 ],
                                 stops: const [0.3, 1.0],
                               ),

@@ -33,7 +33,7 @@ class CardCountdownBanner extends StatelessWidget {
           color: showCelebration
               ? AppTheme.accentEmerald
                   .withValues(alpha: isDark ? 0.5 : 0.35)
-              : Colors.transparent,
+              : AppTheme.accentEmerald.withValues(alpha: 0.0),
           width: 1.5,
         ),
         boxShadow: [
