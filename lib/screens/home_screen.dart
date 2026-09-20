@@ -417,10 +417,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   children:
                                       List.generate(cards.length, (index) {
                                     final isSelected = _currentPage == index;
-                                     final activeDotColor =
-                                         context.colors.buttonPrimaryBg;
-                                     final inactiveDotColor =
-                                         context.colors.border;
+                                    final activeDotColor =
+                                        context.colors.buttonPrimaryBg;
+                                    final inactiveDotColor = isDark
+                                        ? Colors.white.withValues(alpha: 0.32)
+                                        : Colors.black.withValues(alpha: 0.22);
+                                    final borderColor = isSelected
+                                        ? activeDotColor
+                                        : (isDark
+                                            ? Colors.white.withValues(alpha: 0.14)
+                                            : Colors.black.withValues(alpha: 0.10));
 
                                     return AnimatedContainer(
                                       duration:
@@ -435,6 +441,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             : inactiveDotColor,
                                         borderRadius:
                                             BorderRadius.circular(3),
+                                        border: Border.all(
+                                          color: borderColor,
+                                          width: 0.5,
+                                        ),
                                       ),
                                     );
                                   }),
