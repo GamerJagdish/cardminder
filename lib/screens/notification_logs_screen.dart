@@ -227,7 +227,7 @@ class _NotificationLogsScreenState
             ),
             const SizedBox(height: 8),
             const Text(
-              'CardMinder will log all upcoming 365-day deactivation reminders here!',
+              'CardMinder will log all notifications here!',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
