@@ -282,6 +282,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsNotifierProvider);
     final cards = ref.watch(cardNotifierProvider).cards;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     void update(AppSettings newSettings) {
       ref.read(settingsNotifierProvider.notifier).updateSettings(
@@ -306,6 +307,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.onSurface,
+                      shadows: AppTheme.textShadowAmbient(isDark),
                     ),
                   ),
                   const SizedBox(height: 20),

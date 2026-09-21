@@ -102,6 +102,36 @@ class AppTheme {
 
   static AppColors colors(BuildContext context) => context.colors;
 
+  /// Dual-layer ambient shadow for typography over dynamic or theme backgrounds.
+  /// Prevents white text from being washed out even over pure white or vibrant background spots.
+  static List<Shadow> textShadowAmbient(bool isDark) {
+    if (!isDark) return const [];
+    return [
+      Shadow(
+        color: Colors.black.withValues(alpha: 0.55),
+        offset: const Offset(0, 1),
+        blurRadius: 3,
+      ),
+      Shadow(
+        color: Colors.black.withValues(alpha: 0.30),
+        offset: const Offset(0, 0),
+        blurRadius: 8,
+      ),
+    ];
+  }
+
+  /// Subtle shadow for smaller text headers over dynamic backgrounds.
+  static List<Shadow> textShadowSubtle(bool isDark) {
+    if (!isDark) return const [];
+    return [
+      Shadow(
+        color: Colors.black.withValues(alpha: 0.45),
+        offset: const Offset(0, 1),
+        blurRadius: 2,
+      ),
+    ];
+  }
+
   // Preset credit card solid / gradient themes matching screenshot
   static const List<List<Color>> cardThemes = [
     [Color(0xFF273B66), Color(0xFF1E293B)], // Navy (Default)

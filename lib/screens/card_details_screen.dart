@@ -94,6 +94,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
     final hasNext = currentIndex < filteredCards.length - 1;
     final prevCard = hasPrev ? filteredCards[currentIndex - 1] : null;
     final nextCard = hasNext ? filteredCards[currentIndex + 1] : null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return PopScope(
       canPop: false,
@@ -138,6 +139,9 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
             child: Text(
               currentCard.cardName,
               key: ValueKey('title-${currentCard.id}'),
+              style: TextStyle(
+                shadows: AppTheme.textShadowAmbient(isDark),
+              ),
             ),
           ),
         ),

@@ -266,12 +266,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Welcome back,',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: AppTheme.textMuted,
-                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? AppTheme.slate300
+                                        : AppTheme.textMuted,
+                                    fontWeight: FontWeight.w600,
+                                    shadows: AppTheme.textShadowSubtle(isDark),
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -283,6 +286,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     color: Theme.of(context).colorScheme.onSurface,
+                                    shadows: AppTheme.textShadowAmbient(isDark),
                                   ),
                                 ),
                               ],
@@ -468,6 +472,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
                                               color: Theme.of(context).colorScheme.onSurface,
+                                              shadows: AppTheme.textShadowAmbient(isDark),
                                             ),
                                           ),
                                           const SizedBox(width: 8),
