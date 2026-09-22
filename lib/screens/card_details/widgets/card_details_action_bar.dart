@@ -28,10 +28,10 @@ class CardDetailsActionBar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Primary Action Button: "Mark Transaction Today"
+            // Primary Action Button: "Mark Transaction Today" (56px Pill, no leading icon)
             SizedBox(
               width: double.infinity,
-              height: 54,
+              height: 56,
               child: ElevatedButton(
                 onPressed: isResetting ? null : onMarkUsedToday,
                 style: ElevatedButton.styleFrom(
@@ -41,7 +41,7 @@ class CardDetailsActionBar extends StatelessWidget {
                   foregroundColor: context.colors.buttonPrimaryFg,
                   elevation: 2,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(28),
                   ),
                 ),
                 child: AnimatedSwitcher(
@@ -51,8 +51,11 @@ class CardDetailsActionBar extends StatelessWidget {
                           key: ValueKey('resetting'),
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check_circle_rounded,
-                                color: AppTheme.surfaceWhite, size: 20),
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: AppTheme.surfaceWhite,
+                              size: 20,
+                            ),
                             SizedBox(width: 8),
                             Text(
                               'Reset Complete!',
@@ -77,14 +80,14 @@ class CardDetailsActionBar extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
-            // Secondary Actions Row: Solid Edit & Delete Buttons
+            // Secondary Actions Row: Edit & Delete Buttons (50px Rounded Pills, no leading icons)
             Row(
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 48,
+                    height: 50,
                     child: ElevatedButton(
                       onPressed: onEdit,
                       style: ElevatedButton.styleFrom(
@@ -92,7 +95,7 @@ class CardDetailsActionBar extends StatelessWidget {
                         foregroundColor: AppTheme.surfaceWhite,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(25),
                         ),
                       ),
                       child: const Text(
@@ -109,7 +112,7 @@ class CardDetailsActionBar extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: SizedBox(
-                    height: 48,
+                    height: 50,
                     child: ElevatedButton(
                       onPressed: onDelete,
                       style: ElevatedButton.styleFrom(
@@ -117,7 +120,7 @@ class CardDetailsActionBar extends StatelessWidget {
                         foregroundColor: context.colors.destructiveFg,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(25),
                         ),
                       ),
                       child: Text(

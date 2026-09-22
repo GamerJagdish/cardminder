@@ -11,7 +11,6 @@ import 'add_edit_card_screen.dart';
 import 'card_details/widgets/card_3d_deck.dart';
 import 'card_details/widgets/card_countdown_banner.dart';
 import 'card_details/widgets/card_details_action_bar.dart';
-import 'card_details/widgets/card_meta_grid.dart';
 
 class CardDetailsScreen extends ConsumerStatefulWidget {
   final CreditCard card;
@@ -28,10 +27,22 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
   bool _isResetting = false;
   bool _showCelebration = false;
 
-  // Vertical Pull-Down Dismiss
+  // Vertical Pull-Down Dismiss (Card Deck)
   double _pullDownOffset = 0.0;
+  bool _isDraggingDeck = false;
+  bool _isDismissing = false;
   late AnimationController _springBackController;
   late Animation<double> _springBackAnimation;
+
+  // Swipe Down From Anywhere Dismiss (Page-Level)
+  late ScrollController _scrollController;
+  late AnimationController _pageSpringController;
+  late Animation<double> _pageSpringAnimation;
+  double _pagePullDownOffset = 0.0;
+  double? _pageDragStartY;
+  double _pageDragVelocity = 0.0;
+  DateTime? _lastMoveTime;
+  double? _lastMoveY;
 
   // Horizontal 3D Card Deck Switcher
   double _dragOffset = 0.0;
@@ -44,6 +55,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
   void initState() {
     super.initState();
     _currentCardId = widget.card.id;
+    _scrollController = ScrollController();
 
     _springBackController = AnimationController(
       vsync: this,
@@ -54,6 +66,16 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
         });
       });
     _springBackAnimation = const AlwaysStoppedAnimation<double>(0.0);
+
+    _pageSpringController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 280),
+    )..addListener(() {
+        setState(() {
+          _pagePullDownOffset = _pageSpringAnimation.value;
+        });
+      });
+    _pageSpringAnimation = const AlwaysStoppedAnimation<double>(0.0);
 
     _deckController = AnimationController(
       vsync: this,
@@ -68,7 +90,9 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _springBackController.dispose();
+    _pageSpringController.dispose();
     _deckController.dispose();
     super.dispose();
   }
@@ -161,149 +185,274 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // Layer 0 (Underneath): Content with invisible placeholder to reserve card space
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Listener(
+              behavior: HitTestBehavior.translucent,
+              onPointerDown: (event) {
+                if (_isDismissing) return;
+                _pageSpringController.stop();
+                _pageDragStartY = event.position.dy;
+                _lastMoveY = event.position.dy;
+                _lastMoveTime = DateTime.now();
+                _pageDragVelocity = 0.0;
+              },
+              onPointerMove: (event) {
+                if (_isDismissing) return;
+                if (_isDraggingDeck) {
+                  return;
+                }
+                if (_pageDragStartY == null) return;
+
+                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+                if (scrollOffset > 2.0) {
+                  _pageDragStartY = event.position.dy;
+                  if (_pagePullDownOffset > 0) {
+                    setState(() {
+                      _pagePullDownOffset = 0.0;
+                    });
+                  }
+                  return;
+                }
+
+                final totalDy = event.position.dy - _pageDragStartY!;
+                if (totalDy > 0) {
+                  final now = DateTime.now();
+                  if (_lastMoveTime != null && _lastMoveY != null) {
+                    final dt = now.difference(_lastMoveTime!).inMicroseconds / 1000000.0;
+                    if (dt > 0.005) {
+                      _pageDragVelocity = (event.position.dy - _lastMoveY!) / dt;
+                      _lastMoveY = event.position.dy;
+                      _lastMoveTime = now;
+                    }
+                  }
+
+                  setState(() {
+                    _pagePullDownOffset = (totalDy * 0.70).clamp(0.0, 220.0);
+                  });
+                } else {
+                  if (_pagePullDownOffset > 0) {
+                    setState(() {
+                      _pagePullDownOffset = 0.0;
+                    });
+                  }
+                }
+              },
+              onPointerUp: (event) {
+                if (_isDismissing) return;
+                if (_isDraggingDeck) {
+                  _pageDragStartY = null;
+                  return;
+                }
+                if (_pagePullDownOffset > 0) {
+                  if (_pagePullDownOffset > 55.0 || _pageDragVelocity > 350.0) {
+                    _isDismissing = true;
+                    HapticFeedback.lightImpact();
+                    Navigator.pop(context, currentCard.id);
+                  } else {
+                    _pageSpringAnimation = Tween<double>(
+                      begin: _pagePullDownOffset,
+                      end: 0.0,
+                    ).animate(CurvedAnimation(
+                      parent: _pageSpringController,
+                      curve: Curves.easeOutBack,
+                    ));
+                    _pageSpringController.forward(from: 0.0);
+                  }
+                }
+                _pageDragStartY = null;
+              },
+              onPointerCancel: (event) {
+                if (_pagePullDownOffset > 0) {
+                  _pageSpringAnimation = Tween<double>(
+                    begin: _pagePullDownOffset,
+                    end: 0.0,
+                  ).animate(CurvedAnimation(
+                    parent: _pageSpringController,
+                    curve: Curves.easeOutBack,
+                  ));
+                  _pageSpringController.forward(from: 0.0);
+                }
+                _pageDragStartY = null;
+              },
+              child: Transform.translate(
+                offset: Offset(0.0, _pagePullDownOffset),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: _isDraggingDeck || _pagePullDownOffset > 0
+                      ? const NeverScrollableScrollPhysics()
+                      : const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                  padding: const EdgeInsets.all(20.0),
+                  child: Stack(
+                    clipBehavior: Clip.none,
                     children: [
-                      // Placeholder space matching pull-down indicator
-                      Center(
-                        child: Container(
-                          width: 38,
-                          height: 4,
-                          margin: const EdgeInsets.only(bottom: 12),
-                        ),
-                      ),
-
-                      // Invisible card placeholder to naturally size layout
-                      Opacity(
-                        opacity: 0.0,
-                        child: IgnorePointer(
-                          child: CreditCardView(
-                            card: currentCard,
-                            heroTag: null,
-                            isInteractive: false,
-                            enableTilt: false,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Countdown Progress Banner Card with Celebration Ripple
-                      CardCountdownBanner(
-                        card: currentCard,
-                        showCelebration: _showCelebration,
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Metadata 2x2 Grid
-                      CardMetaGrid(
-                        card: currentCard,
-                        onEditLastTransactionDate: () =>
-                            _editLastTransactionDate(context, ref, currentCard),
-                      ),
-                    ],
-                  ),
-
-              // Layer 1 (On Top): Interactive Pull-Down Indicator & 3D Card Deck
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Subtle Apple Wallet Pull-Down Indicator
-                        Center(
-                          child: Container(
-                            width: 38,
-                            height: 4,
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: context.colors.handleBar,
-                              borderRadius: BorderRadius.circular(2),
+                      // Layer 0 (Underneath): Content with invisible placeholder to reserve card space
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Invisible card placeholder to naturally size layout
+                          Opacity(
+                            opacity: 0.0,
+                            child: IgnorePointer(
+                              child: CreditCardView(
+                                card: currentCard,
+                                heroTag: null,
+                                isInteractive: false,
+                                enableTilt: false,
+                              ),
                             ),
                           ),
-                        ),
 
-                        // Interactive 3D Card Deck (Horizontal 3D Slide & Vertical Pull-Down)
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            if (_pullDownOffset > 10 || _dragOffset.abs() > 10) {
-                              return;
-                            }
-                            Navigator.push(
-                              context,
-                              slideUpRoute(
-                                AddEditCardScreen(cardToEdit: currentCard),
-                              ),
-                            );
-                          },
-                          onPanStart: (details) {
-                            if (_deckController.isAnimating ||
-                                _springBackController.isAnimating) {
-                              return;
-                            }
-                            _panStartPosition = details.localPosition;
-                            _dragAxis = null;
-                            _deckController.stop();
-                            _springBackController.stop();
-                          },
-                          onPanUpdate: (details) {
-                            if (_panStartPosition == null) return;
-                            final totalDx =
-                                details.localPosition.dx - _panStartPosition!.dx;
-                            final totalDy =
-                                details.localPosition.dy - _panStartPosition!.dy;
+                          const SizedBox(height: 20),
 
+                          // Merged Countdown & Status Timeline Banner
+                          CardCountdownBanner(
+                            card: currentCard,
+                            showCelebration: _showCelebration,
+                            onEditLastTransactionDate: () =>
+                                _editLastTransactionDate(context, ref, currentCard),
+                          ),
+                        ],
+                      ),
+
+                  // Layer 1 (On Top): Interactive 3D Card Deck
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Listener(
+                          onPointerDown: (_) {
+                            setState(() {
+                              _isDraggingDeck = true;
+                            });
+                          },
+                          onPointerUp: (_) {
                             if (_dragAxis == null) {
-                              if (totalDx.abs() > 8 || totalDy.abs() > 8) {
-                                if (totalDy > 8 &&
-                                    totalDy.abs() > totalDx.abs() * 1.2) {
-                                  _dragAxis = Axis.vertical;
-                                } else if (totalDx.abs() > 8) {
-                                  _dragAxis = Axis.horizontal;
-                                }
-                              }
-                            }
-
-                            if (_dragAxis == Axis.vertical) {
-                              if (totalDy > 0 || _pullDownOffset > 0) {
-                                setState(() {
-                                  _pullDownOffset =
-                                      (totalDy * 0.85).clamp(0.0, 240.0);
-                                });
-                              }
-                            } else if (_dragAxis == Axis.horizontal) {
-                              double dx = totalDx;
-                              if ((dx > 0 && !hasPrev) || (dx < 0 && !hasNext)) {
-                                dx = dx * 0.28;
-                              }
                               setState(() {
-                                _dragOffset = dx;
+                                _isDraggingDeck = false;
                               });
                             }
                           },
-                          onPanEnd: (details) {
-                            final velocityX =
-                                details.velocity.pixelsPerSecond.dx;
-                            final velocityY =
-                                details.velocity.pixelsPerSecond.dy;
-                            final screenWidth =
-                                MediaQuery.of(context).size.width;
+                          onPointerCancel: (_) {
+                            setState(() {
+                              _isDraggingDeck = false;
+                            });
+                          },
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              if (_pullDownOffset > 10 || _dragOffset.abs() > 10) {
+                                return;
+                              }
+                              Navigator.push(
+                                context,
+                                slideUpRoute(
+                                  AddEditCardScreen(cardToEdit: currentCard),
+                                ),
+                              );
+                            },
+                            onPanStart: (details) {
+                              if (_deckController.isAnimating ||
+                                  _springBackController.isAnimating) {
+                                return;
+                              }
+                              _panStartPosition = details.localPosition;
+                              _dragAxis = null;
+                              _deckController.stop();
+                              _springBackController.stop();
+                            },
+                            onPanUpdate: (details) {
+                              if (_panStartPosition == null) return;
+                              final totalDx =
+                                  details.localPosition.dx - _panStartPosition!.dx;
+                              final totalDy =
+                                  details.localPosition.dy - _panStartPosition!.dy;
 
-                            if (_dragAxis == Axis.vertical) {
-                              if (_pullDownOffset > 85.0 || velocityY > 650.0) {
-                                HapticFeedback.lightImpact();
-                                Navigator.pop(context, currentCard.id);
-                              } else if (_pullDownOffset > 0.0) {
+                              if (_dragAxis == null) {
+                                if (totalDx.abs() > 6 || totalDy.abs() > 6) {
+                                  if (totalDy > 6 &&
+                                      totalDy.abs() > totalDx.abs() * 0.75) {
+                                    _dragAxis = Axis.vertical;
+                                  } else if (totalDx.abs() > 6) {
+                                    _dragAxis = Axis.horizontal;
+                                  }
+                                }
+                              }
+
+                              if (_dragAxis == Axis.vertical) {
+                                if (totalDy > 0 || _pullDownOffset > 0) {
+                                  setState(() {
+                                    _pullDownOffset =
+                                        (totalDy * 0.90).clamp(0.0, 240.0);
+                                  });
+                                }
+                              } else if (_dragAxis == Axis.horizontal) {
+                                double dx = totalDx;
+                                if ((dx > 0 && !hasPrev) || (dx < 0 && !hasNext)) {
+                                  dx = dx * 0.28;
+                                }
+                                setState(() {
+                                  _dragOffset = dx;
+                                });
+                              }
+                            },
+                            onPanEnd: (details) {
+                              final velocityX =
+                                  details.velocity.pixelsPerSecond.dx;
+                              final velocityY =
+                                  details.velocity.pixelsPerSecond.dy;
+                              final screenWidth =
+                                  MediaQuery.of(context).size.width;
+
+                              if (_dragAxis == Axis.vertical) {
+                                if (_pullDownOffset > 60.0 || velocityY > 350.0) {
+                                  if (!_isDismissing) {
+                                    _isDismissing = true;
+                                    HapticFeedback.lightImpact();
+                                    Navigator.pop(context, currentCard.id);
+                                  }
+                                } else if (_pullDownOffset > 0.0) {
+                                  _springBackAnimation = Tween<double>(
+                                    begin: _pullDownOffset,
+                                    end: 0.0,
+                                  ).animate(CurvedAnimation(
+                                    parent: _springBackController,
+                                    curve: Curves.easeOutBack,
+                                  ));
+                                  _springBackController.forward(from: 0.0);
+                                }
+                              } else if (_dragAxis == Axis.horizontal) {
+                                final isFlingNext =
+                                    _dragOffset < -65.0 || velocityX < -500.0;
+                                final isFlingPrev =
+                                    _dragOffset > 65.0 || velocityX > 500.0;
+
+                                if (isFlingNext && hasNext && nextCard != null) {
+                                  _completeCardSwitch(
+                                    toNext: true,
+                                    targetCard: nextCard,
+                                    screenWidth: screenWidth,
+                                  );
+                                } else if (isFlingPrev &&
+                                    hasPrev &&
+                                    prevCard != null) {
+                                  _completeCardSwitch(
+                                    toNext: false,
+                                    targetCard: prevCard,
+                                    screenWidth: screenWidth,
+                                  );
+                                } else {
+                                  _springBackDeck();
+                                }
+                              }
+                              _dragAxis = null;
+                              _panStartPosition = null;
+                              setState(() {
+                                _isDraggingDeck = false;
+                              });
+                            },
+                            onPanCancel: () {
+                              if (_pullDownOffset > 0) {
                                 _springBackAnimation = Tween<double>(
                                   begin: _pullDownOffset,
                                   end: 0.0,
@@ -313,71 +462,37 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen>
                                 ));
                                 _springBackController.forward(from: 0.0);
                               }
-                            } else if (_dragAxis == Axis.horizontal) {
-                              final isFlingNext =
-                                  _dragOffset < -65.0 || velocityX < -500.0;
-                              final isFlingPrev =
-                                  _dragOffset > 65.0 || velocityX > 500.0;
-
-                              if (isFlingNext && hasNext && nextCard != null) {
-                                _completeCardSwitch(
-                                  toNext: true,
-                                  targetCard: nextCard,
-                                  screenWidth: screenWidth,
-                                );
-                              } else if (isFlingPrev &&
-                                  hasPrev &&
-                                  prevCard != null) {
-                                _completeCardSwitch(
-                                  toNext: false,
-                                  targetCard: prevCard,
-                                  screenWidth: screenWidth,
-                                );
-                              } else {
+                              if (_dragOffset != 0) {
                                 _springBackDeck();
                               }
-                            }
-                            _dragAxis = null;
-                            _panStartPosition = null;
-                          },
-                          onPanCancel: () {
-                            if (_pullDownOffset > 0) {
-                              _springBackAnimation = Tween<double>(
-                                begin: _pullDownOffset,
-                                end: 0.0,
-                              ).animate(CurvedAnimation(
-                                parent: _springBackController,
-                                curve: Curves.easeOutBack,
-                              ));
-                              _springBackController.forward(from: 0.0);
-                            }
-                            if (_dragOffset != 0) {
-                              _springBackDeck();
-                            }
-                            _dragAxis = null;
-                            _panStartPosition = null;
-                          },
-                          child: Transform.translate(
-                            offset: Offset(0.0, _pullDownOffset),
-                            child: Transform.scale(
-                              scale: (1.0 - (_pullDownOffset / 1000))
-                                  .clamp(0.88, 1.0),
-                              child: Card3DDeck(
-                                currentCard: currentCard,
-                                prevCard: prevCard,
-                                nextCard: nextCard,
-                                hasPrev: hasPrev,
-                                hasNext: hasNext,
-                                dragOffset: _dragOffset,
-                                pullDownOffset: _pullDownOffset,
+                              _dragAxis = null;
+                              _panStartPosition = null;
+                              setState(() {
+                                _isDraggingDeck = false;
+                              });
+                            },
+                            child: Transform.translate(
+                              offset: Offset(0.0, _pullDownOffset),
+                              child: Transform.scale(
+                                scale: (1.0 - (_pullDownOffset / 1000))
+                                    .clamp(0.88, 1.0),
+                                child: Card3DDeck(
+                                  currentCard: currentCard,
+                                  prevCard: prevCard,
+                                  nextCard: nextCard,
+                                  hasPrev: hasPrev,
+                                  hasNext: hasNext,
+                                  dragOffset: _dragOffset,
+                                  pullDownOffset: _pullDownOffset,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
