@@ -343,23 +343,43 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
+          centerTitle: false,
+          titleSpacing: 0,
+          leadingWidth: 70,
           leading: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: GestureDetector(
-              onTap: _handleBackNavigation,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardTheme.color,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: context.colors.border,
+            padding: const EdgeInsets.only(left: 16.0, right: 14.0),
+            child: Center(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: GestureDetector(
+                  onTap: _handleBackNavigation,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: context.colors.circleButtonBg,
+                    ),
+                    child: Icon(
+                      Icons.arrow_back_rounded,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                 ),
-                child: const Icon(Icons.arrow_back_rounded, size: 20),
               ),
             ),
           ),
-          title: Text(isEditing ? 'Edit Card' : 'Add New Card'),
+          title: Text(
+            isEditing ? 'Edit Card' : 'Add New Card',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
+              shadows: AppTheme.textShadowAmbient(
+                Theme.of(context).brightness == Brightness.dark,
+              ),
+            ),
+          ),
         ),
         body: Column(
           children: [
