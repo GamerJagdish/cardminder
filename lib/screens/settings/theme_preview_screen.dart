@@ -715,8 +715,8 @@ class _PhoneMockupView extends StatelessWidget {
                 child: MediaQuery(
                   data: MediaQuery.of(context).copyWith(
                     size: Size(virtualWidth, virtualHeight),
-                    padding: const EdgeInsets.only(top: 44, bottom: 20),
-                    viewPadding: const EdgeInsets.only(top: 44, bottom: 20),
+                    padding: const EdgeInsets.only(top: 36, bottom: 0),
+                    viewPadding: const EdgeInsets.only(top: 36, bottom: 0),
                   ),
                   child: IgnorePointer(
                     ignoring: true,
@@ -733,33 +733,14 @@ class _PhoneMockupView extends StatelessWidget {
                           ),
                         ),
 
-                        // Realistic Smartphone Status Bar Overlay (Dynamic Island notch, Time, Wifi/Battery)
+                        // Realistic Smartphone Status Bar Overlay (Camera hole punch, Time, Wifi/Battery)
                         Positioned(
                           top: 0,
                           left: 0,
                           right: 0,
-                          height: 44,
+                          height: 36,
                           child: _PhoneStatusBar(
                             isDarkText: preset.id == 'classic' && !isDark,
-                          ),
-                        ),
-
-                        // Smartphone Home Indicator Bar at the bottom
-                        Positioned(
-                          bottom: 6,
-                          left: 0,
-                          right: 0,
-                          child: Center(
-                            child: Container(
-                              width: 120,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: (preset.id == 'classic' && !isDark)
-                                    ? Colors.black.withValues(alpha: 0.25)
-                                    : Colors.white.withValues(alpha: 0.35),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
                           ),
                         ),
                       ],
@@ -775,7 +756,7 @@ class _PhoneMockupView extends StatelessWidget {
   }
 }
 
-/// Simulated smartphone status bar (Dynamic Island, live time synced to user clock, battery/wifi)
+/// Simulated smartphone status bar (Android hole punch camera, live time synced to user clock, battery/wifi)
 class _PhoneStatusBar extends StatefulWidget {
   final bool isDarkText;
 
@@ -830,55 +811,80 @@ class _PhoneStatusBarState extends State<_PhoneStatusBar> {
         ? const Color(0xFF0F172A)
         : Colors.white;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return SizedBox(
+      height: 36,
+      child: Stack(
         children: [
-          Text(
-            _formattedTime(context),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: contentColor,
-              letterSpacing: -0.2,
-            ),
-          ),
-          Container(
-            width: 110,
-            height: 26,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(13),
-              border: Border.all(
-                color: widget.isDarkText
-                    ? Colors.black.withValues(alpha: 0.15)
-                    : Colors.white.withValues(alpha: 0.15),
-                width: 0.8,
+          // Time on left & status icons on right
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _formattedTime(context),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: contentColor,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.signal_cellular_alt_rounded,
+                        size: 15,
+                        color: contentColor.withValues(alpha: 0.9),
+                      ),
+                      const SizedBox(width: 5),
+                      Icon(
+                        Icons.wifi_rounded,
+                        size: 15,
+                        color: contentColor.withValues(alpha: 0.9),
+                      ),
+                      const SizedBox(width: 5),
+                      Icon(
+                        Icons.battery_full_rounded,
+                        size: 17,
+                        color: contentColor.withValues(alpha: 0.9),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.signal_cellular_alt_rounded,
-                size: 16,
-                color: contentColor.withValues(alpha: 0.9),
+
+          // Android-Style Hole Punch Camera (precisely centered)
+          Align(
+            alignment: Alignment.center,
+            child: Container(
+              width: 11,
+              height: 11,
+              decoration: BoxDecoration(
+                color: const Color(0xFF05070B),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: widget.isDarkText
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : Colors.white.withValues(alpha: 0.18),
+                  width: 0.8,
+                ),
               ),
-              const SizedBox(width: 5),
-              Icon(
-                Icons.wifi_rounded,
-                size: 16,
-                color: contentColor.withValues(alpha: 0.9),
+              child: Center(
+                child: Container(
+                  width: 4,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B).withValues(alpha: 0.8),
+                    shape: BoxShape.circle,
+                  ),
+                ),
               ),
-              const SizedBox(width: 5),
-              Icon(
-                Icons.battery_full_rounded,
-                size: 18,
-                color: contentColor.withValues(alpha: 0.9),
-              ),
-            ],
+            ),
           ),
         ],
       ),
