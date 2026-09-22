@@ -115,7 +115,7 @@ class AppearanceSection extends StatelessWidget {
                               ),
                             ),
                             const Text(
-                              ' • ',
+                              ' / ',
                               style: TextStyle(color: AppTheme.textMuted),
                             ),
                             Text(

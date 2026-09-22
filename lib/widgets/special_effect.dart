@@ -955,7 +955,7 @@ class _MovableClownLayerState extends State<_MovableClownLayer>
         ),
       ),
       child: const Text(
-        'Tap to Honk! • Drag to fling! 🚀',
+        'Tap to Honk!, Drag to fling! 🚀',
         style: TextStyle(
           color: AppTheme.amber200,
           fontSize: 10.5,

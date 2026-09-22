@@ -130,7 +130,7 @@ class _SetBackupPinDialogState extends State<SetBackupPinDialog> {
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                   decoration: InputDecoration(
-                    hintText: '••••',
+                    hintText: '●●●●',
                     hintStyle: TextStyle(
                       letterSpacing: 10,
                       color: AppTheme.textMuted.withValues(alpha: 0.5),

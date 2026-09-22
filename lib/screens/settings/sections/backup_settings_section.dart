@@ -137,7 +137,7 @@ class BackupSettingsSection extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 8),
                                       const Text(
-                                        '•  Tap to change',
+                                        '-  Tap to change',
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: AppTheme.textMuted,

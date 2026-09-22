@@ -207,7 +207,7 @@ class _UnlockBackupPinDialogState extends State<UnlockBackupPinDialog> {
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                   decoration: InputDecoration(
-                    hintText: '••••',
+                    hintText: '●●●●',
                     hintStyle: TextStyle(
                       letterSpacing: 10,
                       color: AppTheme.textMuted.withValues(alpha: 0.5),
