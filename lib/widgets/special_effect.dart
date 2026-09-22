@@ -97,7 +97,7 @@ class _SpecialEffectOverlayState extends State<SpecialEffectOverlay>
 
               // 4. Pack Up Circus Action Button
               Positioned(
-                bottom: 24,
+                bottom: 88 + MediaQuery.paddingOf(context).bottom,
                 left: 0,
                 right: 0,
                 child: Center(
