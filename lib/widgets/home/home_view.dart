@@ -343,15 +343,26 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         settings: settings,
                         onCardAdded: widget.onCardAdded,
                       )
-                    : SingleChildScrollView(
-                        controller: _scrollController,
-                        physics: widget.isInteractive
-                            ? null
-                            : const NeverScrollableScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 16),
+                    : NotificationListener<OverscrollIndicatorNotification>(
+                        onNotification: (overscroll) {
+                          overscroll.disallowIndicator();
+                          return true;
+                        },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            overscroll: false,
+                          ),
+                          child: SingleChildScrollView(
+                            controller: _scrollController,
+                            physics: widget.isInteractive
+                                ? const BouncingScrollPhysics(
+                                    parent: AlwaysScrollableScrollPhysics(),
+                                  )
+                                : const NeverScrollableScrollPhysics(),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 16),
 
                             // Top Credit Card Carousel
                             SizedBox(
@@ -730,6 +741,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                           ],
                         ),
                       ),
+                    ),
+                  ),
               ),
             ],
           ),
