@@ -750,7 +750,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                         borderRadius: BorderRadius.circular(20),
                                         dropdownColor: isDark
                                             ? const Color(0xFF1E2430)
-                                            : Colors.white,
+                                            : const Color(0xFFF1F5F9),
                                         elevation: 8,
                                         style: TextStyle(
                                           fontSize: 15,

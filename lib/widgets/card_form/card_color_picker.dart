@@ -21,6 +21,9 @@ class CardColorPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBgColor = isDark
+        ? const Color(0xFF1E2430)
+        : const Color(0xFFF1F5F9);
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),
@@ -44,18 +47,8 @@ class CardColorPicker extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardTheme.color,
+                    color: cardBgColor,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: context.colors.border,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.pureBlack.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +90,9 @@ class CardColorPicker extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: context.colors.surfaceSubtle,
+                              color: isDark
+                                  ? const Color(0xFF161B22)
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: context.colors.border,

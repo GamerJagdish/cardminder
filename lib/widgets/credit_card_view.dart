@@ -189,7 +189,6 @@ class _CreditCardViewState extends State<CreditCardView>
     final textSubtle = isLightBg
         ? AppTheme.slate600
         : AppTheme.surfaceWhite.withValues(alpha: 0.60);
-    final iconColor = isLightBg ? AppTheme.primaryNavy : AppTheme.surfaceWhite;
     final badgeBg = isLightBg
         ? AppTheme.pureBlack.withValues(alpha: 0.08)
         : AppTheme.surfaceWhite.withValues(alpha: 0.18);
@@ -313,7 +312,7 @@ class _CreditCardViewState extends State<CreditCardView>
                             ),
                           ),
                         ),
-                        SizedBox(width: onNetworkSelected != null ? 105 : 85),
+                        SizedBox(width: 85),
                       ],
                     ),
 
@@ -466,7 +465,9 @@ class _CreditCardViewState extends State<CreditCardView>
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        color: Theme.of(context).cardTheme.color,
+                        color: isDarkTheme
+                            ? const Color(0xFF1E2430)
+                            : const Color(0xFFF1F5F9),
                         surfaceTintColor: Colors.transparent,
                         tooltip: 'Select Network',
                         itemBuilder: (context) {
@@ -474,6 +475,9 @@ class _CreditCardViewState extends State<CreditCardView>
                               context.colors.buttonPrimaryBg;
                           final itemTextColor =
                               Theme.of(context).colorScheme.onSurface;
+                          final dropdownBgColor = isDarkTheme
+                              ? const Color(0xFF1E2430)
+                              : const Color(0xFFF1F5F9);
 
                           return [
                             'Visa',
@@ -498,10 +502,7 @@ class _CreditCardViewState extends State<CreditCardView>
                                         color: isSelected
                                             ? selectedColor
                                             : itemTextColor,
-                                        backgroundColor:
-                                            Theme.of(context)
-                                                .cardTheme
-                                                .color,
+                                        backgroundColor: dropdownBgColor,
                                       ),
                                     ),
                                   ),
@@ -534,7 +535,7 @@ class _CreditCardViewState extends State<CreditCardView>
                           alignment: Alignment.centerRight,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
+                                horizontal: 10, vertical: 4),
                             constraints: const BoxConstraints(
                               minHeight: 40,
                             ),
@@ -544,18 +545,10 @@ class _CreditCardViewState extends State<CreditCardView>
                               border: Border.all(
                                   color: badgeBorder, width: 0.8),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                FlipCardNetworkLogo(
-                                  network: card.network,
-                                  color: textColor,
-                                  backgroundColor: colors.first,
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(Icons.arrow_drop_down_rounded,
-                                    color: iconColor, size: 20),
-                              ],
+                            child: FlipCardNetworkLogo(
+                              network: card.network,
+                              color: textColor,
+                              backgroundColor: colors.first,
                             ),
                           ),
                         ),
