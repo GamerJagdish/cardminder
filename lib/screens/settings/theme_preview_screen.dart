@@ -25,6 +25,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
   int _currentVariantIndex = 0;
   bool _isViewingVariants = false;
   AppThemePreset? _activeVariantsParent;
+  late Map<String, String> _selectedVariants;
 
   final List<AppThemePreset> _presets = ThemePresets.all;
 
@@ -32,7 +33,12 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
   void initState() {
     super.initState();
     final settings = ref.read(settingsNotifierProvider);
+    _selectedVariants = Map<String, String>.from(settings.selectedVariants);
+
     final parent = ThemePresets.findParentOrSelf(settings.themePreset);
+    if (parent.hasVariants) {
+      _selectedVariants[parent.id] = settings.themePreset;
+    }
     final initialIndex = _presets.indexWhere((p) => p.id == parent.id);
     _currentPage = initialIndex >= 0 ? initialIndex : 0;
 
@@ -63,12 +69,17 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
 
     String targetId = selectedPreset.id;
     if (selectedPreset.hasVariants) {
-      final isAlreadyVariant = selectedPreset.variants.any((v) => v.id == settings.themePreset);
-      targetId = isAlreadyVariant ? settings.themePreset : selectedPreset.variants.first.id;
+      final rememberedId = _selectedVariants[selectedPreset.id] ?? settings.selectedVariants[selectedPreset.id];
+      final isMatch = rememberedId != null && selectedPreset.variants.any((v) => v.id == rememberedId);
+      targetId = isMatch ? rememberedId : selectedPreset.variants.first.id;
+      _selectedVariants[selectedPreset.id] = targetId;
     }
 
     ref.read(settingsNotifierProvider.notifier).updateSettings(
-          settings.copyWith(themePreset: targetId),
+          settings.copyWith(
+            themePreset: targetId,
+            selectedVariants: _selectedVariants,
+          ),
           cards,
         );
   }
@@ -76,7 +87,8 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
   void _enterVariantsView(AppThemePreset parent) {
     HapticFeedback.mediumImpact();
     final settings = ref.read(settingsNotifierProvider);
-    final variantIndex = parent.variants.indexWhere((v) => v.id == settings.themePreset);
+    final currentTarget = _selectedVariants[parent.id] ?? settings.themePreset;
+    final variantIndex = parent.variants.indexWhere((v) => v.id == currentTarget);
     final idx = variantIndex >= 0 ? variantIndex : 0;
 
     _variantPageController?.dispose();
@@ -85,17 +97,22 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
       initialPage: idx,
     );
 
+    final selectedVariant = parent.variants[idx];
+    _selectedVariants[parent.id] = selectedVariant.id;
+
     setState(() {
       _isViewingVariants = true;
       _activeVariantsParent = parent;
       _currentVariantIndex = idx;
     });
 
-    final selectedVariant = parent.variants[idx];
     if (selectedVariant.id != settings.themePreset) {
       final cards = ref.read(cardNotifierProvider).cards;
       ref.read(settingsNotifierProvider.notifier).updateSettings(
-            settings.copyWith(themePreset: selectedVariant.id),
+            settings.copyWith(
+              themePreset: selectedVariant.id,
+              selectedVariants: _selectedVariants,
+            ),
             cards,
           );
     }
@@ -132,18 +149,25 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
       _currentVariantIndex = index;
     });
 
-    final selectedVariant = _activeVariantsParent!.variants[index];
+    final parent = _activeVariantsParent!;
+    final selectedVariant = parent.variants[index];
+    _selectedVariants[parent.id] = selectedVariant.id;
+
     final settings = ref.read(settingsNotifierProvider);
     final cards = ref.read(cardNotifierProvider).cards;
 
     ref.read(settingsNotifierProvider.notifier).updateSettings(
-          settings.copyWith(themePreset: selectedVariant.id),
+          settings.copyWith(
+            themePreset: selectedVariant.id,
+            selectedVariants: _selectedVariants,
+          ),
           cards,
         );
   }
 
   String _getActiveVariantSublabel(AppThemePreset parent, String currentPresetId) {
-    final idx = parent.variants.indexWhere((v) => v.id == currentPresetId);
+    final effectiveId = _selectedVariants[parent.id] ?? currentPresetId;
+    final idx = parent.variants.indexWhere((v) => v.id == effectiveId);
     if (idx >= 0) {
       return '${idx + 1}/${parent.variants.length}';
     }
@@ -152,10 +176,14 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
 
   AppThemePreset _resolvePreviewPreset(AppThemePreset parentPreset, String activePresetId) {
     if (parentPreset.hasVariants) {
-      return parentPreset.variants.firstWhere(
-        (v) => v.id == activePresetId,
-        orElse: () => parentPreset.variants.first,
-      );
+      if (parentPreset.variants.any((v) => v.id == activePresetId)) {
+        return parentPreset.variants.firstWhere((v) => v.id == activePresetId);
+      }
+      final rememberedId = _selectedVariants[parentPreset.id];
+      if (rememberedId != null && parentPreset.variants.any((v) => v.id == rememberedId)) {
+        return parentPreset.variants.firstWhere((v) => v.id == rememberedId);
+      }
+      return parentPreset.variants.first;
     }
     return parentPreset;
   }
@@ -280,9 +308,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                           ),
                         ),
                         subtitle: Text(
-                          preset.hasVariants
-                              ? '${effectivePreset.description} • ${preset.variants.length} styles'
-                              : effectivePreset.description,
+                          effectivePreset.description,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
@@ -518,10 +544,8 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                     const SizedBox(height: 2),
                     Text(
                       _isViewingVariants
-                          ? '${_activeVariantsParent!.name} • Style ${_currentVariantIndex + 1} of ${_activeVariantsParent!.variants.length}'
-                          : (focusedMainPreset.hasVariants
-                              ? '${currentPreset.description} (${focusedMainPreset.variants.length} color styles)'
-                              : currentPreset.description),
+                          ? 'Style ${_currentVariantIndex + 1} of ${_activeVariantsParent!.variants.length}'
+                          : currentPreset.description,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12,

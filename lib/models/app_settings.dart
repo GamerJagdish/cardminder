@@ -12,6 +12,7 @@ class AppSettings {
   final String backupPath; // Custom backup folder path, '' means default storage
   final String themePreset; // 'classic', 'gold_topo', etc.
   final bool animateBackground; // Whether animated shaders tick continuous time
+  final Map<String, String> selectedVariants; // Maps parent preset id to last selected variant id
 
   AppSettings({
     this.userName = 'CardMinder',
@@ -27,6 +28,7 @@ class AppSettings {
     this.backupPath = '',
     this.themePreset = 'classic',
     this.animateBackground = true,
+    this.selectedVariants = const {},
   });
 
   Map<String, dynamic> toJson() {
@@ -44,6 +46,7 @@ class AppSettings {
       'backupPath': backupPath,
       'themePreset': themePreset,
       'animateBackground': animateBackground,
+      'selectedVariants': selectedVariants,
     };
   }
 
@@ -62,6 +65,10 @@ class AppSettings {
       backupPath: (json['backupPath'] as String?) ?? '',
       themePreset: (json['themePreset'] as String?) ?? 'classic',
       animateBackground: (json['animateBackground'] as bool?) ?? true,
+      selectedVariants: (json['selectedVariants'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(k, v.toString()),
+          ) ??
+          const {},
     );
   }
 
@@ -79,6 +86,7 @@ class AppSettings {
     String? backupPath,
     String? themePreset,
     bool? animateBackground,
+    Map<String, String>? selectedVariants,
   }) {
     return AppSettings(
       userName: userName ?? this.userName,
@@ -94,6 +102,7 @@ class AppSettings {
       backupPath: backupPath ?? this.backupPath,
       themePreset: themePreset ?? this.themePreset,
       animateBackground: animateBackground ?? this.animateBackground,
+      selectedVariants: selectedVariants ?? this.selectedVariants,
     );
   }
 }

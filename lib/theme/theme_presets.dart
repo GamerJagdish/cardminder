@@ -57,11 +57,11 @@ class AppThemePreset {
 class ThemePresets {
   static const String defaultPresetId = 'classic';
 
-  // Sub-variants for Topographic Waves
+  // Sub-variants for Waveform (Topographic Waves)
   static const List<AppThemePreset> topographicVariants = [
     AppThemePreset(
       id: 'crimson_ruby',
-      name: 'Crimson Ruby',
+      name: 'Ruby Waveform',
       description: 'Rich dark burgundy illuminated by laser ruby contours',
       shaderType: ShaderType.topographic,
       shaderAsset: 'shaders/topographic_lines.frag',
@@ -72,7 +72,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'gold_topo',
-      name: 'Topographic Gold',
+      name: 'Gold Waveform',
       description: 'Elegantly contoured golden isolines on midnight black',
       shaderType: ShaderType.topographic,
       shaderAsset: 'shaders/topographic_lines.frag',
@@ -83,7 +83,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'aurora_emerald',
-      name: 'Aurora Emerald',
+      name: 'Emerald Waveform',
       description: 'Ethereal northern lights flowing in emerald & mint waves',
       shaderType: ShaderType.topographic,
       shaderAsset: 'shaders/topographic_lines.frag',
@@ -94,7 +94,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'cosmic_violet',
-      name: 'Cosmic Violet',
+      name: 'Violet Waveform',
       description: 'Deep space contours drenched in electric indigo',
       shaderType: ShaderType.topographic,
       shaderAsset: 'shaders/topographic_lines.frag',
@@ -105,7 +105,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'cyberpunk_cyan',
-      name: 'Cyberpunk Cyan',
+      name: 'Cyan Waveform',
       description: 'High-tech neon cyan isolines cutting through dark slate',
       shaderType: ShaderType.topographic,
       shaderAsset: 'shaders/topographic_lines.frag',
@@ -116,7 +116,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'amoled_stealth',
-      name: 'AMOLED Stealth',
+      name: 'Stealth Waveform',
       description: '100% pure black OLED canvas with minimalist silver contours',
       shaderType: ShaderType.topographic,
       shaderAsset: 'shaders/topographic_lines.frag',
@@ -127,7 +127,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'arctic_light',
-      name: 'Arctic Pearl',
+      name: 'Pearl Waveform',
       description: 'Crisp porcelain canvas with subtle slate topographic waves',
       shaderType: ShaderType.topographic,
       shaderAsset: 'shaders/topographic_lines.frag',
@@ -142,7 +142,7 @@ class ThemePresets {
   static const List<AppThemePreset> sillyStringsVariants = [
     AppThemePreset(
       id: 'silly_strings',
-      name: 'Midnight Onyx',
+      name: 'Silly Noir',
       description: 'Deep obsidian black canvas with crisp silver isoline ribbons',
       shaderType: ShaderType.topographicIsolines,
       shaderAsset: 'shaders/topograhic_lines_2.frag',
@@ -153,7 +153,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'silly_strings_cyan',
-      name: 'Electric Cyan',
+      name: 'Silly Cyan',
       description: 'Luminescent neon cyan isolines flowing across deep navy slate',
       shaderType: ShaderType.topographicIsolines,
       shaderAsset: 'shaders/topograhic_lines_2.frag',
@@ -164,7 +164,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'silly_strings_emerald',
-      name: 'Matrix Emerald',
+      name: 'Silly Emerald',
       description: 'High-frequency bio-green contours gliding over dark matrix abyss',
       shaderType: ShaderType.topographicIsolines,
       shaderAsset: 'shaders/topograhic_lines_2.frag',
@@ -175,7 +175,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'silly_strings_amber',
-      name: 'Solar Amber',
+      name: 'Silly Amber',
       description: 'Radiant molten gold strings drifting across midnight obsidian',
       shaderType: ShaderType.topographicIsolines,
       shaderAsset: 'shaders/topograhic_lines_2.frag',
@@ -186,7 +186,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'silly_strings_violet',
-      name: 'Cyber Violet',
+      name: 'Silly Violet',
       description: 'Deep synthwave violet isolines rippling through dark cosmos',
       shaderType: ShaderType.topographicIsolines,
       shaderAsset: 'shaders/topograhic_lines_2.frag',
@@ -197,7 +197,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'silly_strings_crimson',
-      name: 'Crimson Pulse',
+      name: 'Silly Crimson',
       description: 'Fiery neon ruby lines winding through smoky crimson dark',
       shaderType: ShaderType.topographicIsolines,
       shaderAsset: 'shaders/topograhic_lines_2.frag',
@@ -208,7 +208,7 @@ class ThemePresets {
     ),
     AppThemePreset(
       id: 'silly_strings_pearl',
-      name: 'Pearl Slate',
+      name: 'Silly Pearl',
       description: 'Clean porcelain light canvas etched with delicate slate ribbons',
       shaderType: ShaderType.topographicIsolines,
       shaderAsset: 'shaders/topograhic_lines_2.frag',
@@ -224,7 +224,7 @@ class ThemePresets {
     AppThemePreset(
       id: 'classic',
       name: 'Classic CardMinder',
-      description: 'The original clean minimalist look with no background patterns',
+      description: 'The original clean minimalist look',
       shaderType: ShaderType.none,
       shaderAsset: '',
       lineColor: Color(0xFF38BDF8),
@@ -232,10 +232,10 @@ class ThemePresets {
       accentColor: Color(0xFF0284C7),
       isDark: true,
     ),
-    // 2. Crimson Ruby (7 Variants)
+    // 2. Waveform (7 Variants)
     AppThemePreset(
       id: 'crimson_ruby',
-      name: 'Crimson Ruby',
+      name: 'Waveform',
       description: 'Rich dark burgundy illuminated by laser ruby contours',
       shaderType: ShaderType.topographic,
       shaderAsset: 'shaders/topographic_lines.frag',

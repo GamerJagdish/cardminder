@@ -15,6 +15,7 @@ void main() {
       expect(settings.backupPath, isEmpty);
       expect(settings.themePreset, equals('classic'));
       expect(settings.animateBackground, isTrue);
+      expect(settings.selectedVariants, isEmpty);
     });
 
     test('AppSettings JSON serialization and deserialization work', () {
@@ -26,6 +27,10 @@ void main() {
         backupPath: '/storage/emulated/0/Download/Backups',
         themePreset: 'aurora_emerald',
         animateBackground: false,
+        selectedVariants: {
+          'crimson_ruby': 'aurora_emerald',
+          'silly_strings': 'silly_strings_cyan',
+        },
       );
 
       final json = settings.toJson();
@@ -38,6 +43,8 @@ void main() {
       expect(restored.backupPath, equals('/storage/emulated/0/Download/Backups'));
       expect(restored.themePreset, equals('aurora_emerald'));
       expect(restored.animateBackground, isFalse);
+      expect(restored.selectedVariants['crimson_ruby'], equals('aurora_emerald'));
+      expect(restored.selectedVariants['silly_strings'], equals('silly_strings_cyan'));
     });
   });
 }
