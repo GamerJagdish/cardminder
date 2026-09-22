@@ -21,7 +21,12 @@ class HomeEmptyState extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: EdgeInsets.fromLTRB(
+          32.0,
+          16.0,
+          32.0,
+          16.0 + 64.0 + MediaQuery.paddingOf(context).bottom,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../screens/add_edit_card_screen.dart';
 import '../../theme/app_theme.dart';
@@ -32,18 +33,32 @@ class _HomeBottomNavBarState extends State<HomeBottomNavBar> {
     final inactiveColor = context.colors.textMuted;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
 
-    return Container(
-      height: 64 + bottomInset,
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.pureBlack.withValues(alpha: isDark ? 0.2 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          height: 64 + bottomInset,
+          decoration: BoxDecoration(
+            color: isDark
+                ? const Color(0xFF161B26).withValues(alpha: 0.75)
+                : Colors.white.withValues(alpha: 0.80),
+            border: Border(
+              top: BorderSide(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.10)
+                    : Colors.black.withValues(alpha: 0.06),
+                width: 0.8,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    AppTheme.pureBlack.withValues(alpha: isDark ? 0.2 : 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
           ),
-        ],
-      ),
       child: SafeArea(
         top: false,
         child: SizedBox(
@@ -226,6 +241,8 @@ class _HomeBottomNavBarState extends State<HomeBottomNavBar> {
         ),
       ),
     ),
-  );
-}
+        ),
+      ),
+    );
+  }
 }

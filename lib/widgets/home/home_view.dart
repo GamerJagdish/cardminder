@@ -765,7 +765,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            SizedBox(
+                              height: 88 + MediaQuery.paddingOf(context).bottom,
+                            ),
                           ],
                         ),
                       ),
@@ -781,6 +783,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     if (widget.showBottomNavBar) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        extendBody: true,
         body: content,
         bottomNavigationBar: HomeBottomNavBar(
           selectedTab: 0,
