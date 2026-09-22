@@ -9,7 +9,7 @@ import '../../providers/settings_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/home/home_view.dart';
 
-/// Revolut-inspired full-screen Theme Preview experience with animated GLSL shaders,
+/// Full-screen Theme Preview experience with animated GLSL shaders,
 /// horizontal smartphone mockup carousel, dynamic edge-sliding Variants button, and quick Mode controls.
 class ThemePreviewScreen extends ConsumerStatefulWidget {
   const ThemePreviewScreen({super.key});

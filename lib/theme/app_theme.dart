@@ -220,6 +220,11 @@ class AppTheme {
           borderRadius: BorderRadius.circular(14),
         ),
       ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: accentSky,
+        selectionColor: accentSky.withValues(alpha: 0.3),
+        selectionHandleColor: accentSky,
+      ),
     );
   }
 
@@ -287,6 +292,11 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: accentSky,
+        selectionColor: accentSky.withValues(alpha: 0.3),
+        selectionHandleColor: accentSky,
       ),
     );
   }

@@ -50,6 +50,10 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
 
   bool _isSaving = false;
 
+  final FocusNode _nameFocus = FocusNode();
+  final FocusNode _monthFocus = FocusNode();
+  final FocusNode _yearFocus = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +67,10 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
       ..addListener(() => setState(() {}));
     _yearController = TextEditingController(text: card?.expiryYear ?? '28')
       ..addListener(() => setState(() {}));
+
+    _nameFocus.addListener(() => setState(() {}));
+    _monthFocus.addListener(() => setState(() {}));
+    _yearFocus.addListener(() => setState(() {}));
 
     if (card != null) {
       _selectedColorIndex = card.colorIndex;
@@ -121,6 +129,9 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
 
   @override
   void dispose() {
+    _nameFocus.dispose();
+    _monthFocus.dispose();
+    _yearFocus.dispose();
     _nameController.dispose();
     _digitsController.dispose();
     _monthController.dispose();
@@ -313,6 +324,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.cardToEdit != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final dateFormat = DateFormat('dd-MM-yyyy');
 
     final previewCard = CreditCard(
@@ -391,17 +403,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // CARD CAROUSEL SLIDER (Swipe to select card color)
-                      AnimatedOpacity(
-                        opacity: _isSaving ? 0.0 : 1.0,
-                        duration: const Duration(milliseconds: 160),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20.0),
-                          child: _FieldLabel(text: 'SELECT CARD COLOR'),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
+                      // CARD CAROUSEL SLIDER
                       SizedBox(
                         height: 195,
                         child: PageView.builder(
@@ -520,99 +522,216 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                   _currentPage == AppTheme.cardThemes.length,
                             ),
 
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
 
                             // NICKNAME INPUT
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const _FieldLabel(text: 'NICKNAME (REQUIRED)'),
-                                  const SizedBox(height: 8),
-                                  TextFormField(
-                                    controller: _nameController,
-                                    onChanged: (_) => setState(() {}),
-                                    decoration: const InputDecoration(
-                                      hintText: 'e.g. Swiggy HDFC',
-                                    ),
-                                    validator: (val) {
-                                      if (val == null || val.trim().isEmpty) {
-                                        return 'Please enter a nickname';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ],
+                              child: FormField<String>(
+                                initialValue: _nameController.text,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                validator: (val) {
+                                  if (_nameController.text.trim().isEmpty) {
+                                    return 'Please enter a nickname';
+                                  }
+                                  return null;
+                                },
+                                builder: (fieldState) {
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _FloatingPillField(
+                                        label: 'Card nickname',
+                                        controller: _nameController,
+                                        focusNode: _nameFocus,
+                                        hasError: fieldState.hasError,
+                                        child: TextField(
+                                          controller: _nameController,
+                                          focusNode: _nameFocus,
+                                          onChanged: (val) {
+                                            fieldState.didChange(val);
+                                            setState(() {});
+                                          },
+                                          cursorColor: AppTheme.accentSky,
+                                          cursorWidth: 2.0,
+                                          cursorRadius:
+                                              const Radius.circular(1.0),
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
+                                          ),
+                                          decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding: EdgeInsets.zero,
+                                            filled: false,
+                                            fillColor: Colors.transparent,
+                                            border: InputBorder.none,
+                                            enabledBorder: InputBorder.none,
+                                            focusedBorder: InputBorder.none,
+                                          ),
+                                        ),
+                                      ),
+                                      if (fieldState.hasError)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 18.0, top: 5.0),
+                                          child: Text(
+                                            fieldState.errorText!,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                              color: AppTheme.accentRose,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
                               ),
                             ),
 
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 12),
 
                             // EXP. MONTH & EXP. YEAR (Row)
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 20.0),
                               child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const _FieldLabel(
-                                            text: 'EXP. MONTH (OPTIONAL)'),
-                                        const SizedBox(height: 8),
-                                        TextFormField(
-                                          controller: _monthController,
-                                          maxLength: 2,
-                                          keyboardType: TextInputType.number,
-                                          inputFormatters: const [
-                                            _MonthInputFormatter(),
+                                    child: FormField<String>(
+                                      initialValue: _monthController.text,
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      validator: (val) {
+                                        if (_monthController.text.trim() ==
+                                            '0') {
+                                          return 'Enter 1–12';
+                                        }
+                                        return null;
+                                      },
+                                      builder: (fieldState) {
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _FloatingPillField(
+                                              label: 'Exp. month',
+                                              controller: _monthController,
+                                              focusNode: _monthFocus,
+                                              hasError: fieldState.hasError,
+                                              child: TextField(
+                                                controller: _monthController,
+                                                focusNode: _monthFocus,
+                                                maxLength: 2,
+                                                keyboardType:
+                                                    TextInputType.number,
+                                                cursorColor:
+                                                    AppTheme.accentSky,
+                                                cursorWidth: 2.0,
+                                                cursorRadius:
+                                                    const Radius.circular(
+                                                        1.0),
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurface,
+                                                ),
+                                                inputFormatters: const [
+                                                  _MonthInputFormatter(),
+                                                ],
+                                                onChanged: (val) {
+                                                  fieldState.didChange(val);
+                                                  setState(() {});
+                                                  if (val.length == 2) {
+                                                    _yearFocus.requestFocus();
+                                                  }
+                                                },
+                                                decoration:
+                                                    const InputDecoration(
+                                                  isDense: true,
+                                                  contentPadding:
+                                                      EdgeInsets.zero,
+                                                  filled: false,
+                                                  fillColor:
+                                                      Colors.transparent,
+                                                  counterText: '',
+                                                  border: InputBorder.none,
+                                                  enabledBorder:
+                                                      InputBorder.none,
+                                                  focusedBorder:
+                                                      InputBorder.none,
+                                                ),
+                                              ),
+                                            ),
+                                            if (fieldState.hasError)
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 18.0, top: 5.0),
+                                                child: Text(
+                                                  fieldState.errorText!,
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: AppTheme.accentRose,
+                                                  ),
+                                                ),
+                                              ),
                                           ],
-                                          validator: (val) {
-                                            if (val != null && val.trim() == '0') {
-                                              return 'Enter 1–12';
-                                            }
-                                            return null;
-                                          },
-                                          onChanged: (_) => setState(() {}),
-                                          decoration: const InputDecoration(
-                                            hintText: 'MM',
-                                            counter: SizedBox.shrink(),
-                                          ),
-                                        ),
-                                      ],
+                                        );
+                                      },
                                     ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const _FieldLabel(
-                                            text: 'EXP. YEAR (OPTIONAL)'),
-                                        const SizedBox(height: 8),
-                                        TextFormField(
-                                          controller: _yearController,
-                                          maxLength: 2,
-                                          keyboardType: TextInputType.number,
-                                          onChanged: (_) => setState(() {}),
-                                          decoration: const InputDecoration(
-                                            hintText: 'YY',
-                                            counter: SizedBox.shrink(),
-                                          ),
+                                    child: _FloatingPillField(
+                                      label: 'Exp. year',
+                                      controller: _yearController,
+                                      focusNode: _yearFocus,
+                                      child: TextField(
+                                        controller: _yearController,
+                                        focusNode: _yearFocus,
+                                        maxLength: 2,
+                                        keyboardType: TextInputType.number,
+                                        cursorColor: AppTheme.accentSky,
+                                        cursorWidth: 2.0,
+                                        cursorRadius:
+                                            const Radius.circular(1.0),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
                                         ),
-                                      ],
+                                        onChanged: (_) => setState(() {}),
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                          filled: false,
+                                          fillColor: Colors.transparent,
+                                          counterText: '',
+                                          border: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
 
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 12),
 
                             // DEACTIVATION TIMELINE & LAST TRANSACTION DATE (Row)
                             Padding(
@@ -621,152 +740,114 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const _FieldLabel(
-                                            text: 'DEACTIVATION TIMELINE'),
-                                        const SizedBox(height: 8),
-                                        DropdownButtonFormField<int>(
-                                          initialValue:
-                                              _selectedDeactivationDays,
-                                          isExpanded: true,
-                                          dropdownColor:
-                                              context.colors.surfaceCard,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface,
-                                          ),
-                                          decoration: InputDecoration(
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 16),
-                                            fillColor: Theme.of(context)
-                                                .inputDecorationTheme
-                                                .fillColor,
-                                            filled: true,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              borderSide: BorderSide(
-                                                color: context.colors.border,
-                                              ),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              borderSide: BorderSide(
-                                                color: context.colors.border,
-                                              ),
-                                            ),
-                                          ),
-                                          icon: Icon(
-                                            Icons.keyboard_arrow_down_rounded,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface,
-                                          ),
-                                          items: const [
-                                            DropdownMenuItem(
-                                              value: 90,
-                                              child: Text('3 Months',
-                                                  overflow:
-                                                      TextOverflow.ellipsis),
-                                            ),
-                                            DropdownMenuItem(
-                                              value: 180,
-                                              child: Text('6 Months',
-                                                  overflow:
-                                                      TextOverflow.ellipsis),
-                                            ),
-                                            DropdownMenuItem(
-                                              value: 270,
-                                              child: Text('9 Months',
-                                                  overflow:
-                                                      TextOverflow.ellipsis),
-                                            ),
-                                            DropdownMenuItem(
-                                              value: 365,
-                                              child: Text('1 Year',
-                                                  overflow:
-                                                      TextOverflow.ellipsis),
-                                            ),
-                                          ],
-                                          onChanged: (val) {
-                                            if (val != null) {
-                                              setState(() {
-                                                _selectedDeactivationDays = val;
-                                              });
-                                            }
-                                          },
+                                    child: _InPillFieldContainer(
+                                      label: 'Deactivation timeline',
+                                      child: DropdownButtonFormField<int>(
+                                        initialValue:
+                                            _selectedDeactivationDays,
+                                        isExpanded: true,
+                                        isDense: true,
+                                        borderRadius: BorderRadius.circular(20),
+                                        dropdownColor: isDark
+                                            ? const Color(0xFF1E2430)
+                                            : Colors.white,
+                                        elevation: 8,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
                                         ),
-                                      ],
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                          filled: false,
+                                          fillColor: Colors.transparent,
+                                          border: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                        ),
+                                        icon: Icon(
+                                          Icons.keyboard_arrow_down_rounded,
+                                          size: 20,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                        ),
+                                        items: const [
+                                          DropdownMenuItem(
+                                            value: 90,
+                                            child: Text('3 Months',
+                                                overflow:
+                                                    TextOverflow.ellipsis),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 180,
+                                            child: Text('6 Months',
+                                                overflow:
+                                                    TextOverflow.ellipsis),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 270,
+                                            child: Text('9 Months',
+                                                overflow:
+                                                    TextOverflow.ellipsis),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 365,
+                                            child: Text('1 Year',
+                                                overflow:
+                                                    TextOverflow.ellipsis),
+                                          ),
+                                        ],
+                                        onChanged: (val) {
+                                          if (val != null) {
+                                            setState(() {
+                                              _selectedDeactivationDays = val;
+                                            });
+                                          }
+                                        },
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const _FieldLabel(
-                                            text: 'LAST TRANSACTION DATE'),
-                                        const SizedBox(height: 8),
-                                        InkWell(
-                                          onTap: _pickDate,
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 14, vertical: 16),
-                                            decoration: BoxDecoration(
-                                              color: Theme.of(context)
-                                                  .inputDecorationTheme
-                                                  .fillColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              border: Border.all(
-                                                color: context.colors.border,
+                                    child: _InPillFieldContainer(
+                                      label: 'Last transaction',
+                                      onTap: _pickDate,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              dateFormat
+                                                  .format(_selectedDate),
+                                              maxLines: 1,
+                                              overflow:
+                                                  TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight:
+                                                    FontWeight.w600,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface,
                                               ),
                                             ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    dateFormat
-                                                        .format(_selectedDate),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .onSurface,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Icon(
-                                                    Icons
-                                                        .calendar_today_outlined,
-                                                    size: 18,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurface),
-                                              ],
-                                            ),
                                           ),
-                                        ),
-                                      ],
+                                          Icon(
+                                            Icons.calendar_today_outlined,
+                                            size: 18,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -799,7 +880,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                         backgroundColor: context.colors.buttonPrimaryBg,
                         foregroundColor: context.colors.buttonPrimaryFg,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(28),
                         ),
                         elevation: 2,
                       ),
@@ -823,38 +904,167 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
   }
 }
 
-class _FieldLabel extends StatelessWidget {
-  final String text;
+class _InPillFieldContainer extends StatelessWidget {
+  final String label;
+  final Widget child;
+  final VoidCallback? onTap;
 
-  const _FieldLabel({required this.text});
+  const _InPillFieldContainer({
+    required this.label,
+    required this.child,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fillColor = isDark
+        ? const Color(0xFF1E2430)
+        : const Color(0xFFF1F5F9);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    final labelColor = isDark ? AppTheme.textMutedDark : AppTheme.textMuted;
+
+    final container = Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
-        color: isDark
-            ? AppTheme.slate800.withValues(alpha: 0.70)
-            : AppTheme.slate200.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.06),
-          width: 0.5,
-        ),
+        color: fillColor,
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 10.5,
-          fontWeight: FontWeight.bold,
-          color: isDark ? AppTheme.slate300 : AppTheme.slate700,
-          letterSpacing: 0.5,
-        ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.centerLeft,
+        children: [
+          Positioned(
+            left: 0,
+            top: 8,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w500,
+                color: labelColor,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 8,
+            height: 24,
+            child: child,
+          ),
+        ],
       ),
+    );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: container,
+      );
+    }
+
+    return container;
+  }
+}
+
+class _FloatingPillField extends StatelessWidget {
+  final String label;
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final Widget child;
+  final bool hasError;
+
+  const _FloatingPillField({
+    required this.label,
+    required this.controller,
+    required this.focusNode,
+    required this.child,
+    this.hasError = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([focusNode, controller]),
+      builder: (context, _) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final isFloating = focusNode.hasFocus || controller.text.isNotEmpty;
+
+        final fillColor = isDark
+            ? const Color(0xFF1E2430)
+            : const Color(0xFFF1F5F9);
+
+        final mutedColor = isDark ? AppTheme.textMutedDark : AppTheme.textMuted;
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            if (!focusNode.hasFocus) {
+              focusNode.requestFocus();
+            }
+          },
+          child: Container(
+            height: 60,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            decoration: BoxDecoration(
+              color: fillColor,
+              borderRadius: BorderRadius.circular(20),
+              border: hasError
+                  ? Border.all(color: AppTheme.accentRose, width: 1.2)
+                  : null,
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.centerLeft,
+              children: [
+                // Floating Label
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  left: 0,
+                  top: isFloating ? 8 : 20,
+                  child: IgnorePointer(
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      style: TextStyle(
+                        fontSize: isFloating ? 11.5 : 15,
+                        fontWeight:
+                            isFloating ? FontWeight.w500 : FontWeight.w400,
+                        color: mutedColor,
+                        letterSpacing: isFloating ? 0.2 : 0.0,
+                      ),
+                      child: Text(label),
+                    ),
+                  ),
+                ),
+
+                // Input Field
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 8,
+                  height: 24,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 160),
+                    opacity: isFloating ? 1.0 : 0.0,
+                    child: IgnorePointer(
+                      ignoring: !isFloating,
+                      child: child,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

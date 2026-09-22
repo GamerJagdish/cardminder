@@ -7,7 +7,7 @@ import '../../../utils/page_transitions.dart';
 import '../theme_preview_screen.dart';
 import '../widgets/settings_section_header.dart';
 
-/// Section providing entry point to the full-screen Revolut-style Theme & Background customization.
+/// Section providing entry point to the full-screen Theme & Background customization.
 class AppearanceSection extends StatelessWidget {
   final AppSettings settings;
   final ValueChanged<AppSettings> onUpdateSettings;
