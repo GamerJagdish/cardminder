@@ -465,143 +465,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
                             const SizedBox(height: 24),
 
-                            // All Cards Header
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20.0, vertical: 4.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'All Cards',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          shadows:
-                                              AppTheme.textShadowAmbient(isDark),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: BackdropFilter(
-                                          filter: ui.ImageFilter.blur(
-                                              sigmaX: 8, sigmaY: 8),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: isDark
-                                                  ? const Color(0xFF1E293B)
-                                                      .withValues(alpha: 0.55)
-                                                  : Colors.white
-                                                      .withValues(alpha: 0.70),
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              border: Border.all(
-                                                color: isDark
-                                                    ? AppTheme.primaryAccentDark
-                                                        .withValues(alpha: 0.35)
-                                                    : AppTheme.primaryNavy
-                                                        .withValues(alpha: 0.15),
-                                                width: 0.8,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              '${cards.length}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                                color: isDark
-                                                    ? AppTheme.primaryAccentDark
-                                                    : AppTheme.primaryNavy,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  GestureDetector(
-                                    onTap: widget.isInteractive
-                                        ? () {
-                                            HapticFeedback.selectionClick();
-                                            ref
-                                                .read(cardNotifierProvider
-                                                    .notifier)
-                                                .toggleSortMode();
-                                          }
-                                        : null,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: BackdropFilter(
-                                        filter: ui.ImageFilter.blur(
-                                            sigmaX: 8, sigmaY: 8),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: isDark
-                                                ? const Color(0xFF1E293B)
-                                                    .withValues(alpha: 0.55)
-                                                : Colors.white
-                                                    .withValues(alpha: 0.70),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            border: Border.all(
-                                              color: isDark
-                                                  ? AppTheme.primaryAccentDark
-                                                      .withValues(alpha: 0.35)
-                                                  : AppTheme.primaryNavy
-                                                      .withValues(alpha: 0.18),
-                                              width: 0.8,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                state.sortMode ==
-                                                        SortMode.urgency
-                                                    ? Icons.bolt_rounded
-                                                    : Icons
-                                                        .drag_indicator_rounded,
-                                                size: 14,
-                                                color: isDark
-                                                    ? AppTheme.primaryAccentDark
-                                                    : AppTheme.primaryNavy,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                state.sortMode ==
-                                                        SortMode.urgency
-                                                    ? 'Sorted by urgency'
-                                                    : 'User Defined',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: isDark
-                                                      ? AppTheme.primaryAccentDark
-                                                      : AppTheme.primaryNavy,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(height: 12),
-
                             // Cards List inside Frosted Glass Grouped Container
                             Padding(
                               padding: const EdgeInsets.symmetric(
@@ -629,7 +492,170 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                         width: 1,
                                       ),
                                     ),
-                                    child: widget.isInteractive
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // All Cards Header inside Frosted Container
+                                        Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              16, 14, 16, 12),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    'All Cards',
+                                                    style: TextStyle(
+                                                      fontSize: 17,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: isDark
+                                                          ? AppTheme
+                                                              .primaryAccentDark
+                                                              .withValues(
+                                                                  alpha: 0.18)
+                                                          : AppTheme
+                                                              .primaryNavy
+                                                              .withValues(
+                                                                  alpha: 0.08),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                      border: Border.all(
+                                                        color: isDark
+                                                            ? AppTheme
+                                                                .primaryAccentDark
+                                                                .withValues(
+                                                                    alpha: 0.35)
+                                                            : AppTheme
+                                                                .primaryNavy
+                                                                .withValues(
+                                                                    alpha: 0.15),
+                                                        width: 0.8,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      '${cards.length}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: isDark
+                                                            ? AppTheme
+                                                                .primaryAccentDark
+                                                            : AppTheme
+                                                                .primaryNavy,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              GestureDetector(
+                                                onTap: widget.isInteractive
+                                                    ? () {
+                                                        HapticFeedback
+                                                            .selectionClick();
+                                                        ref
+                                                            .read(
+                                                                cardNotifierProvider
+                                                                    .notifier)
+                                                            .toggleSortMode();
+                                                      }
+                                                    : null,
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                          horizontal: 10,
+                                                          vertical: 5),
+                                                  decoration: BoxDecoration(
+                                                    color: isDark
+                                                        ? AppTheme
+                                                            .primaryAccentDark
+                                                            .withValues(
+                                                                alpha: 0.16)
+                                                        : AppTheme.primaryNavy
+                                                            .withValues(
+                                                                alpha: 0.08),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                    border: Border.all(
+                                                      color: isDark
+                                                          ? AppTheme
+                                                              .primaryAccentDark
+                                                              .withValues(
+                                                                  alpha: 0.35)
+                                                          : AppTheme.primaryNavy
+                                                              .withValues(
+                                                                  alpha: 0.18),
+                                                      width: 0.8,
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        state.sortMode ==
+                                                                SortMode.urgency
+                                                            ? Icons
+                                                                .bolt_rounded
+                                                            : Icons
+                                                                .drag_indicator_rounded,
+                                                        size: 14,
+                                                        color: isDark
+                                                            ? AppTheme
+                                                                .primaryAccentDark
+                                                            : AppTheme
+                                                                .primaryNavy,
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        state.sortMode ==
+                                                                SortMode.urgency
+                                                            ? 'Sorted by urgency'
+                                                            : 'User Defined',
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: isDark
+                                                              ? AppTheme
+                                                                  .primaryAccentDark
+                                                              : AppTheme
+                                                                  .primaryNavy,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Divider(
+                                          height: 1,
+                                          thickness: 0.5,
+                                          indent: 16,
+                                          endIndent: 16,
+                                          color: isDark
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.08)
+                                              : Colors.black
+                                                  .withValues(alpha: 0.06),
+                                        ),
+                                        widget.isInteractive
                                         ? ReorderableListView.builder(
                                             shrinkWrap: true,
                                             physics:
@@ -732,7 +758,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                                     false,
                                               );
                                             },
-                                          ),
+                                           ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
