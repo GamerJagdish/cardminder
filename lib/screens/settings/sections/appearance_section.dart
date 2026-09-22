@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import '../../../models/app_settings.dart';
 import '../../../theme/app_theme.dart';
+import '../../../utils/page_transitions.dart';
+import '../theme_preview_screen.dart';
 import '../widgets/settings_section_header.dart';
-import '../widgets/settings_tiles.dart';
 
-/// Section for configuring app theme appearance (System, Light, Dark).
+/// Section providing entry point to the full-screen Revolut-style Theme & Background customization.
 class AppearanceSection extends StatelessWidget {
   final AppSettings settings;
   final ValueChanged<AppSettings> onUpdateSettings;
@@ -17,56 +20,134 @@ class AppearanceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final activePreset = ThemePresets.getById(settings.themePreset);
+    final modeLabel = settings.themeMode[0].toUpperCase() + settings.themeMode.substring(1);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SettingsSectionHeader(
-          title: 'APP THEME',
+          title: 'THEME & BACKGROUND',
           icon: Icons.palette_outlined,
         ),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardTheme.color,
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: context.colors.cardShadow,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              ThemeOptionTile(
-                title: 'System',
-                icon: Icons.phone_android_rounded,
-                isSelected: settings.themeMode == 'system',
-                onTap: () => onUpdateSettings(
-                  settings.copyWith(themeMode: 'system'),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              Navigator.push(
+                context,
+                slideUpRoute(const ThemePreviewScreen()),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardTheme.color,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: context.colors.border,
+                  width: 1,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: context.colors.cardShadow,
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              ThemeOptionTile(
-                title: 'Light',
-                icon: Icons.wb_sunny_rounded,
-                isSelected: settings.themeMode == 'light',
-                onTap: () => onUpdateSettings(
-                  settings.copyWith(themeMode: 'light'),
-                ),
+              child: Row(
+                children: [
+                  // Glowing Theme Preset Avatar
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: activePreset.bgColor,
+                      border: Border.all(
+                        color: activePreset.lineColor,
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: activePreset.lineColor.withValues(alpha: 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        activePreset.icon,
+                        size: 22,
+                        color: activePreset.lineColor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+
+                  // Title & Mode Subtitle
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'App Theme & Background',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            Text(
+                              activePreset.name,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: activePreset.lineColor,
+                              ),
+                            ),
+                            const Text(
+                              ' • ',
+                              style: TextStyle(color: AppTheme.textMuted),
+                            ),
+                            Text(
+                              modeLabel,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppTheme.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Trailing Chevron
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: context.colors.circleButtonBg,
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              ThemeOptionTile(
-                title: 'Dark',
-                icon: Icons.nightlight_round,
-                isSelected: settings.themeMode == 'dark',
-                onTap: () => onUpdateSettings(
-                  settings.copyWith(themeMode: 'dark'),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ],

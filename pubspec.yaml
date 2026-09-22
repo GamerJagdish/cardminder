@@ -83,6 +83,15 @@ flutter:
     - assets/clown-horn-honks.mp3
     - google_fonts/
 
+  shaders:
+    - shaders/topographic_lines.frag
+    - shaders/topograhic_lines_2.frag
+    - shaders/balatro.frag
+    - shaders/chess_glitch.frag
+    - shaders/amoghell.frag
+    - shaders/amoglitch.frag
+    - shaders/raingus.frag
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

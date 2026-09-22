@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 export 'app_colors.dart';
+export 'theme_presets.dart';
 
 class AppTheme {
   static const Color bgLight = Color(0xFFF8FAFC); // Clean light background

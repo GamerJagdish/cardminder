@@ -30,9 +30,10 @@ class _HomeBottomNavBarState extends State<HomeBottomNavBar> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeColor = context.colors.buttonPrimaryBg;
     final inactiveColor = context.colors.textMuted;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Container(
-      height: 74,
+      height: 64 + bottomInset,
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
         boxShadow: [
@@ -44,8 +45,11 @@ class _HomeBottomNavBarState extends State<HomeBottomNavBar> {
         ],
       ),
       child: SafeArea(
-        child: Row(
-          children: [
+        top: false,
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            children: [
             // Left Tab: Home
             Expanded(
               child: InkWell(
@@ -221,6 +225,7 @@ class _HomeBottomNavBarState extends State<HomeBottomNavBar> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

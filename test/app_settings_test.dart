@@ -13,6 +13,8 @@ void main() {
       expect(settings.notify30Days, isTrue);
       expect(settings.notify14Days, isTrue);
       expect(settings.backupPath, isEmpty);
+      expect(settings.themePreset, equals('classic'));
+      expect(settings.animateBackground, isTrue);
     });
 
     test('AppSettings JSON serialization and deserialization work', () {
@@ -22,6 +24,8 @@ void main() {
         widgetSortBy: 'name',
         notificationsEnabled: false,
         backupPath: '/storage/emulated/0/Download/Backups',
+        themePreset: 'aurora_emerald',
+        animateBackground: false,
       );
 
       final json = settings.toJson();
@@ -32,6 +36,8 @@ void main() {
       expect(restored.widgetSortBy, equals('name'));
       expect(restored.notificationsEnabled, isFalse);
       expect(restored.backupPath, equals('/storage/emulated/0/Download/Backups'));
+      expect(restored.themePreset, equals('aurora_emerald'));
+      expect(restored.animateBackground, isFalse);
     });
   });
 }

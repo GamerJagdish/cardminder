@@ -10,6 +10,8 @@ class AppSettings {
   final bool notify7Days;
   final bool notify1Day;
   final String backupPath; // Custom backup folder path, '' means default storage
+  final String themePreset; // 'classic', 'gold_topo', etc.
+  final bool animateBackground; // Whether animated shaders tick continuous time
 
   AppSettings({
     this.userName = 'CardMinder',
@@ -23,6 +25,8 @@ class AppSettings {
     this.notify7Days = true,
     this.notify1Day = true,
     this.backupPath = '',
+    this.themePreset = 'classic',
+    this.animateBackground = true,
   });
 
   Map<String, dynamic> toJson() {
@@ -38,6 +42,8 @@ class AppSettings {
       'notify7Days': notify7Days,
       'notify1Day': notify1Day,
       'backupPath': backupPath,
+      'themePreset': themePreset,
+      'animateBackground': animateBackground,
     };
   }
 
@@ -54,6 +60,8 @@ class AppSettings {
       notify7Days: (json['notify7Days'] as bool?) ?? true,
       notify1Day: (json['notify1Day'] as bool?) ?? true,
       backupPath: (json['backupPath'] as String?) ?? '',
+      themePreset: (json['themePreset'] as String?) ?? 'classic',
+      animateBackground: (json['animateBackground'] as bool?) ?? true,
     );
   }
 
@@ -69,6 +77,8 @@ class AppSettings {
     bool? notify7Days,
     bool? notify1Day,
     String? backupPath,
+    String? themePreset,
+    bool? animateBackground,
   }) {
     return AppSettings(
       userName: userName ?? this.userName,
@@ -82,6 +92,8 @@ class AppSettings {
       notify7Days: notify7Days ?? this.notify7Days,
       notify1Day: notify1Day ?? this.notify1Day,
       backupPath: backupPath ?? this.backupPath,
+      themePreset: themePreset ?? this.themePreset,
+      animateBackground: animateBackground ?? this.animateBackground,
     );
   }
 }
