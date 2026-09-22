@@ -9,6 +9,7 @@ class SwipeableCardTile extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final Future<bool> Function() onDeleteConfirm;
+  final bool showDivider;
 
   const SwipeableCardTile({
     super.key,
@@ -16,70 +17,69 @@ class SwipeableCardTile extends StatelessWidget {
     required this.onTap,
     required this.onEdit,
     required this.onDeleteConfirm,
+    this.showDivider = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final editColor = context.colors.editActionBg;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6.0),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.pureBlack.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Dismissible(
-            key: Key(card.id),
-            background: _SwipeActionBackground(
-              color: editColor,
-              alignment: Alignment.centerLeft,
-              icon: Icons.edit,
-              label: 'Edit',
-            ),
-            secondaryBackground: _SwipeActionBackground(
-              color: AppTheme.accentRose,
-              alignment: Alignment.centerRight,
-              icon: Icons.delete_outline,
-              label: 'Delete',
-              iconAfterLabel: true,
-            ),
-            onUpdate: (details) {
-              if (details.reached && !details.previousReached) {
-                HapticFeedback.mediumImpact();
-              }
-            },
-            confirmDismiss: (direction) async {
-              if (direction == DismissDirection.startToEnd) {
-                onEdit();
-                return false;
-              }
-              if (direction == DismissDirection.endToStart) {
-                return onDeleteConfirm();
-              }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Dismissible(
+          key: Key(card.id),
+          background: _SwipeActionBackground(
+            color: editColor,
+            alignment: Alignment.centerLeft,
+            icon: Icons.edit,
+            label: 'Edit',
+          ),
+          secondaryBackground: _SwipeActionBackground(
+            color: AppTheme.accentRose,
+            alignment: Alignment.centerRight,
+            icon: Icons.delete_outline,
+            label: 'Delete',
+            iconAfterLabel: true,
+          ),
+          onUpdate: (details) {
+            if (details.reached && !details.previousReached) {
+              HapticFeedback.mediumImpact();
+            }
+          },
+          confirmDismiss: (direction) async {
+            if (direction == DismissDirection.startToEnd) {
+              onEdit();
               return false;
-            },
-            child: Material(
-              color: Theme.of(context).cardTheme.color,
-              child: InkWell(
-                onTap: onTap,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: _CardTileBody(card: card),
-                ),
+            }
+            if (direction == DismissDirection.endToStart) {
+              return onDeleteConfirm();
+            }
+            return false;
+          },
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: _CardTileBody(card: card),
               ),
             ),
           ),
         ),
-      ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            indent: 16,
+            endIndent: 16,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
+          ),
+      ],
     );
   }
 }

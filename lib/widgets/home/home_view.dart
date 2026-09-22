@@ -589,85 +589,144 @@ class _HomeViewState extends ConsumerState<HomeView> {
                               ),
                             ),
 
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 12),
 
-                            // Cards List
-                            if (widget.isInteractive)
-                              ReorderableListView.builder(
-                                shrinkWrap: true,
-                                physics:
-                                    const NeverScrollableScrollPhysics(),
-                                itemCount: cards.length,
-                                padding: const EdgeInsets.only(bottom: 20),
-                                onReorderStart: (_) {
-                                  HapticFeedback.mediumImpact();
-                                },
-                                onReorderItem: (oldIndex, newIndex) {
-                                  HapticFeedback.lightImpact();
-                                  ref
-                                      .read(cardNotifierProvider.notifier)
-                                      .reorderCards(oldIndex, newIndex);
-                                },
-                                itemBuilder: (context, index) {
-                                  final card = cards[index];
-                                  return SwipeableCardTile(
-                                    key: ValueKey(card.id),
-                                    card: card,
-                                    onTap: () async {
-                                      final closedCardId =
-                                          await Navigator.push<String?>(
-                                        context,
-                                        zoomFromCenterRoute(
-                                          CardDetailsScreen(card: card),
-                                        ),
-                                      );
-                                      _syncSelectedCard(closedCardId);
-                                    },
-                                    onEdit: () {
-                                      Navigator.push(
-                                        context,
-                                        slideUpRoute(
-                                          AddEditCardScreen(
-                                              cardToEdit: card),
-                                        ),
-                                      );
-                                    },
-                                    onDeleteConfirm: () async {
-                                      final confirm =
-                                          await showDeleteConfirmationDialog(
-                                        context: context,
-                                        cardName: card.cardName,
-                                      );
-                                      if (confirm == true) {
-                                        ref
-                                            .read(cardNotifierProvider
-                                                .notifier)
-                                            .deleteCard(card.id);
-                                        return true;
-                                      }
-                                      return false;
-                                    },
-                                  );
-                                },
-                              )
-                            else
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics:
-                                    const NeverScrollableScrollPhysics(),
-                                itemCount: cards.length,
-                                padding: const EdgeInsets.only(bottom: 20),
-                                itemBuilder: (context, index) {
-                                  final card = cards[index];
-                                  return SwipeableCardTile(
-                                    key: ValueKey(card.id),
-                                    card: card,
-                                    onTap: () {},
-                                    onEdit: () {},
-                                    onDeleteConfirm: () async => false,
-                                  );
-                                },
+                            // Cards List inside Frosted Glass Grouped Container
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: BackdropFilter(
+                                  filter: ui.ImageFilter.blur(
+                                      sigmaX: 10, sigmaY: 10),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF161B26)
+                                              .withValues(alpha: 0.65)
+                                          : Colors.white
+                                              .withValues(alpha: 0.70),
+                                      borderRadius:
+                                          BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? Colors.white
+                                                .withValues(alpha: 0.10)
+                                            : Colors.black
+                                                .withValues(alpha: 0.06),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: widget.isInteractive
+                                        ? ReorderableListView.builder(
+                                            shrinkWrap: true,
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            itemCount: cards.length,
+                                            padding: EdgeInsets.zero,
+                                            proxyDecorator:
+                                                (child, index, animation) {
+                                              return AnimatedBuilder(
+                                                animation: animation,
+                                                builder: (context, _) {
+                                                  return Material(
+                                                    elevation: 6,
+                                                    color: isDark
+                                                        ? const Color(0xFF1E293B)
+                                                        : Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(16),
+                                                    child: child,
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            onReorderStart: (_) {
+                                              HapticFeedback.mediumImpact();
+                                            },
+                                            onReorderItem:
+                                                (oldIndex, newIndex) {
+                                              HapticFeedback.lightImpact();
+                                              ref
+                                                  .read(cardNotifierProvider
+                                                      .notifier)
+                                                  .reorderCards(
+                                                      oldIndex, newIndex);
+                                            },
+                                            itemBuilder: (context, index) {
+                                              final card = cards[index];
+                                              return SwipeableCardTile(
+                                                key: ValueKey(card.id),
+                                                card: card,
+                                                showDivider:
+                                                    index < cards.length - 1,
+                                                onTap: () async {
+                                                  final closedCardId =
+                                                      await Navigator.push<
+                                                          String?>(
+                                                    context,
+                                                    zoomFromCenterRoute(
+                                                      CardDetailsScreen(
+                                                          card: card),
+                                                    ),
+                                                  );
+                                                  _syncSelectedCard(
+                                                      closedCardId);
+                                                },
+                                                onEdit: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    slideUpRoute(
+                                                      AddEditCardScreen(
+                                                          cardToEdit: card),
+                                                    ),
+                                                  );
+                                                },
+                                                onDeleteConfirm: () async {
+                                                  final confirm =
+                                                      await showDeleteConfirmationDialog(
+                                                    context: context,
+                                                    cardName: card.cardName,
+                                                  );
+                                                  if (confirm == true) {
+                                                    ref
+                                                        .read(
+                                                            cardNotifierProvider
+                                                                .notifier)
+                                                        .deleteCard(card.id);
+                                                    return true;
+                                                  }
+                                                  return false;
+                                                },
+                                              );
+                                            },
+                                          )
+                                        : ListView.builder(
+                                            shrinkWrap: true,
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            itemCount: cards.length,
+                                            padding: EdgeInsets.zero,
+                                            itemBuilder: (context, index) {
+                                              final card = cards[index];
+                                              return SwipeableCardTile(
+                                                key: ValueKey(card.id),
+                                                card: card,
+                                                showDivider:
+                                                    index < cards.length - 1,
+                                                onTap: () {},
+                                                onEdit: () {},
+                                                onDeleteConfirm: () async =>
+                                                    false,
+                                              );
+                                            },
+                                          ),
+                                  ),
+                                ),
                               ),
+                            ),
+                            const SizedBox(height: 24),
                           ],
                         ),
                       ),
