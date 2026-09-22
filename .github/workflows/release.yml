@@ -27,31 +27,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Java JDK
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '25'
-
-      - name: Set up Flutter SDK
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-          cache-key: 'flutter-:channel:-:version:-:arch:-:hash:'
-          cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
-
-      - name: Cache Pub dependencies
-        uses: actions/cache@v6
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
-
-      - name: Setup Gradle Cache
-        uses: gradle/actions/setup-gradle@v6
-
       - name: Extract App Version from pubspec.yaml
         id: extract_version
         run: |
@@ -86,6 +61,35 @@ jobs:
       - name: Skip release if version unchanged
         if: steps.version_changed.outputs.should_release != 'true'
         run: echo "Skipping release because the app version did not change."
+
+      - name: Set up Java JDK
+        if: steps.version_changed.outputs.should_release == 'true'
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+
+      - name: Set up Flutter SDK
+        if: steps.version_changed.outputs.should_release == 'true'
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          cache-key: 'flutter-:channel:-:version:-:arch:-:hash:'
+          cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
+
+      - name: Cache Pub dependencies
+        if: steps.version_changed.outputs.should_release == 'true'
+        uses: actions/cache@v6
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Setup Gradle Cache
+        if: steps.version_changed.outputs.should_release == 'true'
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Generate Commit Changelog
         if: steps.version_changed.outputs.should_release == 'true'
