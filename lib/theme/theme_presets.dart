@@ -286,7 +286,7 @@ class ThemePresets {
     AppThemePreset(
       id: 'rainbow_crew',
       name: 'RainGus',
-      description: 'Trippy kaleidoscopic rainbow grid of animated crewmates',
+      description: 'Trippy rainbow grid of animated crewmates',
       shaderType: ShaderType.amogus,
       shaderAsset: 'shaders/raingus.frag',
       lineColor: Color(0xFFA855F7),
@@ -298,7 +298,7 @@ class ThemePresets {
     AppThemePreset(
       id: 'sus_glitch',
       name: 'Sussy Glitch',
-      description: 'Glitchy chromatic aberration crewmates shift across a grid.',
+      description: 'Glitchy chromatic crewmates shift across a grid.',
       shaderType: ShaderType.amogus,
       shaderAsset: 'shaders/amoglitch.frag',
       lineColor: Color(0xFFEF4444),
@@ -310,7 +310,7 @@ class ThemePresets {
     AppThemePreset(
       id: 'sus_abyss',
       name: 'Abyssusy',
-      description: 'Hypnotic logarithmic spiral tunnel into the impostor void',
+      description: 'Hypnotic spiral tunnel into the impostor void',
       shaderType: ShaderType.amogus,
       shaderAsset: 'shaders/amoghell.frag',
       lineColor: Color(0xFFF43F5E),
