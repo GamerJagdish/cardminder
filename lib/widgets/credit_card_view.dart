@@ -312,7 +312,7 @@ class _CreditCardViewState extends State<CreditCardView>
                             ),
                           ),
                         ),
-                        SizedBox(width: 85),
+                        SizedBox(width: onNetworkSelected != null ? 90 : 85),
                       ],
                     ),
 
@@ -455,12 +455,13 @@ class _CreditCardViewState extends State<CreditCardView>
               ),
               // Top-Right Card Network Logo Overlay (Decoupled from Column layout)
               Positioned(
-                top: 16,
-                right: 20,
+                top: onNetworkSelected != null ? 10 : 16,
+                right: onNetworkSelected != null ? 12 : 20,
                 child: onNetworkSelected != null
                     ? PopupMenuButton<String>(
                         onSelected: onNetworkSelected,
-                        offset: const Offset(0, 36),
+                        offset: const Offset(0, 44),
+                        padding: EdgeInsets.zero,
                         elevation: 4,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -532,13 +533,10 @@ class _CreditCardViewState extends State<CreditCardView>
                         child: AnimatedSize(
                           duration: const Duration(milliseconds: 200),
                           curve: Curves.easeInOutCubic,
-                          alignment: Alignment.centerRight,
+                          alignment: Alignment.topRight,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            constraints: const BoxConstraints(
-                              minHeight: 40,
-                            ),
+                                horizontal: 8, vertical: 6),
                             decoration: BoxDecoration(
                               color: badgeBg,
                               borderRadius: BorderRadius.circular(10),

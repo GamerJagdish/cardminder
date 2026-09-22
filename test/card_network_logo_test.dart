@@ -331,7 +331,7 @@ void main() {
     });
 
     testWidgets(
-        'renders interactive network dropdown badge with minHeight 40 and opens menu',
+        'renders interactive network dropdown matching card details logo size and opens menu',
         (WidgetTester tester) async {
       String? selectedNet;
       final card = CreditCard(
@@ -362,7 +362,7 @@ void main() {
       final badgeSize = tester.getSize(dropdownFinder);
       expect(badgeSize.height, greaterThanOrEqualTo(40.0),
           reason:
-              'Dropdown badge should have at least 40px height for unified touch target');
+              'Dropdown badge has >= 40px height for unified touch target');
 
       // Tap to open popup menu
       await tester.tap(dropdownFinder);
