@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -278,25 +279,34 @@ class _HomeViewState extends ConsumerState<HomeView> {
                           : null,
                       child: Stack(
                         children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppTheme.accentRose.withValues(alpha: 0.2)
-                                  : AppTheme.badgeUrgentBgLight
-                                      .withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: isDark
-                                    ? AppTheme.accentRose.withValues(alpha: 0.4)
-                                    : Colors.transparent,
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: BackdropFilter(
+                              filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                              child: Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF1E293B)
+                                          .withValues(alpha: 0.55)
+                                      : Colors.white.withValues(alpha: 0.70),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? AppTheme.accentRose
+                                            .withValues(alpha: 0.40)
+                                        : AppTheme.accentRose
+                                            .withValues(alpha: 0.25),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.notifications_active_outlined,
+                                  color: AppTheme.accentRose,
+                                  size: 22,
+                                ),
                               ),
-                            ),
-                            child: const Icon(
-                              Icons.notifications_active_outlined,
-                              color: AppTheme.accentRose,
-                              size: 22,
                             ),
                           ),
                           if (unreadLogsCount > 0)
@@ -467,26 +477,41 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: isDark
-                                              ? AppTheme.primaryAccentDark
-                                                  .withValues(alpha: 0.18)
-                                              : AppTheme.primaryNavy
-                                                  .withValues(alpha: 0.08),
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          '${cards.length}',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                            color: isDark
-                                                ? AppTheme.primaryAccentDark
-                                                : AppTheme.primaryNavy,
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: BackdropFilter(
+                                          filter: ui.ImageFilter.blur(
+                                              sigmaX: 8, sigmaY: 8),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? const Color(0xFF1E293B)
+                                                      .withValues(alpha: 0.55)
+                                                  : Colors.white
+                                                      .withValues(alpha: 0.70),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: isDark
+                                                    ? AppTheme.primaryAccentDark
+                                                        .withValues(alpha: 0.35)
+                                                    : AppTheme.primaryNavy
+                                                        .withValues(alpha: 0.15),
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              '${cards.length}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: isDark
+                                                    ? AppTheme.primaryAccentDark
+                                                    : AppTheme.primaryNavy,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -502,53 +527,61 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                                 .toggleSortMode();
                                           }
                                         : null,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: isDark
-                                            ? AppTheme.primaryAccentDark
-                                                .withValues(alpha: 0.15)
-                                            : AppTheme.primaryNavy
-                                                .withValues(alpha: 0.08),
-                                        borderRadius:
-                                            BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: isDark
-                                              ? AppTheme.primaryAccentDark
-                                                  .withValues(alpha: 0.3)
-                                              : AppTheme.primaryNavy
-                                                  .withValues(alpha: 0.15),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            state.sortMode ==
-                                                    SortMode.urgency
-                                                ? Icons.bolt_rounded
-                                                : Icons
-                                                    .drag_indicator_rounded,
-                                            size: 14,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: BackdropFilter(
+                                        filter: ui.ImageFilter.blur(
+                                            sigmaX: 8, sigmaY: 8),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
                                             color: isDark
-                                                ? AppTheme.primaryAccentDark
-                                                : AppTheme.primaryNavy,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            state.sortMode ==
-                                                    SortMode.urgency
-                                                ? 'Sorted by urgency'
-                                                : 'User Defined',
-                                            style: TextStyle(
-                                              fontSize: 12,
+                                                ? const Color(0xFF1E293B)
+                                                    .withValues(alpha: 0.55)
+                                                : Colors.white
+                                                    .withValues(alpha: 0.70),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
                                               color: isDark
                                                   ? AppTheme.primaryAccentDark
-                                                  : AppTheme.primaryNavy,
-                                              fontWeight: FontWeight.bold,
+                                                      .withValues(alpha: 0.35)
+                                                  : AppTheme.primaryNavy
+                                                      .withValues(alpha: 0.18),
+                                              width: 0.8,
                                             ),
                                           ),
-                                        ],
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                state.sortMode ==
+                                                        SortMode.urgency
+                                                    ? Icons.bolt_rounded
+                                                    : Icons
+                                                        .drag_indicator_rounded,
+                                                size: 14,
+                                                color: isDark
+                                                    ? AppTheme.primaryAccentDark
+                                                    : AppTheme.primaryNavy,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                state.sortMode ==
+                                                        SortMode.urgency
+                                                    ? 'Sorted by urgency'
+                                                    : 'User Defined',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: isDark
+                                                      ? AppTheme.primaryAccentDark
+                                                      : AppTheme.primaryNavy,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
