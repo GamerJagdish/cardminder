@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/credit_card.dart';
@@ -23,6 +24,8 @@ class CreditCardView extends StatefulWidget {
   final bool isInteractive;
   final String? heroTag;
   final bool enableTilt;
+  final bool isFrosted;
+  final double frostedOpacity;
 
   const CreditCardView({
     super.key,
@@ -35,6 +38,8 @@ class CreditCardView extends StatefulWidget {
     this.isInteractive = true,
     this.heroTag,
     this.enableTilt = true,
+    this.isFrosted = false,
+    this.frostedOpacity = 0.80,
   });
 
   @override
@@ -202,59 +207,7 @@ class _CreditCardViewState extends State<CreditCardView>
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isUrgent = _isUrgent(card);
 
-    final cardWidget = GestureDetector(
-      onTap: isInteractive && onTap != null
-          ? () {
-              if (_longPressTriggered) {
-                _longPressTriggered = false;
-                return;
-              }
-              _resetTiltImmediately();
-              onTap();
-            }
-          : null,
-      child: AnimatedBuilder(
-        animation: _breathingAnimation,
-        builder: (context, child) {
-          final breath = isUrgent ? _breathingAnimation.value : 0.0;
-          final primaryAlpha = (isDarkTheme ? 0.38 : 0.28) +
-              (isDarkTheme ? 0.16 : 0.12) * breath;
-          final ambientAlpha = (isDarkTheme ? 0.20 : 0.12) +
-              (isDarkTheme ? 0.10 : 0.08) * breath;
-          final primaryBlur = 22.0 + (2.0 * breath);
-          final ambientBlur = 14.0 + (2.0 * breath);
-
-          return Container(
-            height: 195,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: colors,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: colors.first.withValues(alpha: primaryAlpha),
-                  blurRadius: primaryBlur,
-                  offset: const Offset(0, 9),
-                ),
-                BoxShadow(
-                  color: colors.first.withValues(alpha: ambientAlpha),
-                  blurRadius: ambientBlur,
-                  spreadRadius: -2,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: child,
-          );
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: Stack(
-            children: [
+    final stackChildren = <Widget>[
               // Top Right ambient circle overlay
               Positioned(
                 right: -40,
@@ -580,9 +533,100 @@ class _CreditCardViewState extends State<CreditCardView>
                   ),
                 ),
               ),
-            ],
+            ];
+
+    final Widget cardBody;
+    if (widget.isFrosted) {
+      cardBody = ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: colors
+                    .map((c) => c.withValues(alpha: widget.frostedOpacity))
+                    .toList(),
+              ),
+              border: Border.all(
+                color: isDarkTheme
+                    ? Colors.white.withValues(alpha: 0.18)
+                    : (isLightBg
+                        ? Colors.black.withValues(alpha: 0.10)
+                        : Colors.white.withValues(alpha: 0.22)),
+                width: 1.0,
+              ),
+            ),
+            child: Stack(
+              children: stackChildren,
+            ),
           ),
         ),
+      );
+    } else {
+      cardBody = ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: stackChildren,
+        ),
+      );
+    }
+
+    final cardWidget = GestureDetector(
+      onTap: isInteractive && onTap != null
+          ? () {
+              if (_longPressTriggered) {
+                _longPressTriggered = false;
+                return;
+              }
+              _resetTiltImmediately();
+              onTap();
+            }
+          : null,
+      child: AnimatedBuilder(
+        animation: _breathingAnimation,
+        child: cardBody,
+        builder: (context, child) {
+          final breath = isUrgent ? _breathingAnimation.value : 0.0;
+          final primaryAlpha = (isDarkTheme ? 0.38 : 0.28) +
+              (isDarkTheme ? 0.16 : 0.12) * breath;
+          final ambientAlpha = (isDarkTheme ? 0.20 : 0.12) +
+              (isDarkTheme ? 0.10 : 0.08) * breath;
+          final primaryBlur = 22.0 + (2.0 * breath);
+          final ambientBlur = 14.0 + (2.0 * breath);
+
+          return Container(
+            height: 195,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: widget.isFrosted
+                  ? null
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: colors,
+                    ),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.first.withValues(alpha: primaryAlpha),
+                  blurRadius: primaryBlur,
+                  offset: const Offset(0, 9),
+                ),
+                BoxShadow(
+                  color: colors.first.withValues(alpha: ambientAlpha),
+                  blurRadius: ambientBlur,
+                  spreadRadius: -2,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: child,
+          );
+        },
       ),
     );
 

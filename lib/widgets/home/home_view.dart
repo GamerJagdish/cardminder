@@ -421,6 +421,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                           : 'card-hero-${card.id}',
                                       isInteractive: widget.isInteractive,
                                       enableTilt: widget.isInteractive,
+                                      isFrosted: true,
                                       onTap: widget.isInteractive
                                           ? () async {
                                               final closedCardId =

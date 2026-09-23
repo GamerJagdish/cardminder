@@ -39,6 +39,29 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('renders CreditCardView with isFrosted true and BackdropFilter without error',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: CreditCardView(
+              card: testCard,
+              isFrosted: true,
+              frostedOpacity: 0.80,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BackdropFilter), findsOneWidget);
+      expect(find.text('Sapphire Preferred'), findsOneWidget);
+      expect(find.text('4321'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('AnimatedOdometerText rolls values smoothly without error',
         (WidgetTester tester) async {
       int count = 12;
