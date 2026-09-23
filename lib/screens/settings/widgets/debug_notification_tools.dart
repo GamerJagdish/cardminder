@@ -46,9 +46,20 @@ class _DebugNotificationToolsState extends State<DebugNotificationTools> {
       final pending = await NotificationService.getPendingNotifications();
       if (!mounted) return;
 
+      final isDark = Theme.of(context).brightness == Brightness.dark;
       await showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.10)
+                  : Colors.black.withValues(alpha: 0.08),
+              width: 1.2,
+            ),
+          ),
+          backgroundColor: context.colors.surfaceCard,
           title: Text('Pending notifications (${pending.length})'),
           content: pending.isEmpty
               ? const Text('No notifications are scheduled with the OS.')

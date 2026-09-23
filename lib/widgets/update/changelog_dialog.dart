@@ -155,9 +155,17 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
       child: Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.10)
+                : Colors.black.withValues(alpha: 0.08),
+            width: 1.2,
+          ),
         ),
-        backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.surfaceWhite,
+        backgroundColor: context.colors.surfaceCard,
         surfaceTintColor: Colors.transparent,
+        elevation: isDark ? 12 : 8,
+        shadowColor: Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
         insetPadding: EdgeInsets.symmetric(
           horizontal: horizontalInset,
           vertical: verticalInset,

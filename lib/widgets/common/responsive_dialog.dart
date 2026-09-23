@@ -36,11 +36,39 @@ class ResponsiveDialog extends StatelessWidget {
     final availableWidth = screenWidth - (horizontalInset * 2);
     final dialogWidth = availableWidth.clamp(minWidth, maxWidth);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.10)
+        : Colors.black.withValues(alpha: 0.08);
+
+    final effectivePadding = padding != null
+        ? (isLandscape || screenHeight < 500
+            ? EdgeInsets.only(
+                left: padding!.left,
+                right: padding!.right,
+                top: padding!.top.clamp(0.0, 16.0),
+                bottom: padding!.bottom.clamp(0.0, 16.0),
+              )
+            : padding!)
+        : null;
+
+    final Widget dialogBody;
+    if (child is SingleChildScrollView) {
+      dialogBody = effectivePadding != null
+          ? Padding(padding: effectivePadding, child: child)
+          : child;
+    } else {
+      dialogBody = SingleChildScrollView(
+        padding: effectivePadding,
+        child: child,
+      );
+    }
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius),
         side: BorderSide(
-          color: context.colors.border,
+          color: borderColor,
           width: 1.2,
         ),
       ),
@@ -50,16 +78,15 @@ class ResponsiveDialog extends StatelessWidget {
       ),
       clipBehavior: clipContent ? Clip.antiAlias : Clip.none,
       backgroundColor: backgroundColor ?? context.colors.surfaceCard,
-      elevation: 8,
+      elevation: isDark ? 12 : 8,
+      shadowColor: Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
       surfaceTintColor: Colors.transparent,
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: dialogWidth,
           minWidth: dialogWidth,
         ),
-        child: padding != null
-            ? Padding(padding: padding!, child: child)
-            : child,
+        child: dialogBody,
       ),
     );
   }
