@@ -474,8 +474,22 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                   final isSelected = _currentPage == index;
                                   final isCustomDot =
                                       index == AppTheme.cardThemes.length;
+                                  final isDark =
+                                      Theme.of(context).brightness == Brightness.dark;
                                   final primaryColor =
                                       Theme.of(context).colorScheme.primary;
+
+                                  final inactiveDotColor = isDark
+                                      ? Colors.white.withValues(alpha: 0.35)
+                                      : Colors.black.withValues(alpha: 0.32);
+                                  final borderColor = isSelected
+                                      ? primaryColor
+                                      : (isCustomDot
+                                          ? primaryColor.withValues(
+                                              alpha: isDark ? 0.35 : 0.25)
+                                          : (isDark
+                                              ? Colors.white.withValues(alpha: 0.18)
+                                              : Colors.black.withValues(alpha: 0.15)));
 
                                   return GestureDetector(
                                     onTap: () {
@@ -497,9 +511,13 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                                             ? primaryColor
                                             : (isCustomDot
                                                 ? primaryColor.withValues(
-                                                    alpha: 0.4)
-                                                : context.colors.border),
+                                                    alpha: isDark ? 0.55 : 0.45)
+                                                : inactiveDotColor),
                                         borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                          color: borderColor,
+                                          width: 0.6,
+                                        ),
                                       ),
                                     ),
                                   );

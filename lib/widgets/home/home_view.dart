@@ -461,13 +461,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                 final activeDotColor =
                                     context.colors.buttonPrimaryBg;
                                 final inactiveDotColor = isDark
-                                    ? Colors.white.withValues(alpha: 0.32)
-                                    : Colors.black.withValues(alpha: 0.22);
+                                    ? Colors.white.withValues(alpha: 0.35)
+                                    : Colors.black.withValues(alpha: 0.32);
                                 final borderColor = isSelected
                                     ? activeDotColor
                                     : (isDark
-                                        ? Colors.white.withValues(alpha: 0.14)
-                                        : Colors.black.withValues(alpha: 0.10));
+                                        ? Colors.white.withValues(alpha: 0.18)
+                                        : Colors.black.withValues(alpha: 0.15));
 
                                 return AnimatedContainer(
                                   duration:
