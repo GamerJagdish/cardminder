@@ -170,7 +170,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             child: ShaderBackgroundView(
               preset: currentPreset,
               animate: effectiveAnimate,
-              opacity: isDark ? 0.8 : 0.95,
+              opacity: isDark ? 0.95 : 0.95,
             ),
           ),
         ),
@@ -452,46 +452,102 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
                             const SizedBox(height: 12),
 
-                            // Page Indicator Dots (. . -)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children:
-                                  List.generate(cards.length, (index) {
-                                final isSelected = _currentPage == index;
-                                final activeDotColor =
-                                    context.colors.buttonPrimaryBg;
-                                final inactiveDotColor = isDark
-                                    ? Colors.white.withValues(alpha: 0.35)
-                                    : Colors.black.withValues(alpha: 0.32);
-                                final borderColor = isSelected
-                                    ? activeDotColor
-                                    : (isDark
-                                        ? Colors.white.withValues(alpha: 0.18)
-                                        : Colors.black.withValues(alpha: 0.15));
+                            // Page Indicator Dots inside Frosted Glass Dock
+                            if (cards.isNotEmpty)
+                              Center(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: BackdropFilter(
+                                    filter: ui.ImageFilter.blur(
+                                        sigmaX: 8, sigmaY: 8),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: isDark
+                                            ? const Color(0xFF1E293B)
+                                                .withValues(alpha: 0.55)
+                                            : Colors.white
+                                                .withValues(alpha: 0.70),
+                                        borderRadius:
+                                            BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: isDark
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.08)
+                                              : Colors.black
+                                                  .withValues(alpha: 0.06),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children:
+                                            List.generate(cards.length, (index) {
+                                          final isSelected =
+                                              _currentPage == index;
+                                          final activeDotColor =
+                                              context.colors.buttonPrimaryBg;
+                                          final inactiveDotColor = isDark
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.35)
+                                              : Colors.black
+                                                  .withValues(alpha: 0.32);
+                                          final borderColor = isSelected
+                                              ? activeDotColor
+                                              : (isDark
+                                                  ? Colors.white
+                                                      .withValues(alpha: 0.18)
+                                                  : Colors.black
+                                                      .withValues(alpha: 0.15));
 
-                                return AnimatedContainer(
-                                  duration:
-                                      const Duration(milliseconds: 200),
-                                  margin: const EdgeInsets.symmetric(
-                                      horizontal: 3),
-                                  width: isSelected ? 20 : 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? activeDotColor
-                                        : inactiveDotColor,
-                                    borderRadius:
-                                        BorderRadius.circular(3),
-                                    border: Border.all(
-                                      color: borderColor,
-                                      width: 0.5,
+                                          return GestureDetector(
+                                            onTap: widget.isInteractive &&
+                                                    _pageController.hasClients
+                                                ? () {
+                                                    _pageController
+                                                        .animateToPage(
+                                                      index,
+                                                      duration: const Duration(
+                                                          milliseconds: 300),
+                                                      curve:
+                                                          Curves.easeOutCubic,
+                                                    );
+                                                  }
+                                                : null,
+                                            behavior:
+                                                HitTestBehavior.opaque,
+                                            child: AnimatedContainer(
+                                              duration: const Duration(
+                                                  milliseconds: 200),
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 3),
+                                              width: isSelected ? 20 : 6,
+                                              height: 6,
+                                              decoration: BoxDecoration(
+                                                color: isSelected
+                                                    ? activeDotColor
+                                                    : inactiveDotColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(3),
+                                                border: Border.all(
+                                                  color: borderColor,
+                                                  width: 0.5,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }),
+                                      ),
                                     ),
                                   ),
-                                );
-                              }),
-                            ),
+                                ),
+                              ),
 
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 20),
 
                             // Cards List inside Frosted Glass Grouped Container
                             Padding(
