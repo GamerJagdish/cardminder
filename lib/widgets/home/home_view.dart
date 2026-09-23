@@ -217,48 +217,76 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   children: [
                     // User Name Header
                     Expanded(
-                      child: GestureDetector(
-                        onTap: widget.isInteractive
-                            ? () => EditUserNameDialog.show(
-                                  context: context,
-                                  currentName: settings.userName,
-                                  onSave: (newName) {
-                                    ref
-                                        .read(settingsNotifierProvider.notifier)
-                                        .updateSettings(
-                                            settings.copyWith(
-                                                userName: newName),
-                                            cards.cast());
-                                  },
-                                )
-                            : null,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome back,',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: isDark
-                                    ? AppTheme.slate300
-                                    : AppTheme.textMuted,
-                                fontWeight: FontWeight.w600,
-                                shadows: AppTheme.textShadowSubtle(isDark),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: GestureDetector(
+                          onTap: widget.isInteractive
+                              ? () => EditUserNameDialog.show(
+                                    context: context,
+                                    currentName: settings.userName,
+                                    onSave: (newName) {
+                                      ref
+                                          .read(settingsNotifierProvider.notifier)
+                                          .updateSettings(
+                                              settings.copyWith(
+                                                  userName: newName),
+                                              cards.cast());
+                                    },
+                                  )
+                              : null,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: BackdropFilter(
+                              filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF1E293B)
+                                          .withValues(alpha: 0.55)
+                                      : Colors.white.withValues(alpha: 0.70),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.08)
+                                        : Colors.black.withValues(alpha: 0.06),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Welcome back,',
+                                      style: TextStyle(
+                                        fontSize: 12.5,
+                                        color: isDark
+                                            ? AppTheme.slate300
+                                            : AppTheme.slate600,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      settings.userName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              settings.userName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.onSurface,
-                                shadows: AppTheme.textShadowAmbient(isDark),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
