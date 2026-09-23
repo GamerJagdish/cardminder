@@ -170,7 +170,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             child: ShaderBackgroundView(
               preset: currentPreset,
               animate: effectiveAnimate,
-              opacity: isDark ? 0.75 : 0.35,
+              opacity: isDark ? 0.8 : 0.95,
             ),
           ),
         ),
