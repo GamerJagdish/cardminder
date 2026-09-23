@@ -4,6 +4,8 @@ An Android app that keeps your credit and debit cards from getting deactivated d
 
 Most banks quietly deactivate a card if you don't use it for 365 days. I kept forgetting about the cards I don't use often, so I built this to track the last transaction date on each card and remind me before the deadline hits.
 
+[![cardminder](https://img.shields.io/github/release/gamerjagdish/cardminder.svg?maxAge=3600&display_name=release&label=Download%20App&labelColor=06599d&color=043b69&style=for-the-badge)](https://github.com/gamerjagdish/cardminder/releases)
+
 ## What it does
 
 - Everything is stored locally on your phone, nothing is sent anywhere
