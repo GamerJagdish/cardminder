@@ -28,13 +28,15 @@ class ShaderBackgroundView extends StatefulWidget {
 }
 
 class _ShaderBackgroundViewState extends State<ShaderBackgroundView>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _timeController;
   ui.FragmentProgram? _currentProgram;
+  bool _isAppResumed = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _timeController = AnimationController(
       duration: const Duration(seconds: 120),
       vsync: this,
@@ -46,6 +48,36 @@ class _ShaderBackgroundViewState extends State<ShaderBackgroundView>
         _timeController.repeat();
       }
       _loadShader(widget.preset.shaderAsset);
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final isResumed = state == AppLifecycleState.resumed;
+    if (_isAppResumed != isResumed) {
+      _isAppResumed = isResumed;
+      _syncAnimationState();
+    }
+  }
+
+  void _syncAnimationState() {
+    if (widget.preset.shaderType == ShaderType.none ||
+        widget.preset.shaderAsset.isEmpty) {
+      if (_timeController.isAnimating) {
+        _timeController.stop();
+      }
+      return;
+    }
+
+    final shouldAnimate = widget.animate && _isAppResumed;
+    if (shouldAnimate) {
+      if (!_timeController.isAnimating) {
+        _timeController.repeat();
+      }
+    } else {
+      if (_timeController.isAnimating) {
+        _timeController.stop();
+      }
     }
   }
 
@@ -64,21 +96,13 @@ class _ShaderBackgroundViewState extends State<ShaderBackgroundView>
           _currentProgram == null) {
         _loadShader(widget.preset.shaderAsset);
       }
-
-      if (widget.animate) {
-        if (!_timeController.isAnimating) {
-          _timeController.repeat();
-        }
-      } else {
-        if (_timeController.isAnimating) {
-          _timeController.stop();
-        }
-      }
+      _syncAnimationState();
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timeController.dispose();
     super.dispose();
   }
@@ -118,18 +142,20 @@ class _ShaderBackgroundViewState extends State<ShaderBackgroundView>
     Widget content;
 
     if (_currentProgram != null) {
-      content = AnimatedBuilder(
-        animation: _timeController,
-        builder: (context, _) {
-          return CustomPaint(
-            painter: _ShaderPainter(
-              program: _currentProgram!,
-              time: _timeController.value * 120.0,
-              preset: widget.preset,
-            ),
-            size: Size.infinite,
-          );
-        },
+      content = RepaintBoundary(
+        child: AnimatedBuilder(
+          animation: _timeController,
+          builder: (context, _) {
+            return CustomPaint(
+              painter: _ShaderPainter(
+                program: _currentProgram!,
+                time: _timeController.value * 120.0,
+                preset: widget.preset,
+              ),
+              size: Size.infinite,
+            );
+          },
+        ),
       );
     } else {
       // Graceful fallback during asset loading or on unsupported environments

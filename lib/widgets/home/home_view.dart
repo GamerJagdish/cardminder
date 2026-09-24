@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,7 @@ import '../../screens/card_details_screen.dart';
 import '../../screens/notification_logs_screen.dart';
 import '../../services/notification_log_service.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/app_route_observer.dart';
 import '../../utils/page_transitions.dart';
 import '../card_tile.dart';
 import '../credit_card_view.dart';
@@ -31,6 +33,7 @@ class HomeView extends ConsumerStatefulWidget {
   final bool isInteractive;
   final bool showBottomNavBar;
   final bool isPreview;
+  final bool isActive;
   final ScrollController? scrollController;
   final PageController? pageController;
   final ValueChanged<String>? onCardAdded;
@@ -42,6 +45,7 @@ class HomeView extends ConsumerStatefulWidget {
     this.isInteractive = true,
     this.showBottomNavBar = false,
     this.isPreview = false,
+    this.isActive = true,
     this.scrollController,
     this.pageController,
     this.onCardAdded,
@@ -77,10 +81,13 @@ class HomeView extends ConsumerStatefulWidget {
   ConsumerState<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends ConsumerState<HomeView> {
+class _HomeViewState extends ConsumerState<HomeView> with RouteAware {
   int _currentPage = 0;
   PageController? _internalPageController;
   ScrollController? _internalScrollController;
+  ModalRoute<dynamic>? _route;
+  bool _isRouteActive = true;
+  Timer? _resumeTransitionTimer;
 
   PageController get _pageController =>
       widget.pageController ??
@@ -91,7 +98,91 @@ class _HomeViewState extends ConsumerState<HomeView> {
       (_internalScrollController ??= ScrollController());
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!widget.isPreview) {
+      final route = ModalRoute.of(context);
+      if (route != _route) {
+        _route?.secondaryAnimation
+            ?.removeStatusListener(_onRouteAnimationStatusChanged);
+        _route?.animation?.removeStatusListener(_onRouteAnimationStatusChanged);
+        if (_route is PageRoute<dynamic>) {
+          appRouteObserver.unsubscribe(this);
+        }
+        _route = route;
+        _route?.secondaryAnimation
+            ?.addStatusListener(_onRouteAnimationStatusChanged);
+        _route?.animation?.addStatusListener(_onRouteAnimationStatusChanged);
+        if (route is PageRoute<dynamic>) {
+          appRouteObserver.subscribe(this, route);
+        }
+        _updateRouteState();
+      }
+    }
+  }
+
+  @override
+  void didPushNext() {
+    // A secondary PageRoute is being pushed over HomeScreen.
+    // Pause shader immediately to dedicate 100% GPU to smooth transition!
+    _resumeTransitionTimer?.cancel();
+    if (_isRouteActive) {
+      if (mounted) {
+        setState(() {
+          _isRouteActive = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void didPopNext() {
+    // Child screen was popped, returning to HomeScreen.
+    // Wait for the reverse transition to finish before resuming shader.
+    _resumeTransitionTimer?.cancel();
+    _resumeTransitionTimer = Timer(const Duration(milliseconds: 450), () {
+      if (mounted && !_isRouteActive) {
+        setState(() {
+          _isRouteActive = true;
+        });
+      }
+    });
+  }
+
+  void _onRouteAnimationStatusChanged(AnimationStatus status) {
+    _updateRouteState();
+  }
+
+  void _updateRouteState() {
+    final route = _route;
+    if (route == null) return;
+    // Check if covered by another PageRoute via secondaryAnimation.
+    // Popups/dialogs (like EditUserNameDialog) do not drive secondaryAnimation,
+    // allowing the background shader to keep playing seamlessly while in view.
+    final isSecondaryDismissed =
+        route.secondaryAnimation?.isDismissed ?? true;
+    final isPrimaryRouteSettled = route.animation == null ||
+        route.animation!.status == AnimationStatus.completed ||
+        route.animation!.status == AnimationStatus.dismissed;
+    final isActive = isSecondaryDismissed && isPrimaryRouteSettled;
+    if (_isRouteActive != isActive) {
+      if (mounted) {
+        setState(() {
+          _isRouteActive = isActive;
+        });
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    _resumeTransitionTimer?.cancel();
+    if (!widget.isPreview) {
+      appRouteObserver.unsubscribe(this);
+    }
+    _route?.secondaryAnimation
+        ?.removeStatusListener(_onRouteAnimationStatusChanged);
+    _route?.animation?.removeStatusListener(_onRouteAnimationStatusChanged);
     _internalPageController?.dispose();
     _internalScrollController?.dispose();
     super.dispose();
@@ -159,18 +250,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
     final currentPreset = widget.presetOverride ??
         ThemePresets.getById(settings.themePreset);
-    final effectiveAnimate =
+    final baseAnimate =
         widget.animateOverride ?? settings.animateBackground;
+    final effectiveAnimate = widget.isPreview
+        ? baseAnimate
+        : (baseAnimate && widget.isActive && _isRouteActive);
 
     final content = Stack(
       children: [
         // 1. Hardware-Accelerated GLSL Fragment Shader Background
         Positioned.fill(
           child: IgnorePointer(
-            child: ShaderBackgroundView(
-              preset: currentPreset,
-              animate: effectiveAnimate,
-              opacity: isDark ? 0.95 : 0.95,
+            child: RepaintBoundary(
+              child: ShaderBackgroundView(
+                preset: currentPreset,
+                animate: effectiveAnimate,
+                opacity: isDark ? 0.95 : 0.95,
+              ),
             ),
           ),
         ),
@@ -183,20 +279,22 @@ class _HomeViewState extends ConsumerState<HomeView> {
             right: 0,
             height: 480,
             child: IgnorePointer(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 450),
-                curve: Curves.easeOutCubic,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      activeCardColor.withValues(alpha: isDark ? 0.20 : 0.10),
-                      activeCardColor.withValues(alpha: isDark ? 0.24 : 0.12),
-                      activeCardColor.withValues(alpha: isDark ? 0.08 : 0.04),
-                      activeCardColor.withValues(alpha: 0.0),
-                    ],
-                    stops: const [0.0, 0.40, 0.75, 1.0],
+              child: RepaintBoundary(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 450),
+                  curve: Curves.easeOutCubic,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        activeCardColor.withValues(alpha: isDark ? 0.20 : 0.10),
+                        activeCardColor.withValues(alpha: isDark ? 0.24 : 0.12),
+                        activeCardColor.withValues(alpha: isDark ? 0.08 : 0.04),
+                        activeCardColor.withValues(alpha: 0.0),
+                      ],
+                      stops: const [0.0, 0.40, 0.75, 1.0],
+                    ),
                   ),
                 ),
               ),
@@ -206,7 +304,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
         // 3. Main Screen Content inside SafeArea
         SafeArea(
           bottom: false,
-          child: Column(
+          child: RepaintBoundary(
+            child: Column(
             children: [
               // Top App Bar Header (Welcome back, <userName> & Notification Bell)
               Padding(
@@ -377,10 +476,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
                           return true;
                         },
                         child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            overscroll: false,
-                          ),
-                          child: SingleChildScrollView(
+                            behavior: ScrollConfiguration.of(context).copyWith(
+                              overscroll: false,
+                            ),
+                            child: SingleChildScrollView(
                             controller: _scrollController,
                             physics: widget.isInteractive
                                 ? const BouncingScrollPhysics(
@@ -414,37 +513,39 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 20.0),
-                                    child: CreditCardView(
-                                      card: card,
-                                      heroTag: widget.isPreview
-                                          ? null
-                                          : 'card-hero-${card.id}',
-                                      isInteractive: widget.isInteractive,
-                                      enableTilt: widget.isInteractive,
-                                      isFrosted: true,
-                                      onTap: widget.isInteractive
-                                          ? () async {
-                                              final closedCardId =
-                                                  await Navigator.push<String?>(
-                                                context,
-                                                slideUpRoute(
-                                                  CardDetailsScreen(card: card),
-                                                ),
-                                              );
-                                              _syncSelectedCard(closedCardId);
-                                            }
-                                          : null,
-                                      onLongPress: widget.isInteractive
-                                          ? () {
-                                              Navigator.push(
-                                                context,
-                                                slideUpRoute(
-                                                  AddEditCardScreen(
-                                                      cardToEdit: card),
-                                                ),
-                                              );
-                                            }
-                                          : null,
+                                    child: RepaintBoundary(
+                                      child: CreditCardView(
+                                        card: card,
+                                        heroTag: widget.isPreview
+                                            ? null
+                                            : 'card-hero-${card.id}',
+                                        isInteractive: widget.isInteractive,
+                                        enableTilt: widget.isInteractive,
+                                        isFrosted: true,
+                                        onTap: widget.isInteractive
+                                            ? () async {
+                                                final closedCardId =
+                                                    await Navigator.push<String?>(
+                                                  context,
+                                                  slideUpRoute(
+                                                    CardDetailsScreen(card: card),
+                                                  ),
+                                                );
+                                                _syncSelectedCard(closedCardId);
+                                              }
+                                            : null,
+                                        onLongPress: widget.isInteractive
+                                            ? () {
+                                                Navigator.push(
+                                                  context,
+                                                  slideUpRoute(
+                                                    AddEditCardScreen(
+                                                        cardToEdit: card),
+                                                  ),
+                                                );
+                                              }
+                                            : null,
+                                      ),
                                     ),
                                   );
                                 },
@@ -860,6 +961,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   ),
               ),
             ],
+          ),
           ),
         ),
       ],

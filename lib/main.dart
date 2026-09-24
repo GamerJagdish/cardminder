@@ -8,6 +8,7 @@ import 'screens/home_screen.dart';
 import 'services/notification_log_service.dart';
 import 'services/storage_service.dart';
 import 'theme/app_theme.dart';
+import 'utils/app_route_observer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,6 +71,7 @@ class CardMinderApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: _parseThemeMode(themeModeStr),
       themeAnimationDuration: Duration.zero,
+      navigatorObservers: [appRouteObserver],
       home: const HomeScreen(),
     );
   }

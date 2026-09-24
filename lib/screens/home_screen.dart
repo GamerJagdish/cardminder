@@ -28,6 +28,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   late PageController _pageController;
   late ScrollController _homeScrollController;
   StreamSubscription<Uri?>? _widgetClickSubscription;
+  Timer? _deferredTasksTimer;
 
   @override
   void initState() {
@@ -43,7 +44,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _initDeferredBackgroundTasks() {
     // Allow initial frames, layout, and entrance animations to settle
     // smoothly before executing non-urgent background maintenance.
-    Future.delayed(const Duration(milliseconds: 1200), () async {
+    _deferredTasksTimer = Timer(const Duration(milliseconds: 1200), () async {
       if (!mounted) return;
       final cards = ref.read(cardNotifierProvider).cards;
 
@@ -124,6 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
+    _deferredTasksTimer?.cancel();
     _widgetClickSubscription?.cancel();
     _pageController.dispose();
     _homeScrollController.dispose();
@@ -157,6 +159,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBody: true,
+      resizeToAvoidBottomInset: false,
       body: IndexedStack(
         index: _selectedTab,
         children: [
@@ -165,26 +168,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             pageController: _pageController,
             isInteractive: true,
             showBottomNavBar: false,
+            isActive: _selectedTab == 0,
             onCardAdded: _onCardAdded,
           ),
           const SettingsScreen(),
         ],
       ),
       // Custom Floating Bottom Navigation Bar (Mathematically Centered 3-Column Grid)
-      bottomNavigationBar: HomeBottomNavBar(
-        selectedTab: _selectedTab,
-        onTabSelected: (tab) => setState(() => _selectedTab = tab),
-        onHomeReselected: () {
-          if (_homeScrollController.hasClients &&
-              _homeScrollController.offset > 0) {
-            _homeScrollController.animateTo(
-              0.0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-            );
-          }
-        },
-        onCardAdded: _onCardAdded,
+      bottomNavigationBar: RepaintBoundary(
+        child: HomeBottomNavBar(
+          selectedTab: _selectedTab,
+          onTabSelected: (tab) => setState(() => _selectedTab = tab),
+          onHomeReselected: () {
+            if (_homeScrollController.hasClients &&
+                _homeScrollController.offset > 0) {
+              _homeScrollController.animateTo(
+                0.0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+              );
+            }
+          },
+          onCardAdded: _onCardAdded,
+        ),
       ),
     );
   }
