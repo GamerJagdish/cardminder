@@ -69,6 +69,30 @@ class NotificationLogService {
     await _box.put(log.id, jsonStr);
   }
 
+  Future<void> setReadStatus(String id, bool isRead) async {
+    final raw = _box.get(id);
+    if (raw != null) {
+      try {
+        final Map<String, dynamic> jsonMap = jsonDecode(raw);
+        final log = NotificationLog.fromJson(jsonMap);
+        final updated = log.copyWith(isRead: isRead);
+        await saveLog(updated);
+      } catch (_) {}
+    }
+  }
+
+  Future<void> toggleReadStatus(String id) async {
+    final raw = _box.get(id);
+    if (raw != null) {
+      try {
+        final Map<String, dynamic> jsonMap = jsonDecode(raw);
+        final log = NotificationLog.fromJson(jsonMap);
+        final updated = log.copyWith(isRead: !log.isRead);
+        await saveLog(updated);
+      } catch (_) {}
+    }
+  }
+
   Future<void> markAllAsRead() async {
     final logs = loadLogs();
     for (var log in logs) {
@@ -102,6 +126,16 @@ class NotificationLogNotifier extends Notifier<List<NotificationLog>> {
     if (hasNew) {
       loadLogs();
     }
+  }
+
+  Future<void> setReadStatus(String id, bool isRead) async {
+    await _service.setReadStatus(id, isRead);
+    loadLogs();
+  }
+
+  Future<void> toggleReadStatus(String id) async {
+    await _service.toggleReadStatus(id);
+    loadLogs();
   }
 
   Future<void> markAllAsRead() async {

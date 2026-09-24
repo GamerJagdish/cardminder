@@ -239,8 +239,8 @@ class _HomeViewState extends ConsumerState<HomeView> with RouteAware {
         : rawCards;
 
     final settings = ref.watch(settingsNotifierProvider);
-    final unreadLogsCount =
-        ref.watch(notificationLogNotifierProvider.notifier).unreadCount;
+    final notificationLogs = ref.watch(notificationLogNotifierProvider);
+    final unreadLogsCount = notificationLogs.where((l) => !l.isRead).length;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeCardColor = cards.isNotEmpty
