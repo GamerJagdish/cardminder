@@ -301,9 +301,9 @@ class ThemePresets {
       description: 'Glitchy chromatic crewmates shift across a grid.',
       shaderType: ShaderType.amogus,
       shaderAsset: 'shaders/amoglitch.frag',
-      lineColor: Color(0xFFEF4444),
-      bgColor: Color(0xFF0B0F19),
-      accentColor: Color(0xFFF87171),
+      lineColor: Color(0xFFE2E8F0),
+      bgColor: Color(0xFF000000),
+      accentColor: Color(0xFF94A3B8),
       isDark: true,
     ),
     // 8. Abyssusy
