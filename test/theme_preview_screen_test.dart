@@ -64,13 +64,16 @@ void main() {
       // Verify the new Theme Presets sheet is visible
       expect(find.text('Theme Presets'), findsOneWidget);
       expect(find.byIcon(Icons.palette_rounded), findsWidgets);
-      expect(
-        find.descendant(
-          of: find.byType(BottomSheet),
-          matching: find.byIcon(Icons.close_rounded),
-        ),
-        findsOneWidget,
+      final closeIconFinder = find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byIcon(Icons.close_rounded),
       );
+      expect(closeIconFinder, findsOneWidget);
+      final closeContainer = tester.widget<Container>(
+        find.ancestor(of: closeIconFinder, matching: find.byType(Container)).first,
+      );
+      final closeDec = closeContainer.decoration as BoxDecoration?;
+      expect(closeDec?.shape, BoxShape.circle);
 
       // Verify theme presets are rendered as visual cards in the sheet
       final sheetFinder = find.byType(BottomSheet);
@@ -107,10 +110,16 @@ void main() {
 
       // Should show 'Waveform Styles' header and back button in popup
       expect(find.text('Waveform Styles'), findsOneWidget);
-      expect(
-        find.descendant(of: find.byType(BottomSheet), matching: find.byIcon(Icons.arrow_back_rounded)),
-        findsOneWidget,
+      final backIconFinder = find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byIcon(Icons.arrow_back_rounded),
       );
+      expect(backIconFinder, findsOneWidget);
+      final backContainer = tester.widget<Container>(
+        find.ancestor(of: backIconFinder, matching: find.byType(Container)).first,
+      );
+      final backDec = backContainer.decoration as BoxDecoration?;
+      expect(backDec?.shape, BoxShape.circle);
 
       // Variants should be visible inside the popup
       expect(find.text('Ruby Waveform'), findsOneWidget);

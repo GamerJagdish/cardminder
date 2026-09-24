@@ -437,47 +437,49 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                               child: Row(
                                 children: [
                                   if (isViewingSheetVariants)
-                                    // Back button to return to main themes
+                                    // Back button to return to main themes (matching main X button style)
                                     Padding(
                                       padding: const EdgeInsets.only(right: 12),
-                                      child: IconButton(
-                                        onPressed: () {
+                                      child: GestureDetector(
+                                        onTap: () {
                                           HapticFeedback.lightImpact();
                                           setSheetState(() {
                                             selectedParentPreset = null;
                                           });
                                         },
-                                        style: IconButton.styleFrom(
-                                          backgroundColor: isDark
-                                              ? Colors.white.withValues(alpha: 0.08)
-                                              : Colors.black.withValues(alpha: 0.06),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(14),
-                                            side: BorderSide(
+                                        child: Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: isDark
+                                                ? Colors.white.withValues(alpha: 0.12)
+                                                : Colors.black.withValues(alpha: 0.08),
+                                            border: Border.all(
                                               color: isDark
                                                   ? Colors.white.withValues(alpha: 0.12)
                                                   : Colors.black.withValues(alpha: 0.08),
                                               width: 1.0,
                                             ),
                                           ),
-                                        ),
-                                        icon: Icon(
-                                          Icons.arrow_back_rounded,
-                                          size: 20,
-                                          color: Theme.of(context).colorScheme.onSurface,
+                                          child: Icon(
+                                            Icons.arrow_back_rounded,
+                                            size: 20,
+                                            color: Theme.of(context).colorScheme.onSurface,
+                                          ),
                                         ),
                                       ),
                                     )
                                   else
-                                    // Palette Icon
+                                    // Palette Icon (matching 40x40 circular geometry)
                                     Padding(
                                       padding: const EdgeInsets.only(right: 12),
                                       child: Container(
-                                        width: 44,
-                                        height: 44,
+                                        width: 40,
+                                        height: 40,
                                         decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
                                           color: primaryColor.withValues(alpha: isDark ? 0.16 : 0.10),
-                                          borderRadius: BorderRadius.circular(14),
                                           border: Border.all(
                                             color: primaryColor.withValues(alpha: isDark ? 0.32 : 0.20),
                                             width: 1.0,
@@ -487,7 +489,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                                           child: Icon(
                                             Icons.palette_rounded,
                                             color: primaryColor,
-                                            size: 22,
+                                            size: 20,
                                           ),
                                         ),
                                       ),
@@ -522,27 +524,32 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                                     ),
                                   ),
 
-                                  // Close (X) button
-                                  IconButton(
-                                    onPressed: () => Navigator.pop(sheetCtx),
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: isDark
-                                          ? Colors.white.withValues(alpha: 0.06)
-                                          : Colors.black.withValues(alpha: 0.04),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        side: BorderSide(
+                                  // Close (X) button (matching main X button style)
+                                  GestureDetector(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      Navigator.pop(sheetCtx);
+                                    },
+                                    child: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: isDark
+                                            ? Colors.white.withValues(alpha: 0.12)
+                                            : Colors.black.withValues(alpha: 0.08),
+                                        border: Border.all(
                                           color: isDark
-                                              ? Colors.white.withValues(alpha: 0.10)
+                                              ? Colors.white.withValues(alpha: 0.12)
                                               : Colors.black.withValues(alpha: 0.08),
                                           width: 1.0,
                                         ),
                                       ),
-                                    ),
-                                    icon: Icon(
-                                      Icons.close_rounded,
-                                      size: 18,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      child: Icon(
+                                        Icons.close_rounded,
+                                        size: 20,
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                      ),
                                     ),
                                   ),
                                 ],
