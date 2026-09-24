@@ -350,7 +350,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                           foregroundColor: context.colors.buttonGhostFg,
                           backgroundColor: context.colors.buttonGhostBg,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(22),
                           ),
                         ),
                         child: const Text(
@@ -385,7 +385,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
           elevation: 0,
           alignment: Alignment.center,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(25),
           ),
         ),
         child: const Center(
@@ -427,14 +427,14 @@ class _UpdateScreenState extends State<UpdateScreen> {
           width: constraints.maxWidth,
           decoration: BoxDecoration(
             color: context.colors.containerBorder,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(25),
             border: Border.all(
               color: context.colors.border,
               width: 1,
             ),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(25),
             child: Stack(
               children: [
                 AnimatedContainer(
@@ -587,7 +587,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
               foregroundColor: AppTheme.surfaceWhite,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(25),
               ),
             ),
             child: const Row(

@@ -209,7 +209,7 @@ class _SetBackupPinDialogState extends State<SetBackupPinDialog> {
                           foregroundColor:
                               Theme.of(context).colorScheme.onSurface,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(22),
                             side: BorderSide(
                               color: isDark
                                   ? Colors.white.withValues(alpha: 0.10)
@@ -238,12 +238,12 @@ class _SetBackupPinDialogState extends State<SetBackupPinDialog> {
                           foregroundColor: context.colors.buttonPrimaryFg,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(22),
                           ),
                         ),
                         onPressed: _submit,
                         child: const Text(
-                          'Create Backup',
+                          'Backup',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,

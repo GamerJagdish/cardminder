@@ -296,7 +296,7 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                                                           vertical: 12),
                                                       shape: RoundedRectangleBorder(
                                                         borderRadius:
-                                                            BorderRadius.circular(14),
+                                                            BorderRadius.circular(22),
                                                       ),
                                                       elevation: 0,
                                                     ),
@@ -483,7 +483,7 @@ class _ChangelogScreenState extends State<ChangelogScreen> {
                       foregroundColor: context.colors.buttonGhostFg,
                       backgroundColor: context.colors.buttonGhostBg,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(22),
                       ),
                     ),
                     child: const Text(

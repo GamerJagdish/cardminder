@@ -103,7 +103,7 @@ Future<bool?> showDeleteConfirmationDialog({
                           : Colors.black.withValues(alpha: 0.04),
                       foregroundColor: Theme.of(context).colorScheme.onSurface,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(22),
                         side: BorderSide(
                           color: isDark
                               ? Colors.white.withValues(alpha: 0.10)
@@ -133,7 +133,7 @@ Future<bool?> showDeleteConfirmationDialog({
                       foregroundColor: AppTheme.surfaceWhite,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(22),
                       ),
                     ),
                     child: const Text(

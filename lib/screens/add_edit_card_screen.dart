@@ -290,7 +290,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                         foregroundColor:
                             Theme.of(context).colorScheme.onSurface,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(22),
                           side: BorderSide(
                             color: isDark
                                 ? Colors.white.withValues(alpha: 0.10)
@@ -320,7 +320,7 @@ class _AddEditCardScreenState extends ConsumerState<AddEditCardScreen> {
                         foregroundColor: AppTheme.pureBlack,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(22),
                         ),
                       ),
                       child: const Text(

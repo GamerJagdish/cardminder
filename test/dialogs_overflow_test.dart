@@ -183,4 +183,109 @@ void main() {
       });
     });
   }
+
+  group('Dialog rounded buttons style tests', () {
+    testWidgets('DeleteConfirmationDialog uses rounded pill buttons (radius 22)',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () => showDeleteConfirmationDialog(
+                  context: context,
+                  cardName: 'Test Sapphire Reserve Card',
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      final deleteBtn = tester.widget<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, 'Delete'));
+      final deleteShape =
+          deleteBtn.style?.shape?.resolve({}) as RoundedRectangleBorder?;
+      expect(deleteShape?.borderRadius, BorderRadius.circular(22));
+
+      final cancelBtn =
+          tester.widget<TextButton>(find.widgetWithText(TextButton, 'Cancel'));
+      final cancelShape =
+          cancelBtn.style?.shape?.resolve({}) as RoundedRectangleBorder?;
+      expect(cancelShape?.borderRadius, BorderRadius.circular(22));
+    });
+
+    testWidgets('EditUserNameDialog uses rounded pill buttons (radius 22)',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () => EditUserNameDialog.show(
+                  context: context,
+                  currentName: 'Test User',
+                  onSave: (_) {},
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      final saveBtn =
+          tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'Save'));
+      final saveShape =
+          saveBtn.style?.shape?.resolve({}) as RoundedRectangleBorder?;
+      expect(saveShape?.borderRadius, BorderRadius.circular(22));
+
+      final cancelBtn =
+          tester.widget<TextButton>(find.widgetWithText(TextButton, 'Cancel'));
+      final cancelShape =
+          cancelBtn.style?.shape?.resolve({}) as RoundedRectangleBorder?;
+      expect(cancelShape?.borderRadius, BorderRadius.circular(22));
+    });
+
+    testWidgets('CardDigitsDialog uses rounded pill buttons (radius 22)',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () => CardDigitsDialog.show(
+                  context,
+                  '1234',
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      final saveBtn =
+          tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'Save'));
+      final saveShape =
+          saveBtn.style?.shape?.resolve({}) as RoundedRectangleBorder?;
+      expect(saveShape?.borderRadius, BorderRadius.circular(22));
+
+      final cancelBtn =
+          tester.widget<TextButton>(find.widgetWithText(TextButton, 'Cancel'));
+      final cancelShape =
+          cancelBtn.style?.shape?.resolve({}) as RoundedRectangleBorder?;
+      expect(cancelShape?.borderRadius, BorderRadius.circular(22));
+    });
+  });
 }

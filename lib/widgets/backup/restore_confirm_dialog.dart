@@ -173,7 +173,7 @@ class RestoreConfirmDialog extends StatelessWidget {
                         foregroundColor:
                             Theme.of(context).colorScheme.onSurface,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(22),
                           side: BorderSide(
                             color: isDark
                                 ? Colors.white.withValues(alpha: 0.10)
@@ -202,7 +202,7 @@ class RestoreConfirmDialog extends StatelessWidget {
                         foregroundColor: AppTheme.surfaceWhite,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(22),
                         ),
                       ),
                       onPressed: () => Navigator.of(context).pop(true),
