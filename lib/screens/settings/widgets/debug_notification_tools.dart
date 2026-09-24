@@ -105,6 +105,11 @@ class _DebugNotificationToolsState extends State<DebugNotificationTools> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
               child: const Text('Close'),
             ),
           ],

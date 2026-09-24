@@ -92,7 +92,7 @@ class PillOption extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               color: isSelected ? activeBg : inactiveBg,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(20),
             ),
             alignment: Alignment.center,
             child: Text(
@@ -189,7 +189,7 @@ class DebugActionButton extends StatelessWidget {
           ),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(22),
           ),
         ),
         icon: Icon(icon, size: 18),

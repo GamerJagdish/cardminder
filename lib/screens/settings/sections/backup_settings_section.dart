@@ -239,7 +239,7 @@ class BackupSettingsSection extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: context.colors.buttonPrimaryBg,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(22),
                         ),
                         alignment: Alignment.center,
                         child: Row(
@@ -274,7 +274,11 @@ class BackupSettingsSection extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: context.colors.surfaceSubtle,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(
+                            color: context.colors.border,
+                            width: 1.0,
+                          ),
                         ),
                         alignment: Alignment.center,
                         child: Row(

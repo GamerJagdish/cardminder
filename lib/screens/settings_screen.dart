@@ -407,7 +407,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       backgroundColor: context.colors.buttonPrimaryBg,
                       foregroundColor: context.colors.buttonPrimaryFg,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(26),
                       ),
                     ),
                     icon: Icon(
