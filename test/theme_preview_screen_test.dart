@@ -309,6 +309,7 @@ void main() {
 
       expect(find.text('Dark'), findsOneWidget);
       expect(find.text('System'), findsNothing);
+      expect(find.byType(SnackBar), findsNothing);
 
       // Second tap: switches to Light
       await tester.tap(find.text('Mode'));

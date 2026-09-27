@@ -326,15 +326,6 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
           settings.copyWith(themeMode: nextMode),
           cards,
         );
-
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Theme Mode: ${nextMode[0].toUpperCase()}${nextMode.substring(1)}'),
-        duration: const Duration(milliseconds: 1400),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   void _showThemePickerSheet() {
