@@ -83,6 +83,57 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('allows editing hex color badge directly and updates color',
+        (WidgetTester tester) async {
+      int selectedColor = const Color(0xFF0F172A).toARGB32();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StatefulBuilder(
+            builder: (context, setState) {
+              return Scaffold(
+                body: SingleChildScrollView(
+                  child: CardColorPicker(
+                    customRgbColorValue: selectedColor,
+                    onColorChanged: (c) => setState(() => selectedColor = c),
+                    isVisible: true,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final hexFieldFinder = find.byKey(const ValueKey('hex_color_input'));
+      expect(hexFieldFinder, findsOneWidget);
+      expect(tester.widget<TextField>(hexFieldFinder).controller?.text, '#0F172A');
+
+      // Enter 6-digit hex (lowercase without #) -> formats to #FF5733 and updates color
+      await tester.enterText(hexFieldFinder, 'ff5733');
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<TextField>(hexFieldFinder).controller?.text, '#FF5733');
+      expect(selectedColor, const Color(0xFFFF5733).toARGB32());
+
+      // Enter 3-digit shorthand hex and submit -> expands to #00AAFF
+      await tester.enterText(hexFieldFinder, '#0af');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<TextField>(hexFieldFinder).controller?.text, '#00AAFF');
+      expect(selectedColor, const Color(0xFF00AAFF).toARGB32());
+
+      // Enter incomplete hex (2 chars) and unfocus -> restores #00AAFF
+      await tester.enterText(hexFieldFinder, '12');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<TextField>(hexFieldFinder).controller?.text, '#00AAFF');
+    });
   });
 
   group('pillRevealRoute Transition Tests', () {
