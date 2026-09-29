@@ -129,7 +129,7 @@ class CardCountdownBanner extends StatelessWidget {
                       value: card.daysRemaining,
                       style: TextStyle(
                         fontSize: 32,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w800,
                         color: Theme.of(context).colorScheme.onSurface,
                         height: 1.05,
                       ),

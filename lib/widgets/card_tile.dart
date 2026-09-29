@@ -201,7 +201,7 @@ class _CardTileBody extends StatelessWidget {
               '${card.daysRemaining}d',
               style: TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w800,
                 color: urgency.badgeTextColor(isDark),
               ),
             ),

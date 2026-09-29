@@ -67,8 +67,8 @@ Future<bool?> showDeleteConfirmationDialog({
             ],
           ),
           const SizedBox(height: 18),
-          RichText(
-            text: TextSpan(
+          Text.rich(
+            TextSpan(
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
