@@ -101,6 +101,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _developerClickCount = 0;
   bool _showClownRain = false;
   bool _isCheckingUpdate = false;
+  int _syncRotationTurns = 0;
 
   void _handleDeveloperTap() {
     setState(() {
@@ -394,6 +395,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   height: 52,
                   child: ElevatedButton.icon(
                     onPressed: () {
+                      setState(() {
+                        _syncRotationTurns -= 1;
+                      });
                       ref
                           .read(settingsNotifierProvider.notifier)
                           .updateSettings(settings, cards);
@@ -410,10 +414,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         borderRadius: BorderRadius.circular(26),
                       ),
                     ),
-                    icon: Icon(
-                      Icons.sync_rounded,
-                      size: 20,
-                      color: context.colors.buttonPrimaryFg,
+                    icon: AnimatedRotation(
+                      turns: _syncRotationTurns.toDouble(),
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeInOut,
+                      child: Icon(
+                        Icons.sync_rounded,
+                        size: 20,
+                        color: context.colors.buttonPrimaryFg,
+                      ),
                     ),
                     label: Text(
                       'Sync Widget & Notifications',
