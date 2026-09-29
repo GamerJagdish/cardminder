@@ -233,16 +233,19 @@ class BackupSettingsSection extends StatelessWidget {
                 children: [
                   // Create Backup Button
                   Expanded(
-                    child: GestureDetector(
-                      onTap: onCreateBackup,
-                      child: Container(
-                        height: 44,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: context.colors.buttonPrimaryBg,
-                          borderRadius: BorderRadius.circular(22),
+                    child: SizedBox(
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: onCreateBackup,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.colors.buttonPrimaryBg,
+                          foregroundColor: context.colors.buttonPrimaryFg,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
                         ),
-                        alignment: Alignment.center,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -250,18 +253,19 @@ class BackupSettingsSection extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.file_download_outlined,
-                              size: 16,
+                              size: 17,
                               color: context.colors.buttonPrimaryFg,
                             ),
                             const SizedBox(width: 6),
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 1.5, right: 2.0),
+                              padding: const EdgeInsets.only(
+                                  bottom: 1.5, right: 2.0),
                               child: Text(
                                 'Create Backup',
                                 style: TextStyle(
                                   color: context.colors.buttonPrimaryFg,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                                  fontSize: 13.5,
                                   height: 1.0,
                                   leadingDistribution:
                                       TextLeadingDistribution.even,
@@ -277,40 +281,39 @@ class BackupSettingsSection extends StatelessWidget {
 
                   // Restore Backup Button
                   Expanded(
-                    child: GestureDetector(
-                      onTap: onRestoreBackup,
-                      child: Container(
-                        height: 44,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: context.colors.surfaceSubtle,
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(
-                            color: context.colors.border,
-                            width: 1.0,
+                    child: SizedBox(
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: onRestoreBackup,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.colors.editActionBg,
+                          foregroundColor: AppTheme.surfaceWhite,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
                           ),
                         ),
-                        alignment: Alignment.center,
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.file_upload_outlined,
-                              size: 16,
-                              color: Theme.of(context).colorScheme.onSurface,
+                              size: 17,
+                              color: AppTheme.surfaceWhite,
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6),
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 1.5, right: 2.0),
+                              padding: EdgeInsets.only(
+                                  bottom: 1.5, right: 2.0),
                               child: Text(
                                 'Restore Backup',
                                 style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
+                                  color: AppTheme.surfaceWhite,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                                  fontSize: 13.5,
                                   height: 1.0,
                                   leadingDistribution:
                                       TextLeadingDistribution.even,
