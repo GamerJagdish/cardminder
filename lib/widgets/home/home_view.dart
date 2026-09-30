@@ -265,14 +265,14 @@ class _HomeViewState extends ConsumerState<HomeView> with RouteAware {
               child: ShaderBackgroundView(
                 preset: currentPreset,
                 animate: effectiveAnimate,
-                opacity: isDark ? 0.95 : 0.95,
+                opacity: currentPreset.shaderType != ShaderType.none ? 1.0 : 0.95,
               ),
             ),
           ),
         ),
 
         // 2. Full-bleed Dynamic Ambient Backdrop Tint (Seamless edge-to-edge)
-        if (cards.isNotEmpty)
+        if (cards.isNotEmpty && currentPreset.shaderType != ShaderType.satella)
           Positioned(
             top: 0,
             left: 0,
