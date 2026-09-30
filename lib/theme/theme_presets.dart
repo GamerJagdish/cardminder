@@ -7,6 +7,7 @@ enum ShaderType {
   balatro,
   chessGlitch,
   amogus,
+  satella,
 }
 
 class AppThemePreset {
@@ -50,6 +51,8 @@ class AppThemePreset {
         return Icons.grid_view_rounded;
       case ShaderType.amogus:
         return Icons.pest_control_rounded;
+      case ShaderType.satella:
+        return Icons.auto_awesome_rounded;
     }
   }
 }
@@ -316,6 +319,18 @@ class ThemePresets {
       lineColor: Color(0xFFF43F5E),
       bgColor: Color(0xFF0A000A),
       accentColor: Color(0xFFFB7185),
+      isDark: true,
+    ),
+    // 9. Satella
+    AppThemePreset(
+      id: 'satella',
+      name: 'Satella',
+      description: 'Miasma of the Witch of Envy from Re:Zero',
+      shaderType: ShaderType.satella,
+      shaderAsset: 'shaders/satella.frag',
+      lineColor: Color(0xFFB85ACB),
+      bgColor: Color(0xFF090C25),
+      accentColor: Color(0xFFC084FC),
       isDark: true,
     ),
   ];

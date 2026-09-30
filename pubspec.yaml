@@ -91,6 +91,7 @@ flutter:
     - shaders/amoghell.frag
     - shaders/amoglitch.frag
     - shaders/raingus.frag
+    - shaders/satella.frag
 
   # To add assets to your application, add an assets section, like this:
   # assets:
