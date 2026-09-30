@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// An animated rolling counter that transitions between numeric values
 /// with a mechanical odometer roll effect.
