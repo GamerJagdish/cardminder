@@ -246,33 +246,13 @@ class BackupSettingsSection extends StatelessWidget {
                             borderRadius: BorderRadius.circular(24),
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.file_download_outlined,
-                              size: 17,
-                              color: context.colors.buttonPrimaryFg,
-                            ),
-                            const SizedBox(width: 6),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  bottom: 1.5, right: 2.0),
-                              child: Text(
-                                'Create Backup',
-                                style: TextStyle(
-                                  color: context.colors.buttonPrimaryFg,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
-                                  height: 1.0,
-                                  leadingDistribution:
-                                      TextLeadingDistribution.even,
-                                ),
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          'Create Backup',
+                          style: TextStyle(
+                            color: context.colors.buttonPrimaryFg,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -294,33 +274,13 @@ class BackupSettingsSection extends StatelessWidget {
                             borderRadius: BorderRadius.circular(24),
                           ),
                         ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.file_upload_outlined,
-                              size: 17,
-                              color: AppTheme.surfaceWhite,
-                            ),
-                            SizedBox(width: 6),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                  bottom: 1.5, right: 2.0),
-                              child: Text(
-                                'Restore Backup',
-                                style: TextStyle(
-                                  color: AppTheme.surfaceWhite,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
-                                  height: 1.0,
-                                  leadingDistribution:
-                                      TextLeadingDistribution.even,
-                                ),
-                              ),
-                            ),
-                          ],
+                        child: const Text(
+                          'Restore Backup',
+                          style: TextStyle(
+                            color: AppTheme.surfaceWhite,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
