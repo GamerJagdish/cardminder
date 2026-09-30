@@ -118,10 +118,13 @@ class ChangelogParser {
       }
     }
 
-    // Keep only populated categories in order
+    // Keep only populated categories in order, with entries sorted alphabetically
     final result = <String, List<String>>{};
     for (final key in ['refactor:', 'feature:', 'fix:', 'chore:', 'other:']) {
       if (groups[key]!.isNotEmpty) {
+        groups[key]!.sort(
+          (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
+        );
         result[key] = groups[key]!;
       }
     }
