@@ -385,10 +385,10 @@ packages:
     dependency: "direct main"
     description:
       name: github_release_apk_updater
-      sha256: "70e7aee9c677009caae9ef45496f58d998a93765bb83cc7ccb049bdea514e6b7"
+      sha256: e48a2508ced03ac6549f4f47bbd4bb6b4a6ab7b0aeeb4fffbb3557d7bf6131e1
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.7"
+    version: "1.0.11"
   google_fonts:
     dependency: "direct main"
     description:
