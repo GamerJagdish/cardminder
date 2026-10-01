@@ -217,7 +217,7 @@ void main() {
       expect(scaffold.resizeToAvoidBottomInset, isFalse);
 
       // Tap the user greeting header to open EditUserNameDialog
-      final greetingFinder = find.text('Welcome back,');
+      final greetingFinder = find.byKey(const Key('user_greeting_header'));
       expect(greetingFinder, findsOneWidget);
       await tester.tap(greetingFinder);
       await tester.pumpAndSettle();

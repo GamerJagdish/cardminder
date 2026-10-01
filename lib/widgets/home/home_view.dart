@@ -13,6 +13,7 @@ import '../../screens/notification_logs_screen.dart';
 import '../../services/notification_log_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_route_observer.dart';
+import '../../utils/greeting_helper.dart';
 import '../../utils/page_transitions.dart';
 import '../card_tile.dart';
 import '../credit_card_view.dart';
@@ -37,11 +38,13 @@ class HomeView extends ConsumerStatefulWidget {
   final ScrollController? scrollController;
   final PageController? pageController;
   final ValueChanged<String>? onCardAdded;
+  final String? greetingOverride;
 
   const HomeView({
     super.key,
     this.presetOverride,
     this.animateOverride,
+    this.greetingOverride,
     this.isInteractive = true,
     this.showBottomNavBar = false,
     this.isPreview = false,
@@ -88,6 +91,23 @@ class _HomeViewState extends ConsumerState<HomeView> with RouteAware {
   ModalRoute<dynamic>? _route;
   bool _isRouteActive = true;
   Timer? _resumeTransitionTimer;
+  late String _greeting;
+
+  @override
+  void initState() {
+    super.initState();
+    _greeting = widget.greetingOverride ??
+        (widget.isPreview ? 'Welcome back,' : GreetingHelper.nextGreeting());
+  }
+
+  @override
+  void didUpdateWidget(covariant HomeView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.greetingOverride != null &&
+        widget.greetingOverride != oldWidget.greetingOverride) {
+      _greeting = widget.greetingOverride!;
+    }
+  }
 
   PageController get _pageController =>
       widget.pageController ??
@@ -319,6 +339,7 @@ class _HomeViewState extends ConsumerState<HomeView> with RouteAware {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: GestureDetector(
+                          key: const Key('user_greeting_header'),
                           onTap: widget.isInteractive
                               ? () => EditUserNameDialog.show(
                                     context: context,
@@ -358,7 +379,7 @@ class _HomeViewState extends ConsumerState<HomeView> with RouteAware {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      'Welcome back,',
+                                      _greeting,
                                       style: TextStyle(
                                         fontSize: 12.5,
                                         color: isDark

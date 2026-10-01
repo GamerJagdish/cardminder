@@ -49,7 +49,7 @@ void main() {
     });
 
     testWidgets(
-        'BackupSettingsSection Create and Restore buttons use rounded pill shape (radius 22)',
+        'BackupSettingsSection Create and Restore buttons use rounded pill shape (radius 24)',
         (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -69,27 +69,19 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final createBackupContainer = tester.widget<Container>(
-        find
-            .ancestor(
-              of: find.text('Create Backup'),
-              matching: find.byType(Container),
-            )
-            .first,
+      final createButton = tester.widget<ElevatedButton>(
+        find.widgetWithText(ElevatedButton, 'Create Backup'),
       );
-      final createDec = createBackupContainer.decoration as BoxDecoration?;
-      expect(createDec?.borderRadius, BorderRadius.circular(22));
+      final createBorder =
+          createButton.style?.shape?.resolve({}) as RoundedRectangleBorder?;
+      expect(createBorder?.borderRadius, BorderRadius.circular(24));
 
-      final restoreBackupContainer = tester.widget<Container>(
-        find
-            .ancestor(
-              of: find.text('Restore Backup'),
-              matching: find.byType(Container),
-            )
-            .first,
+      final restoreButton = tester.widget<ElevatedButton>(
+        find.widgetWithText(ElevatedButton, 'Restore Backup'),
       );
-      final restoreDec = restoreBackupContainer.decoration as BoxDecoration?;
-      expect(restoreDec?.borderRadius, BorderRadius.circular(22));
+      final restoreBorder =
+          restoreButton.style?.shape?.resolve({}) as RoundedRectangleBorder?;
+      expect(restoreBorder?.borderRadius, BorderRadius.circular(24));
     });
 
     testWidgets('PillOption buttons use rounded pill shape (radius 20)',
