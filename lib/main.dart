@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
 import 'services/notification_log_service.dart';
+import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 import 'theme/app_theme.dart';
 import 'utils/app_route_observer.dart';
@@ -34,6 +35,7 @@ void main() async {
   await Future.wait([
     SettingsNotifier.init(),
     NotificationLogService.init(),
+    NotificationService.init(),
   ]);
 
   runApp(

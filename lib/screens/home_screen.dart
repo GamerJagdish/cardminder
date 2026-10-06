@@ -28,6 +28,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   late PageController _pageController;
   late ScrollController _homeScrollController;
   StreamSubscription<Uri?>? _widgetClickSubscription;
+  StreamSubscription<String>? _notificationClickSubscription;
   Timer? _deferredTasksTimer;
 
   @override
@@ -38,7 +39,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
     _homeScrollController = ScrollController();
     _initWidgetLaunchHandling();
+    _initNotificationLaunchHandling();
     _initDeferredBackgroundTasks();
+  }
+
+  void _initNotificationLaunchHandling() {
+    final initialCardId = NotificationService.initialCardLaunchId;
+    if (initialCardId != null && initialCardId.isNotEmpty) {
+      NotificationService.clearInitialCardLaunchId();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _openCardById(initialCardId);
+      });
+    }
+
+    _notificationClickSubscription =
+        NotificationService.onCardClick.listen((cardId) {
+      _openCardById(cardId);
+    });
   }
 
   void _initDeferredBackgroundTasks() {
@@ -79,6 +96,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
   }
 
+  void _openCardDetails(CreditCard targetCard) {
+    _syncSelectedCard(targetCard.id);
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    Navigator.push<String?>(
+      context,
+      slideUpRoute(
+        CardDetailsScreen(card: targetCard),
+      ),
+    ).then((closedCardId) {
+      _syncSelectedCard(closedCardId);
+    });
+  }
+
+  void _openCardById(String cardId) {
+    if (!mounted) return;
+    final cards = ref.read(cardNotifierProvider).cards;
+    final targetCard = cards.where((c) => c.id == cardId).firstOrNull;
+    if (targetCard != null) {
+      final unreadLogs = ref
+          .read(notificationLogNotifierProvider)
+          .where((l) => l.cardId == cardId && !l.isRead)
+          .toList();
+      for (final log in unreadLogs) {
+        ref
+            .read(notificationLogNotifierProvider.notifier)
+            .setReadStatus(log.id, true);
+      }
+      _openCardDetails(targetCard);
+    }
+  }
+
   void _handleWidgetLaunchUri(Uri? uri) {
     if (uri == null || !mounted) return;
     final cardId = uri.queryParameters['id'] ??
@@ -110,16 +158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     if (targetCard != null) {
-      _syncSelectedCard(targetCard.id);
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      Navigator.push<String?>(
-        context,
-        slideUpRoute(
-          CardDetailsScreen(card: targetCard),
-        ),
-      ).then((closedCardId) {
-        _syncSelectedCard(closedCardId);
-      });
+      _openCardDetails(targetCard);
     }
   }
 
@@ -127,6 +166,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void dispose() {
     _deferredTasksTimer?.cancel();
     _widgetClickSubscription?.cancel();
+    _notificationClickSubscription?.cancel();
     _pageController.dispose();
     _homeScrollController.dispose();
     super.dispose();

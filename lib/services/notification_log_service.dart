@@ -51,7 +51,7 @@ class NotificationLogService {
             cardId: card.id,
             cardName: card.cardName,
             message:
-                '${card.cardName} has $days day(s) remaining before 365-day deactivation!',
+                '$days day${days == 1 ? '' : 's'} left until deactivation',
             timestamp: now,
             daysRemaining: days,
             isRead: false,

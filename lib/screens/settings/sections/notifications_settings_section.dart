@@ -94,7 +94,7 @@ class NotificationsSettingsSection extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               settings.notificationsEnabled
-                                  ? 'Receive alerts before 365-day expiry'
+                                  ? 'Receive alerts before deactivation deadline'
                                   : 'Reminders are paused',
                               style: const TextStyle(
                                 fontSize: 12,
