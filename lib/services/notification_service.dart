@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -15,12 +16,26 @@ class NotificationService {
   static const int _debugImmediateId = 99999;
   static const int _debugScheduledId = 99998;
 
+  static final StreamController<String> _cardClickController =
+      StreamController<String>.broadcast();
+
+  /// Stream emitting card IDs when a user taps a card push notification.
+  static Stream<String> get onCardClick => _cardClickController.stream;
+
+  static String? _initialCardLaunchId;
+
+  /// Returns card ID if the app was launched by tapping a card notification from a terminated state.
+  static String? get initialCardLaunchId => _initialCardLaunchId;
+
+  /// Clears initial card launch ID after it has been consumed.
+  static void clearInitialCardLaunchId() => _initialCardLaunchId = null;
+
   static const NotificationDetails _notificationDetails = NotificationDetails(
     android: AndroidNotificationDetails(
       'cardminder_channel',
       'Card Expiry Reminders',
       channelDescription:
-          'Notifications for upcoming 365-day card transaction deadlines',
+          'Notifications for upcoming card transaction deadlines',
       importance: Importance.high,
       priority: Priority.high,
       icon: 'ic_notification',
@@ -62,10 +77,18 @@ class NotificationService {
 
     void onNotificationResponse(NotificationResponse response) {
       final payload = response.payload;
-      if (payload != null && payload.startsWith('install_apk:')) {
-        final filePath = payload.substring('install_apk:'.length);
-        if (filePath.isNotEmpty) {
-          GithubReleaseApkUpdater().installApk(filePath);
+      if (payload != null) {
+        if (payload.startsWith('install_apk:')) {
+          final filePath = payload.substring('install_apk:'.length);
+          if (filePath.isNotEmpty) {
+            GithubReleaseApkUpdater().installApk(filePath);
+          }
+        } else if (payload.startsWith('card:')) {
+          final cardId = payload.substring('card:'.length);
+          if (cardId.isNotEmpty) {
+            _initialCardLaunchId = cardId;
+            _cardClickController.add(cardId);
+          }
         }
       }
     }
@@ -107,6 +130,20 @@ class NotificationService {
         );
       } catch (_) {}
     }
+
+    try {
+      final launchDetails =
+          await _notificationsPlugin.getNotificationAppLaunchDetails();
+      if (launchDetails != null && launchDetails.didNotificationLaunchApp) {
+        final payload = launchDetails.notificationResponse?.payload;
+        if (payload != null && payload.startsWith('card:')) {
+          final cardId = payload.substring('card:'.length);
+          if (cardId.isNotEmpty) {
+            _initialCardLaunchId = cardId;
+          }
+        }
+      }
+    } catch (_) {}
   }
 
   static const int updateNotificationId = 77777;
@@ -242,18 +279,15 @@ class NotificationService {
 
       if (targetDate.isAfter(now)) {
         final scheduledTZDate = tz.TZDateTime.from(targetDate, tz.local);
-
-        final cardDigitsInfo =
-            card.lastFourDigits != null && card.lastFourDigits!.isNotEmpty
-                ? ' (•• ${card.lastFourDigits})'
-                : '';
+        final notificationBody =
+            '$daysBefore day${daysBefore == 1 ? '' : 's'} left until deactivation';
 
         try {
           await _notificationsPlugin.zonedSchedule(
             id: notificationId,
-            title: '💳 Card Transaction Reminder',
-            body:
-                '${card.cardName}$cardDigitsInfo needs a transaction in $daysBefore day(s) to avoid deactivation!',
+            title: card.cardName,
+            body: notificationBody,
+            payload: 'card:${card.id}',
             scheduledDate: scheduledTZDate,
             notificationDetails: _notificationDetails,
             androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -261,9 +295,9 @@ class NotificationService {
         } catch (_) {
           await _notificationsPlugin.zonedSchedule(
             id: notificationId,
-            title: '💳 Card Transaction Reminder',
-            body:
-                '${card.cardName}$cardDigitsInfo needs a transaction in $daysBefore day(s) to avoid deactivation!',
+            title: card.cardName,
+            body: notificationBody,
+            payload: 'card:${card.id}',
             scheduledDate: scheduledTZDate,
             notificationDetails: _notificationDetails,
             androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
