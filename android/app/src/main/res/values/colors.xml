@@ -1,29 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Widget Light Mode Colors (High Contrast & Crisp) -->
-    <color name="widget_bg">#FFFFFF</color>
-    <color name="widget_border">#CBD5E1</color>
+    <!-- Widget Light Mode Colors (Matching Settings Page Background bgLight #F8FAFC) -->
+    <color name="widget_bg">#E6F8FAFC</color>
     <color name="widget_header_title">#0F172A</color>
-    <color name="widget_header_subtitle">#334155</color>
-    <color name="widget_header_icon_bg">#EEF2F6</color>
+    <color name="widget_header_subtitle">#475569</color>
+    <color name="widget_header_icon_bg">#140F172A</color>
     <color name="widget_icon_tint">#0F172A</color>
-    <color name="widget_badge_bg">#EEF2F6</color>
-    <color name="widget_badge_border">#CBD5E1</color>
+    <!-- Count badge pill matching in-app HomeView (8% navy fill, 15% navy border) -->
+    <color name="widget_badge_bg">#140F172A</color>
+    <color name="widget_badge_border">#260F172A</color>
     <color name="widget_badge_text">#0F172A</color>
-    <color name="widget_divider">#E2E8F0</color>
-    <color name="widget_card_item_bg">#F8FAFC</color>
-    <color name="widget_card_item_border">#E2E8F0</color>
+    <color name="widget_divider">#140F172A</color>
     <color name="widget_text_primary">#0F172A</color>
-    <color name="widget_text_secondary">#334155</color>
-    <color name="widget_empty_text">#334155</color>
+    <color name="widget_text_secondary">#475569</color>
+    <color name="widget_empty_text">#64748B</color>
 
-    <!-- Urgency Status Colors (Light Mode - Bold, High-Contrast Text) -->
-    <color name="widget_status_safe_text">#047857</color>
+    <!-- Urgency Status Colors (Light Mode - Matching AppColors.light) -->
+    <color name="widget_status_safe_text">#065F46</color>
     <color name="widget_status_safe_bg">#DCFCE7</color>
-    <color name="widget_status_warning_text">#B45309</color>
+    <color name="widget_status_warning_text">#92400E</color>
     <color name="widget_status_warning_bg">#FEF3C7</color>
-    <color name="widget_status_critical_text">#B91C1C</color>
+    <color name="widget_status_critical_text">#991B1B</color>
     <color name="widget_status_critical_bg">#FEE2E2</color>
-    <color name="widget_status_expired_text">#334155</color>
-    <color name="widget_status_expired_bg">#E2E8F0</color>
+    <color name="widget_status_expired_text">#6B7280</color>
+    <color name="widget_status_expired_bg">#F3F4F6</color>
 </resources>

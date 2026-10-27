@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_container"
+    android:id="@android:id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:paddingLeft="10dp"
+    android:paddingTop="10dp"
+    android:paddingRight="10dp"
+    android:paddingBottom="0dp">
 
     <!-- Widget Header Bar -->
     <RelativeLayout
@@ -14,7 +17,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical">
 
-        <!-- Header Left: App Icon + App Branding -->
+        <!-- Header Left: App Icon + (Optional on Wide) App Branding -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -25,14 +28,14 @@
 
             <FrameLayout
                 android:id="@+id/widget_header_icon_container"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:background="@drawable/widget_header_icon_bg">
 
                 <ImageView
                     android:id="@+id/widget_header_icon"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_notification"
                     android:tint="@color/widget_icon_tint" />
@@ -42,14 +45,15 @@
                 android:id="@+id/widget_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
+                android:layout_marginLeft="7dp"
                 android:text="CardMinder"
                 android:textColor="@color/widget_header_title"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="visible" />
         </LinearLayout>
 
-        <!-- Header Right: Total Cards Count Pill Badge -->
+        <!-- Header Right: Total Cards Count Pill Badge (Matching in-app count pill) -->
         <TextView
             android:id="@+id/widget_cards_count_label"
             android:layout_width="wrap_content"
@@ -57,13 +61,15 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:background="@drawable/widget_count_badge_bg"
-            android:paddingLeft="9dp"
-            android:paddingTop="3dp"
-            android:paddingRight="9dp"
-            android:paddingBottom="3dp"
-            android:text="0 CARDS"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:paddingLeft="8dp"
+            android:paddingTop="2dp"
+            android:paddingRight="8dp"
+            android:paddingBottom="2dp"
+            android:text="0"
             android:textColor="@color/widget_badge_text"
-            android:textSize="9sp"
+            android:textSize="12sp"
             android:textStyle="bold" />
     </RelativeLayout>
 
@@ -72,8 +78,8 @@
         android:id="@+id/widget_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="7dp"
-        android:layout_marginBottom="6dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="4dp"
         android:background="@color/widget_divider" />
 
     <!-- Content Area: ListView with Empty State fallback -->
@@ -94,8 +100,8 @@
 
             <ImageView
                 android:id="@+id/widget_empty_icon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:src="@drawable/ic_notification"
                 android:tint="@color/widget_icon_tint" />
 
@@ -103,20 +109,20 @@
                 android:id="@+id/widget_empty_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="5dp"
                 android:text="All cards are active"
                 android:textColor="@color/widget_text_primary"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/widget_empty_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="1dp"
                 android:text="Tap to manage your cards"
                 android:textColor="@color/widget_empty_text"
-                android:textSize="10sp" />
+                android:textSize="9sp" />
         </LinearLayout>
 
         <!-- Scrollable Cards List -->
@@ -124,8 +130,10 @@
             android:id="@+id/widget_cards_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="6dp"
             android:divider="@android:color/transparent"
-            android:dividerHeight="4dp"
+            android:dividerHeight="0dp"
             android:cacheColorHint="@android:color/transparent"
             android:fadingEdge="none"
             android:scrollbars="none"

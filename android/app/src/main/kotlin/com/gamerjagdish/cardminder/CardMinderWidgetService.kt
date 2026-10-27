@@ -11,6 +11,7 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.net.Uri
 import android.os.Build
+import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import org.json.JSONArray
@@ -78,8 +79,8 @@ class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsSe
             val status = item.optString("status", "SAFE")
 
             views.setTextViewText(R.id.widget_name, name)
-            val subText = if (bank.isNotEmpty()) "$bank • $network" else "$network • •••• $digits"
-            views.setTextViewText(R.id.widget_subtitle, subText)
+            // Show only the card network under the card name (no redundant card number)
+            views.setTextViewText(R.id.widget_subtitle, network)
 
             // Render mini credit card bitmap
             val cardBmp = createMiniCardBitmap(context, digits, colorHex, network)
@@ -105,6 +106,13 @@ class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsSe
                 views.setTextColor(R.id.widget_status, color)
                 views.setTextColor(R.id.widget_days, color)
             }
+
+            // Hide hairline divider under the last card item in the list
+            val isLastItem = position == cardsList.size - 1
+            views.setViewVisibility(
+                R.id.widget_item_divider,
+                if (isLastItem) View.GONE else View.VISIBLE
+            )
 
             // Fill-in Intent to trigger the widget's PendingIntentTemplate with card deep-link
             val fillInIntent = Intent().apply {
@@ -166,8 +174,9 @@ class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsSe
         network: String?
     ): Bitmap {
         val density = context.resources.displayMetrics.density
-        val width = (42 * density).toInt().coerceAtLeast(84)
-        val height = (26 * density).toInt().coerceAtLeast(52)
+        // Proportional credit card dimensions (44dp x 30dp, aspect ratio ~1.47:1)
+        val width = (44 * density).toInt().coerceAtLeast(88)
+        val height = (30 * density).toInt().coerceAtLeast(60)
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -181,71 +190,59 @@ class CardMinderRemoteViewsFactory(private val context: Context) : RemoteViewsSe
         // Compute darker gradient color for card depth
         val hsv = FloatArray(3)
         Color.colorToHSV(cardColor, hsv)
-        hsv[2] = (hsv[2] * 0.72f).coerceIn(0f, 1f)
+        hsv[2] = (hsv[2] * 0.75f).coerceIn(0f, 1f)
         val darkerColor = Color.HSVToColor(hsv)
 
+        val cornerRadius = 8 * density
+        val cardRect = RectF(0f, 0f, width.toFloat(), height.toFloat())
+
+        // Strictly clip canvas to rounded rectangle so no drawing ever bleeds into the corners
+        val cardPath = android.graphics.Path().apply {
+            addRoundRect(cardRect, cornerRadius, cornerRadius, android.graphics.Path.Direction.CW)
+        }
+        canvas.clipPath(cardPath)
+
+        // Diagonal gradient for subtle depth
         val cardPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             shader = LinearGradient(
                 0f, 0f, width.toFloat(), height.toFloat(),
                 cardColor, darkerColor, Shader.TileMode.CLAMP
             )
         }
-
-        val cornerRadius = 5 * density
-        val cardRect = RectF(0f, 0f, width.toFloat(), height.toFloat())
         canvas.drawRoundRect(cardRect, cornerRadius, cornerRadius, cardPaint)
 
-        // Compute luminance to ensure text on card has high contrast
-        val luminance = (0.299 * Color.red(cardColor) + 0.587 * Color.green(cardColor) + 0.114 * Color.blue(cardColor)) / 255.0
-        val cardTextColor = if (luminance > 0.65) Color.parseColor("#0F172A") else Color.WHITE
-
-        // Ambient sheen circle in top-right
-        val sheenPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = if (luminance > 0.65) Color.BLACK else Color.WHITE
-            alpha = 20
+        // Subtle specular highlight rim simulating light reflection on rounded card edge
+        val highlightPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            alpha = 35
+            style = Paint.Style.STROKE
+            strokeWidth = 1f * density
         }
-        canvas.drawCircle(width * 0.88f, height * 0.12f, width * 0.42f, sheenPaint)
-
-        // Mini gold EMV chip in top-left
-        val chipPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#EAB308")
-        }
-        val chipRect = RectF(
-            width * 0.10f,
-            height * 0.20f,
-            width * 0.28f,
-            height * 0.50f
+        val strokeInset = 0.5f * density
+        val strokeRect = RectF(
+            strokeInset, strokeInset,
+            width.toFloat() - strokeInset, height.toFloat() - strokeInset
         )
-        canvas.drawRoundRect(chipRect, 1.5f * density, 1.5f * density, chipPaint)
+        canvas.drawRoundRect(strokeRect, cornerRadius - strokeInset, cornerRadius - strokeInset, highlightPaint)
 
-        // Digits text (last 4)
+        // Dynamic luminance-aware text color matching Flutter AppTheme (luminance > 0.45)
+        val luminance = (0.299 * Color.red(cardColor) + 0.587 * Color.green(cardColor) + 0.114 * Color.blue(cardColor)) / 255.0
+        val cardTextColor = if (luminance > 0.45) Color.parseColor("#0F172A") else Color.WHITE
+
+        // Centered bold digits (last 4) matching app's _CardTileBody thumbnail
+        val safeDigits = if (digits.length >= 4) digits.takeLast(4) else digits.padStart(4, '0')
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = cardTextColor
-            textSize = 8.5f * density
+            textSize = 11.5f * density
             isFakeBoldText = true
-        }
-        val safeDigits = if (digits.length >= 4) digits.takeLast(4) else digits.padStart(4, '0')
-        canvas.drawText(safeDigits, width * 0.10f, height * 0.84f, textPaint)
-
-        // Network badge on top-right (e.g. VISA, MC, AMEX, RUPAY, DISC)
-        val netStr = when ((network ?: "").lowercase()) {
-            "visa" -> "VISA"
-            "mastercard" -> "MC"
-            "amex" -> "AMEX"
-            "rupay" -> "RUPAY"
-            "discover" -> "DISC"
-            else -> network?.take(4)?.uppercase() ?: ""
-        }
-        if (netStr.isNotEmpty()) {
-            val netPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = cardTextColor
-                alpha = 220
-                textSize = 6f * density
-                isFakeBoldText = true
-                textAlign = Paint.Align.RIGHT
+            textAlign = Paint.Align.CENTER
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                letterSpacing = 0.08f
             }
-            canvas.drawText(netStr, width * 0.90f, height * 0.42f, netPaint)
         }
+        val fontMetrics = textPaint.fontMetrics
+        val textY = (height / 2f) - ((fontMetrics.ascent + fontMetrics.descent) / 2f)
+        canvas.drawText(safeDigits, width / 2f, textY, textPaint)
 
         return bitmap
     }
