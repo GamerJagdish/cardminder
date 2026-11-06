@@ -61,7 +61,7 @@ class AppearanceSection extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // Glowing Theme Preset Avatar
+                  // Theme Preset Avatar
                   Container(
                     width: 48,
                     height: 48,
@@ -72,13 +72,6 @@ class AppearanceSection extends StatelessWidget {
                         color: activePreset.lineColor,
                         width: 2,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: activePreset.lineColor.withValues(alpha: 0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
                     ),
                     child: Center(
                       child: Icon(
@@ -100,7 +93,7 @@ class AppearanceSection extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: activePreset.lineColor,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),

@@ -164,6 +164,18 @@ void main() {
       expect(find.text('App Theme & Background'), findsNothing);
       expect(find.text(activePreset.name), findsOneWidget);
       expect(find.text('Dark'), findsOneWidget);
+
+      final presetText = tester.widget<Text>(find.text(activePreset.name));
+      expect(presetText.style?.color, AppTheme.darkTheme.colorScheme.onSurface);
+
+      final avatarContainer = tester.widget<Container>(
+        find.ancestor(
+          of: find.byIcon(activePreset.icon),
+          matching: find.byType(Container),
+        ).first,
+      );
+      final avatarDec = avatarContainer.decoration as BoxDecoration?;
+      expect(avatarDec?.boxShadow, isNull);
     });
   });
 }
