@@ -1418,11 +1418,9 @@ class _PhoneMockupView extends StatelessWidget {
         color: preset.bgColor,
         borderRadius: BorderRadius.circular(outerRadius),
         border: Border.all(
-          color: isFocused
-              ? preset.lineColor.withValues(alpha: 0.55)
-              : (isDark
-                  ? Colors.white.withValues(alpha: 0.14)
-                  : Colors.black.withValues(alpha: 0.12)),
+          color: isDark
+              ? Colors.white.withValues(alpha: isFocused ? 0.22 : 0.14)
+              : Colors.black.withValues(alpha: isFocused ? 0.20 : 0.12),
           width: borderWidth,
         ),
         boxShadow: [
