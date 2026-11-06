@@ -737,7 +737,9 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
     AppSettings settings,
     bool isDark,
   ) {
-    final activeColor = _getThemedAccentColor(currentPreset, isDark);
+    final textColor = settings.animateBackground
+        ? (isDark ? Colors.white : const Color(0xFF0F172A))
+        : (isDark ? AppTheme.textMuted : AppTheme.slate600);
 
     return GestureDetector(
       onTap: () {
@@ -753,14 +755,14 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: settings.animateBackground
-              ? activeColor.withValues(alpha: isDark ? 0.20 : 0.12)
-              : (isDark ? Colors.white10 : Colors.black12),
+          color: isDark
+              ? Colors.white.withValues(alpha: settings.animateBackground ? 0.14 : 0.08)
+              : Colors.black.withValues(alpha: settings.animateBackground ? 0.10 : 0.05),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: settings.animateBackground
-                ? activeColor
-                : Colors.transparent,
+            color: isDark
+                ? Colors.white.withValues(alpha: settings.animateBackground ? 0.16 : 0.09)
+                : Colors.black.withValues(alpha: settings.animateBackground ? 0.12 : 0.06),
             width: 1,
           ),
         ),
@@ -772,9 +774,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                   ? Icons.motion_photos_on_rounded
                   : Icons.motion_photos_off_rounded,
               size: 14,
-              color: settings.animateBackground
-                  ? activeColor
-                  : (isDark ? AppTheme.textMuted : AppTheme.slate600),
+              color: textColor,
             ),
             const SizedBox(width: 4),
             Text(
@@ -782,9 +782,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
-                color: settings.animateBackground
-                    ? activeColor
-                    : (isDark ? AppTheme.textMuted : AppTheme.slate600),
+                color: textColor,
               ),
             ),
           ],
