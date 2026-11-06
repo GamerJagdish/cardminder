@@ -90,42 +90,34 @@ class AppearanceSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 14),
 
-                  // Title & Mode Subtitle
+                  // Current Theme & Mode Selection
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          'App Theme & Background',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
+                        Flexible(
+                          child: Text(
+                            activePreset.name,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: activePreset.lineColor,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        Row(
-                          children: [
-                            Text(
-                              activePreset.name,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: activePreset.lineColor,
-                              ),
-                            ),
-                            const Text(
-                              ' / ',
-                              style: TextStyle(color: AppTheme.textMuted),
-                            ),
-                            Text(
-                              modeLabel,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.textMuted,
-                              ),
-                            ),
-                          ],
+                        const Text(
+                          ' / ',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: AppTheme.textMuted,
+                          ),
+                        ),
+                        Text(
+                          modeLabel,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: AppTheme.textMuted,
+                          ),
                         ),
                       ],
                     ),

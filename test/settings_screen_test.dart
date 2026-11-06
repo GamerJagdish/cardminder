@@ -5,6 +5,7 @@ import 'package:cardminder/models/app_settings.dart';
 import 'package:cardminder/providers/card_provider.dart';
 import 'package:cardminder/providers/settings_provider.dart';
 import 'package:cardminder/screens/settings_screen.dart';
+import 'package:cardminder/screens/settings/sections/appearance_section.dart';
 import 'package:cardminder/screens/settings/sections/backup_settings_section.dart';
 import 'package:cardminder/screens/settings/widgets/settings_tiles.dart';
 import 'package:cardminder/theme/app_theme.dart';
@@ -139,6 +140,30 @@ void main() {
       final shape =
           debugBtn.style?.shape?.resolve({}) as RoundedRectangleBorder?;
       expect(shape?.borderRadius, BorderRadius.circular(22));
+    });
+
+    testWidgets(
+        'AppearanceSection displays active preset and mode without redundant App Theme & Background title',
+        (tester) async {
+      final activePreset = ThemePresets.getById('classic');
+      final settings = AppSettings(themePreset: 'classic', themeMode: 'dark');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: AppearanceSection(
+              settings: settings,
+              onUpdateSettings: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('App Theme & Background'), findsNothing);
+      expect(find.text(activePreset.name), findsOneWidget);
+      expect(find.text('Dark'), findsOneWidget);
     });
   });
 }
